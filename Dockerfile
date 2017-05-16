@@ -39,7 +39,7 @@ RUN \
 
 # Generate and install favicons.
 RUN \
-    APP_ICON_URL=https://handbrake.fr/img/logo.png && \
+    APP_ICON_URL=https://raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/images/handbrake-icon.png && \
     /opt/install_app_icon.sh "$APP_ICON_URL"
 
 # Add files.
