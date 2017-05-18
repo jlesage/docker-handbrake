@@ -14,38 +14,30 @@ log() {
     echo "watchFolder: $*"
 }
 
-process_watch_folder() {
-    while true; do
-        file_processed=false
+process_files() {
+    for file in $1; do
+        hash="$(stat -c '%n %s %Y' "$file" | md5sum | cut -d' ' -f1)"
+        if grep -q -w "$hash" "$SUCCESSFUL_CONVERSIONS"; then
+            log "Skipping file '$file' ($hash): already processed successfully."
+            continue
+        fi
+        if grep -q -w "$hash" "$FAILED_CONVERSIONS"; then
+            log "Skipping file '$file' ($hash): already processed with failure."
+            continue
+        fi
 
-        for file in $(find /watch -type f); do
-            hash="$(stat -c '%n %s %Y' "$file" | md5sum |  cut -d' ' -f1)"
-            if grep -q -w "$hash" "$SUCCESSFUL_CONVERSIONS"; then
-                log "Skipping file '$file' ($hash): already processed successfully."
-                continue
-            fi
-            if grep -q -w "$hash" "$FAILED_CONVERSIONS"; then
-                log "Skipping file '$file' ($hash): already processed with failure."
-                continue
-            fi
-
-            log "Starting conversion of '$file' ($hash)..."
-            basename="$(basename $file | sed 's/\.[^.]*$//')"
-            $HANDBRAKE_CLI -i "$file" \
-                           -o /output/"$basename"."$AUTOMATED_CONVERSION_FORMAT" \
-                           --preset "$AUTOMATED_CONVERSION_PRESET"
-            if [ $? -eq 0 ]; then
-                log "Conversion ended successfully."
-                echo "$file $hash" >> "$SUCCESSFUL_CONVERSIONS"
-            else
-                log "Conversion failed."
-                echo "$file $hash" >> "$FAILED_CONVERSIONS"
-            fi
-            file_processed=true
-        done
-
-        $file_processed || break
-        log "Re-processing watch folder for any missed files..."
+        log "Starting conversion of '$file' ($hash)..."
+        basename="$(basename $file | sed 's/\.[^.]*$//')"
+        $HANDBRAKE_CLI -i "$file" \
+                       -o /output/"$basename"."$AUTOMATED_CONVERSION_FORMAT" \
+                       --preset "$AUTOMATED_CONVERSION_PRESET"
+        if [ $? -eq 0 ]; then
+            log "Conversion ended successfully."
+            echo "$file $hash" >> "$SUCCESSFUL_CONVERSIONS"
+        else
+            log "Conversion failed."
+            echo "$file $hash" >> "$FAILED_CONVERSIONS"
+        fi
     done
 }
 
@@ -54,15 +46,23 @@ echo "Starting watchfolder service..."
 [ -f "$FAILED_CONVERSIONS" ] || touch "$FAILED_CONVERSIONS"
 [ -f "$SUCCESSFUL_CONVERSIONS" ] || touch "$SUCCESSFUL_CONVERSIONS"
 
-process_watch_folder
+DIRHASH=UNSET
 while true; do
-    /usr/bin/inotifywait -e close_write -e moved_to /watch 2> /dev/null
-    if [ $? -eq  0 ]; then
-        log "Watch folder: New file(s) detected!"
+    CONTENT="$(find /watch -maxdepth 1 -type f -printf '%T@:%s:%p\n')"
+    HASH="$(echo "$CONTENT" | md5sum | cut -d' ' -f1)"
+    FILES="$(echo "$CONTENT" | cut -d':' -f3)"
+
+    if [ "$DIRHASH" != "$HASH" ]; then
+        if [ "$DIRHASH" != "UNSET" ]; then
+            log "Watch folder: New file(s) detected!"
+        fi
         log "Processing watch folder..."  
-        process_watch_folder
+        process_files "$FILES"
         log "Watch folder processing terminated"
+        DIRHASH="$HASH"
     fi
+
+    sleep 5
 done
 
 # vim: set ft=sh :

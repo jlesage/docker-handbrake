@@ -36,7 +36,7 @@ RUN sed -i 's/<application type="normal">/<application type="normal" title="Hand
 # Install dependencies.
 RUN \
     apk --no-cache add \
-        inotify-tools
+        findutils
 
 # Generate and install favicons.
 RUN \
