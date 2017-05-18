@@ -33,9 +33,10 @@ RUN \
 RUN sed -i 's/<application type="normal">/<application type="normal" title="HandBrake">/' \
     $HOME/.config/openbox/rc.xml
 
-# Install other dependencies.
+# Install dependencies.
 RUN \
-    apk --no-cache add inotify-tools
+    apk --no-cache add \
+        inotify-tools
 
 # Generate and install favicons.
 RUN \
