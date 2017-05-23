@@ -14,31 +14,34 @@ log() {
     echo "watchFolder: $*"
 }
 
-process_files() {
-    for file in $1; do
-        hash="$(stat -c '%n %s %Y' "$file" | md5sum | cut -d' ' -f1)"
-        if grep -q -w "$hash" "$SUCCESSFUL_CONVERSIONS"; then
-            log "Skipping file '$file' ($hash): already processed successfully."
-            continue
-        fi
-        if grep -q -w "$hash" "$FAILED_CONVERSIONS"; then
-            log "Skipping file '$file' ($hash): already processed with failure."
-            continue
-        fi
+watchdir_hash() {
+    find /watch -follow -maxdepth 1 -type f -printf '%T@:%s:%p\n' | md5sum | cut -d' ' -f1
+}
 
-        log "Starting conversion of '$file' ($hash)..."
-        basename="$(basename $file | sed 's/\.[^.]*$//')"
-        $HANDBRAKE_CLI -i "$file" \
-                       -o /output/"$basename"."$AUTOMATED_CONVERSION_FORMAT" \
-                       --preset "$AUTOMATED_CONVERSION_PRESET"
-        if [ $? -eq 0 ]; then
-            log "Conversion ended successfully."
-            echo "$file $hash" >> "$SUCCESSFUL_CONVERSIONS"
-        else
-            log "Conversion failed."
-            echo "$file $hash" >> "$FAILED_CONVERSIONS"
-        fi
-    done
+process_file() {
+    file="$1"
+    hash="$(stat -c '%n %s %Y' "$file" | md5sum | cut -d' ' -f1)"
+    if grep -q -w "$hash" "$SUCCESSFUL_CONVERSIONS"; then
+        log "Skipping file '$file' ($hash): already processed successfully."
+        continue
+    fi
+    if grep -q -w "$hash" "$FAILED_CONVERSIONS"; then
+        log "Skipping file '$file' ($hash): already processed with failure."
+        continue
+    fi
+
+    log "Starting conversion of '$file' ($hash)..."
+    basename="$(basename "$file" | sed 's/\.[^.]*$//')"
+    $HANDBRAKE_CLI -i "$file" \
+                   -o /output/"$basename.$AUTOMATED_CONVERSION_FORMAT" \
+                   --preset "$AUTOMATED_CONVERSION_PRESET"
+    if [ $? -eq 0 ]; then
+        log "Conversion ended successfully."
+        echo "$file $hash" >> "$SUCCESSFUL_CONVERSIONS"
+    else
+        log "Conversion failed."
+        echo "$file $hash" >> "$FAILED_CONVERSIONS"
+    fi
 }
 
 echo "Starting watchfolder service..."
@@ -48,18 +51,21 @@ echo "Starting watchfolder service..."
 
 DIRHASH=UNSET
 while true; do
-    CONTENT="$(find /watch -maxdepth 1 -type f -printf '%T@:%s:%p\n')"
-    HASH="$(echo "$CONTENT" | md5sum | cut -d' ' -f1)"
-    FILES="$(echo "$CONTENT" | cut -d':' -f3)"
-
-    if [ "$DIRHASH" != "$HASH" ]; then
+    PREHASH="$(watchdir_hash)"
+    if [ "$DIRHASH" != "$PREHASH" ]; then
         if [ "$DIRHASH" != "UNSET" ]; then
             log "Watch folder: New file(s) detected!"
         fi
         log "Processing watch folder..."  
-        process_files "$FILES"
+        find /watch -follow -maxdepth 1 -type f | while read FILE
+        do
+            process_file "$FILE"
+        done
         log "Watch folder processing terminated"
-        DIRHASH="$HASH"
+        POSTHASH="$(watchdir_hash)"
+        if [ "$DIRHASH" == "UNSET" ] || [ "$PREHASH" == "$POSTHASH" ]; then
+            DIRHASH="$PREHASH"
+        fi
     fi
 
     sleep 5
