@@ -13,7 +13,10 @@ if [ ! -f /config/ghb/preferences.json ]; then
   cp /defaults/preferences.json /config/ghb/preferences.json
 fi
 
-# Adjust config file permissions.
+# Take ownership of the config directory.
 chown -R $USER_ID:$GROUP_ID /config
+
+# Take ownership of the output directory.
+chown $USER_ID:$GROUP_ID /output
 
 # vim: set ft=sh :
