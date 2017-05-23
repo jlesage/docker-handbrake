@@ -38,6 +38,10 @@ process_file() {
     if [ $? -eq 0 ]; then
         log "Conversion ended successfully."
         echo "$file $hash" >> "$SUCCESSFUL_CONVERSIONS"
+        if [ "${AUTOMATED_CONVERSION_KEEP_SOURCE:-1}" -eq 0 ]; then
+            rm "$file"
+            log "Removed file '$file'."
+        fi
     else
         log "Conversion failed."
         echo "$file $hash" >> "$FAILED_CONVERSIONS"
