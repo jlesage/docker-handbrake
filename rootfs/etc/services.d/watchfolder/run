@@ -4,6 +4,7 @@ set -u # Treat unset variables as an error.
 
 AUTOMATED_CONVERSION_PRESET="${AUTOMATED_CONVERSION_PRESET:-Very Fast 1080p30}"
 AUTOMATED_CONVERSION_FORMAT="${AUTOMATED_CONVERSION_FORMAT:-mp4}"
+AUTOMATED_CONVERSION_SOURCE_STABLE_TIME="${AUTOMATED_CONVERSION_SOURCE_STABLE_TIME:-5}"
 
 FAILED_CONVERSIONS="/config/failed_conversions"
 SUCCESSFUL_CONVERSIONS="/config/successful_conversions"
@@ -28,12 +29,13 @@ WATCHDIR_HASH_update() {
     WATCHDIR_HASH="$(WATCHDIR_HASH_calculate)"
 }
 
-WATCHDIR_HASH_invalidate() {
-    WATCHDIR_HASH=INVALID
-}
-
 WATCHDIR_HASH_changed() {
     [ "$WATCHDIR_HASH" != "$(WATCHDIR_HASH_calculate)" ]
+}
+
+get_hash() {
+    file="$1"
+    stat -c '%n %s %Y' "$file" | md5sum | cut -d' ' -f1
 }
 
 process_file() {
@@ -46,17 +48,8 @@ process_file() {
         return
     fi
 
-    # Skip file if it is being accessed (may be currently being copied).
-    if lsof -f -- "$file" &>/dev/null; then
-        log "Skipping file '$file': currently being accessed."
-        # Invalidate the watch directory hash.  If we don't, we may never
-        # process this file because the hash may remain the same.
-        WATCHDIR_HASH_invalidate
-        return
-    fi
-
-    # Get hash of the file from its name, size and time.
-    hash="$(stat -c '%n %s %Y' "$file" | md5sum | cut -d' ' -f1)"
+    # Get hash of the file from its properties.
+    hash="$(get_hash "$file")"
 
     # Skip file if it has been already successfully processed.
     if grep -q -w "$hash" "$SUCCESSFUL_CONVERSIONS"; then
@@ -67,6 +60,14 @@ process_file() {
     # Skip file if we already failed to process it.
     if grep -q -w "$hash" "$FAILED_CONVERSIONS"; then
         log "Skipping file '$file' ($hash): already processed with failure."
+        return
+    fi
+
+    # Skip file if it is not stable.
+    echo "Waiting $AUTOMATED_CONVERSION_SOURCE_STABLE_TIME seconds before processing '$file'..."
+    sleep $AUTOMATED_CONVERSION_SOURCE_STABLE_TIME
+    if [ "$hash" != "$(get_hash "$file")" ]; then
+        log "Skipping file '$file': currently being copied."
         return
     fi
 
