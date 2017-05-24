@@ -10,24 +10,64 @@ SUCCESSFUL_CONVERSIONS="/config/successful_conversions"
 
 HANDBRAKE_CLI="$APP_NICE_CMD s6-setuidgid $USER_ID:$GROUP_ID /usr/bin/HandBrakeCLI --preset-import-file /config/ghb/presets.json"
 
+WATCHDIR_HASH=UNSET
+
 log() {
     echo "watchFolder: $*"
 }
 
-watchdir_hash() {
+WATCHDIR_HASH_calculate() {
     find /watch -follow -maxdepth 1 -type f -printf '%T@:%s:%p\n' | md5sum | cut -d' ' -f1
+}
+
+WATCHDIR_HASH_isset() {
+    [ "$WATCHDIR_HASH" != "UNSET" ]
+}
+
+WATCHDIR_HASH_update() {
+    WATCHDIR_HASH="$(WATCHDIR_HASH_calculate)"
+}
+
+WATCHDIR_HASH_invalidate() {
+    WATCHDIR_HASH=INVALID
+}
+
+WATCHDIR_HASH_changed() {
+    [ "$WATCHDIR_HASH" != "$(WATCHDIR_HASH_calculate)" ]
 }
 
 process_file() {
     file="$1"
+
+    # Skip file if it doesn't exists (may have been removed while processing
+    # the watch directory).
+    if [ ! -f "$file" ]; then
+        log "Skipping file '$file': no longer exists."
+        return
+    fi
+
+    # Skip file if it is being accessed (may be currently being copied).
+    if lsof -f -- "$file" &>/dev/null; then
+        log "Skipping file '$file': currently being accessed."
+        # Invalidate the watch directory hash.  If we don't, we may never
+        # process this file because the hash may remain the same.
+        WATCHDIR_HASH_invalidate
+        return
+    fi
+
+    # Get hash of the file from its name, size and time.
     hash="$(stat -c '%n %s %Y' "$file" | md5sum | cut -d' ' -f1)"
+
+    # Skip file if it has been already successfully processed.
     if grep -q -w "$hash" "$SUCCESSFUL_CONVERSIONS"; then
         log "Skipping file '$file' ($hash): already processed successfully."
-        continue
+        return
     fi
+
+    # Skip file if we already failed to process it.
     if grep -q -w "$hash" "$FAILED_CONVERSIONS"; then
         log "Skipping file '$file' ($hash): already processed with failure."
-        continue
+        return
     fi
 
     log "Starting conversion of '$file' ($hash)..."
@@ -53,23 +93,21 @@ echo "Starting watchfolder service..."
 [ -f "$FAILED_CONVERSIONS" ] || touch "$FAILED_CONVERSIONS"
 [ -f "$SUCCESSFUL_CONVERSIONS" ] || touch "$SUCCESSFUL_CONVERSIONS"
 
-DIRHASH=UNSET
 while true; do
-    PREHASH="$(watchdir_hash)"
-    if [ "$DIRHASH" != "$PREHASH" ]; then
-        if [ "$DIRHASH" != "UNSET" ]; then
+    if WATCHDIR_HASH_changed; then
+        if WATCHDIR_HASH_isset; then
             log "Watch folder: New file(s) detected!"
         fi
+        # Make sure to update the watch directory hash before processing it.
+        # This is to make sure we catch, on the next round, changes occuring
+        # during the processing.
+        WATCHDIR_HASH_update
         log "Processing watch folder..."  
         find /watch -follow -maxdepth 1 -type f | while read FILE
         do
             process_file "$FILE"
         done
-        log "Watch folder processing terminated"
-        POSTHASH="$(watchdir_hash)"
-        if [ "$DIRHASH" == "UNSET" ] || [ "$PREHASH" == "$POSTHASH" ]; then
-            DIRHASH="$PREHASH"
-        fi
+        log "Watch folder processing terminated."
     fi
 
     sleep 5

@@ -36,7 +36,9 @@ RUN sed -i 's/<application type="normal">/<application type="normal" title="Hand
 # Install dependencies.
 RUN \
     apk --no-cache add \
-        findutils
+        # For watchfolder
+        findutils \
+        lsof
 
 # Generate and install favicons.
 RUN \
