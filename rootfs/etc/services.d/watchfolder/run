@@ -14,7 +14,7 @@ HANDBRAKE_CLI="$APP_NICE_CMD s6-setuidgid $USER_ID:$GROUP_ID /usr/bin/HandBrakeC
 WATCHDIR_HASH=UNSET
 
 log() {
-    echo "watchFolder: $*"
+    echo "autoVideoConverter: $*"
 }
 
 WATCHDIR_HASH_calculate() {
@@ -64,7 +64,7 @@ process_file() {
     fi
 
     # Skip file if it is not stable.
-    echo "Waiting $AUTOMATED_CONVERSION_SOURCE_STABLE_TIME seconds before processing '$file'..."
+    log "Waiting $AUTOMATED_CONVERSION_SOURCE_STABLE_TIME seconds before processing '$file'..."
     sleep $AUTOMATED_CONVERSION_SOURCE_STABLE_TIME
     if [ "$hash" != "$(get_hash "$file")" ]; then
         log "Skipping file '$file': currently being copied."
@@ -89,7 +89,7 @@ process_file() {
     fi
 }
 
-echo "Starting watchfolder service..."
+echo "Starting Automatic Video Converter service..."
 
 [ -f "$FAILED_CONVERSIONS" ] || touch "$FAILED_CONVERSIONS"
 [ -f "$SUCCESSFUL_CONVERSIONS" ] || touch "$SUCCESSFUL_CONVERSIONS"
@@ -97,7 +97,7 @@ echo "Starting watchfolder service..."
 while true; do
     if WATCHDIR_HASH_changed; then
         if WATCHDIR_HASH_isset; then
-            log "Watch folder: New file(s) detected!"
+            log "Change detected in watch folder"
         fi
         # Make sure to update the watch directory hash before processing it.
         # This is to make sure we catch, on the next round, changes occuring
