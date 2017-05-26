@@ -104,10 +104,13 @@ while true; do
         # during the processing.
         WATCHDIR_HASH_update
         log "Processing watch folder..."  
-        find /watch -follow -maxdepth 1 -type f | while read FILE
+        FILELIST="$(mktemp)"
+        find /watch -follow -maxdepth 1 -type f > "$FILELIST"
+        while read -u 3 FILE
         do
             process_file "$FILE"
-        done
+        done 3<"$FILELIST"
+        rm "$FILELIST"
         log "Watch folder processing terminated."
     fi
 
