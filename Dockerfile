@@ -1,11 +1,11 @@
 #
-# dupeguru Dockerfile
+# handbrake Dockerfile
 #
 # https://github.com/jlesage/docker-handbrake
 #
 
 # Pull base image.
-FROM jlesage/baseimage-gui:alpine-3.5-v1.3.1
+FROM jlesage/baseimage-gui:alpine-3.5-v1.3.2
 
 # Define working directory.
 WORKDIR /tmp
