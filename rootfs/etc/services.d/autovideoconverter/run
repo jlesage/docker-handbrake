@@ -76,7 +76,8 @@ process_file() {
     $HANDBRAKE_CLI -i "$file" \
                    -o /output/"$basename.$AUTOMATED_CONVERSION_FORMAT" \
                    --preset "$AUTOMATED_CONVERSION_PRESET"
-    if [ $? -eq 0 ]; then
+    hb_rc=$?
+    if [ $hb_rc -eq 0 ]; then
         log "Conversion ended successfully."
         echo "$file $hash" >> "$SUCCESSFUL_CONVERSIONS"
         if [ "${AUTOMATED_CONVERSION_KEEP_SOURCE:-1}" -eq 0 ]; then
@@ -86,6 +87,13 @@ process_file() {
     else
         log "Conversion failed."
         echo "$file $hash" >> "$FAILED_CONVERSIONS"
+    fi
+
+    # Call post conversion hook.
+    if [ -f /config/hooks/post_conversion.sh ]; then
+        log "Executing post-conversion hook..."
+        /usr/bin/with-contenv sh /config/hooks/post_conversion.sh $hb_rc "/output/$basename.$AUTOMATED_CONVERSION_FORMAT"
+        log "Post-conversion hook exited with $?"
     fi
 }
 

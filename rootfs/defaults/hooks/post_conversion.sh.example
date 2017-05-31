@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# This is an example of a post-conversion hook.  This script is always invoked
+# with /bin/sh (shebang ignored).
+#
+# The first parameter is the conversion status.  A value of 0 indicates that
+# the video has been converted successfully.  Else, conversion failed.
+#
+# The second parameter is the full path to the converted video (the output).
+#
+
+CONVERSION_STATUS=$1
+CONVERTED_FILE="$2"
+
+echo "post-conversion: Status = $CONVERSION_STATUS"
+echo "post-conversion: File = $CONVERTED_FILE"
+
+if [ "$CONVERSION_STATUS" -eq 0 ]; then
+    # Successful conversion.
+
+    # TODO: Do something useful.
+    :
+else
+    # Failed conversion.
+
+    # TODO: Do something useful.
+    :
+fi

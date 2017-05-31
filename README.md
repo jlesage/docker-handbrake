@@ -189,3 +189,28 @@ about setting environment variables.
 
 **NOTE**: All default presets, along with personalized/custom ones, can be seen
 with the HandBrake GUI.
+
+### Hooks
+
+Custom actions can be performed using hooks.  Hooks are shell scripts executed
+by the automatic video converter.
+
+**NOTE**: Hooks are always invoked via `/bin/sh`, ignoring any shebang the
+script may have.
+
+Hooks are optional and by default, no one is defined.  A hook is defined and
+executed when the script is found at a specific location.
+
+The following table describe available hooks:
+
+| Container location | Description | Parameter(s) |
+|--------------------|-------------|--------------|
+| `/config/hooks/post_conversion.sh` | Hook executed when the conversion of a video file is terminated. | The first parameter is the status of the conversion.  A value of `0` indicates that the conversion terminated successfuly.  Any other value represent a failure.  The second argument is the path to the converted video (the output). |
+
+During the first start of the container, example hooks are installed in
+`/config/hooks/`.  Example scripts have the suffix `.example`.  For example,
+you can use `/config/hooks/post_conversion.sh.example` as a starting point.
+
+**NOTE**: Keep in mind that this container has the minimal set of packages
+required to run HandBrake.  This may limit actions that can be performed in
+hooks.

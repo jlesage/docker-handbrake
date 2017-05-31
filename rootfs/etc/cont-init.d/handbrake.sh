@@ -13,6 +13,15 @@ if [ ! -f /config/ghb/preferences.json ]; then
   cp /defaults/preferences.json /config/ghb/preferences.json
 fi
 
+# Copy example hooks if needed.
+mkdir -p /config/hooks
+for hook in post_conversion.sh
+do
+  [ ! -f /config/hooks/$hook ] || continue
+  [ ! -f /config/hooks/$hook.example ] || continue
+  cp /defaults/hooks/$hook.example /config/hooks/
+done
+
 # Take ownership of the config directory.
 chown -R $USER_ID:$GROUP_ID /config
 
