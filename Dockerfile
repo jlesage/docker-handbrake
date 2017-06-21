@@ -5,20 +5,16 @@
 #
 
 # Pull base image.
-FROM jlesage/baseimage-gui:alpine-3.5-v1.3.2
+FROM jlesage/baseimage-gui:alpine-3.6-v1.4.2
 
 # Define working directory.
 WORKDIR /tmp
 
 # Install HandBrake
 RUN \
-    echo "@edge-testing http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
-    echo "@edge-main http://nl.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
+    echo "http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
+    echo "http://nl.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
     apk --no-cache add \
-        libass@edge-main \
-        x265@edge-main \
-        ffmpeg-libs@edge-main \
-        libbluray@edge-main \
         # For live preview:
         gst-libav1 \
         gst-plugins-good1 \
@@ -26,8 +22,8 @@ RUN \
         librsvg \
         # For all other small icons:
         adwaita-icon-theme \
-        handbrake@edge-testing \
-        handbrake-gtk@edge-testing
+        handbrake \
+        handbrake-gtk
 
 # Maximize only the main/initial window.
 RUN sed -i 's/<application type="normal">/<application type="normal" title="HandBrake">/' \
