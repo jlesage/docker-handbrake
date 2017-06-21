@@ -1,46 +1,47 @@
 # Docker container for HandBrake
 [![Docker Automated build](https://img.shields.io/docker/automated/jlesage/handbrake.svg)](https://hub.docker.com/r/jlesage/handbrake/) [![](https://images.microbadger.com/badges/image/jlesage/handbrake.svg)](http://microbadger.com/#/images/jlesage/handbrake "Get your own image badge on microbadger.com") [![Build Status](https://travis-ci.org/jlesage/docker-handbrake.svg?branch=master)](https://travis-ci.org/jlesage/docker-handbrake)
 
-This is a Docker container for HandBrake.  The GUI of the application is
-accessed through a modern web browser (no installation or configuration needed
-on client side) or via any VNC client.
+This is a Docker container for HandBrake.
 
-A fully automated mode is also available: drop files into a watch folder and let
-HandBrake process them without any user interaction.
+The GUI of the application is accessed through a modern web browser (no installation or configuration needed on client side) or via any VNC client.
+
+A fully automated mode is also available: drop files into a watch folder and let HandBrake process them without any user interaction.
 
 ---
 
-[![HandBrake logo](https://raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/images/handbrake-icon.png)](https://handbrake.fr/)
+[![HandBrake logo](https://images.weserv.nl/?url=raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/images/handbrake-icon.png&w=200)](https://handbrake.fr/)
 [![HandBrake](https://dummyimage.com/400x110/ffffff/575757&text=HandBrake)](https://handbrake.fr/)
 
-HandBrake is a tool for converting video from nearly any format to a selection
- of modern, widely supported codecs.
+HandBrake is a tool for converting video from nearly any format to a selection of modern, widely supported codecs.
 
 ---
 
 ## Quick Start
-First create the configuration directory for HandBrake.  In this example,
-`/docker/appdata/handbrake` is used.  Other directories also need to be defined:
-source of videos to be converted (`$HOME/Videos`), destination of converted
-videos (`$HOME/HandBrake/output`) and optionally a watch folder
-(`$HOME/HandBrake/watch`).  Launch the HandBrake docker container with the
-following command:
+
+Launch the HandBrake docker container with the following command:
 ```
 docker run -d --rm \
     --name=handbrake \
     -p 5800:5800 \
     -p 5900:5900 \
-    -v /var/docker/handbrake:/config \
-    -v $HOME/Videos:/storage:ro \
-    -v $HOME/HandBrake/watch:/watch:ro \
-    -v $HOME/HandBrake/output:/output \
+    -v /docker/appdata/handbrake:/config:rw \
+    -v $HOME:/storage:ro \
+    -v $HOME/HandBrake/watch:/watch:rw \
+    -v $HOME/HandBrake/output:/output:rw \
     jlesage/handbrake
 ```
 
-Browse to `http://your-host-ip:5800` to access the HandBrake GUI.  Your video
-files appear under the `/storage` folder in the container.
+Where:
+  - `/docker/appdata/handbrake`: This is where the application stores its configuration, log and any files needing persistency.
+  - `$HOME`: This location contains files from your host that need to be accessible by the application.
+  - `$HOME/HandBrake/watch`: This is where videos to be automatically converted are located.
+  - `$HOME/HandBrake/output`: This is where automatically converted video files are written.
+
+Browse to `http://your-host-ip:5800` to access the HandBrake GUI.  Files from
+the host appear under the `/storage` folder in the container.
 
 ## Usage
+
 ```
 docker run [-d] [--rm] \
     --name=handbrake \
@@ -65,21 +66,19 @@ of this parameter has the format `<VARIABLE_NAME>=<VALUE>`.
 
 | Variable       | Description                                  | Default |
 |----------------|----------------------------------------------|---------|
-|`USER_ID`       | ID of the user the application runs as.  See [User/Group IDs](#usergroup-ids) to better understand when this should be set. | 1000    |
-|`GROUP_ID`      | ID of the group the application runs as.  See [User/Group IDs](#usergroup-ids) to better understand when this should be set. | 1000    |
-|`TZ`            | [TimeZone] of the container.  Timezone can also be set by mapping `/etc/localtime` between the host and the container. | Etc/UTC |
-|`DISPLAY_WIDTH` | Width (in pixels) of the display.             | 1280    |
-|`DISPLAY_HEIGHT`| Height (in pixels) of the display.            | 768     |
-|`VNC_PASSWORD`  | Password needed to connect to the application's GUI.  See the [VNC Pasword](#vnc-password) section for more details. | (unset) |
-|`KEEP_GUIAPP_RUNNING`| When set to `1`, the application will be automatically restarted if it crashes or if user quits it. | (unset) |
-|`APP_NICENESS`  | Priority at which the application should run.  A niceness value of −20 is the highest priority and 19 is the lowest priority.  By default, niceness is not set, meaning that the default niceness of 0 is used.  **NOTE**: A negative niceness (priority increase) requires additional permissions.  In this case, the container should be run with the docker option `--cap-add=SYS_NICE`. | (unset) |
-|`AUTOMATED_CONVERSION_PRESET`| HandBrake preset used by the automatic video converter.  See the [Automatic Video Conversion](#automatic-video-conversion) section for more details. | "Very Fast 1080p30" |
-|`AUTOMATED_CONVERSION_FORMAT`| Video container format used by the automatic video converter for output files.  This is typically the video filename extension.  See the [Automatic Video Conversion](#automatic-video-conversion) section for more details.  | "mp4" |
-|`AUTOMATED_CONVERSION_KEEP_SOURCE`| When set to `0`, a video that has been successfully converted is removed from the watch folder. | 1 |
-|`AUTOMATED_CONVERSION_SOURCE_STABLE_TIME`| Time during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied. | 5 |
+|`USER_ID`| ID of the user the application runs as.  See [User/Group IDs](#usergroup-ids) to better understand when this should be set. | `1000` |
+|`GROUP_ID`| ID of the group the application runs as.  See [User/Group IDs](#usergroup-ids) to better understand when this should be set. | `1000` |
+|`TZ`| [TimeZone] of the container.  Timezone can also be set by mapping `/etc/localtime` between the host and the container. | `Etc/UTC` |
+|`DISPLAY_WIDTH`| Width (in pixels) of the application's window. | `1280` |
+|`DISPLAY_HEIGHT`| Height (in pixels) of the application's window. | `768` |
+|`VNC_PASSWORD`| Password needed to connect to the application's GUI.  See the [VNC Pasword](#vnc-password) section for more details. | (unset) |
+|`KEEP_GUIAPP_RUNNING`| When set to `1`, the application will be automatically restarted if it crashes or if user quits it. | `0` |
+|`APP_NICENESS`| Priority at which the application should run.  A niceness value of -20 is the highest priority and 19 is the lowest priority.  By default, niceness is not set, meaning that the default niceness of 0 is used.  **NOTE**: A negative niceness (priority increase) requires additional permissions.  In this case, the container should be run with the docker option `--cap-add=SYS_NICE`. | (unset) |
+|`AUTOMATED_CONVERSION_PRESET`| HandBrake preset used by the automatic video converter.  See the [Automatic Video Conversion](#automatic-video-conversion) section for more details. | `Very Fast 1080p30` |
+|`AUTOMATED_CONVERSION_FORMAT`| Video container format used by the automatic video converter for output files.  This is typically the video filename extension.  See the [Automatic Video Conversion](#automatic-video-conversion) section for more details. | `mp4` |
+|`AUTOMATED_CONVERSION_KEEP_SOURCE`| When set to `0`, a video that has been successfully converted is removed from the watch folder. | `1` |
+|`AUTOMATED_CONVERSION_SOURCE_STABLE_TIME`| Time during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied. | `5` |
 |`HANDBRAKE_DEBUG`| Setting this to `1` enables HandBrake debug logging.  Log messages are sent to `/config/handbrake.debug.log` (container path).  **NOTE**: When enabled, a lot of information is generated and the log file will grow quickly.  Make sure to enable this temporarily and only when needed. | (unset) |
-
-[TimeZone]: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 
 ### Data Volumes
 
@@ -89,10 +88,10 @@ format: `<HOST_DIR>:<CONTAINER_DIR>[:PERMISSIONS]`.
 
 | Container path  | Permissions | Description |
 |-----------------|-------------|-------------|
-|`/config`        | rw          | This is where the application stores its configuration, log and any files needing persistency. |
-|`/storage`       | ro          | This is where video files to be converted on your host are made available to the application. |
-|`/watch`         | ro          | This is where videos to be automatically converted are located. |
-|`/output`        | rw          | This is where automatically converted video files are written. |
+|`/config`| rw | This is where the application stores its configuration, log and any files needing persistency. |
+|`/storage`| ro | This location contains files from your host that need to be accessible by the application. |
+|`/watch`| rw | This is where videos to be automatically converted are located. |
+|`/output`| rw | This is where automatically converted video files are written. |
 
 ### Ports
 
@@ -103,8 +102,8 @@ container cannot be changed, but you are free to use any port on the host side.
 
 | Port | Mapping to host | Description |
 |------|-----------------|-------------|
-| 5800 | Mandatory       | Port used to access the application's GUI via the web interface. |
-| 5900 | Mandatory       | Port used to access the application's GUI via the VNC protocol.  |
+| 5800 | Mandatory | Port used to access the application's GUI via the web interface. |
+| 5900 | Mandatory | Port used to access the application's GUI via the VNC protocol. |
 
 ## User/Group IDs
 
@@ -170,6 +169,7 @@ be done via two methods:
 should not be considered as secure in any way.
 
 ## Automatic Video Conversion
+
 This container has an automatic video converter built-in.  This is useful to
 batch-convert videos without user interaction.
 
@@ -214,3 +214,5 @@ you can use `/config/hooks/post_conversion.sh.example` as a starting point.
 **NOTE**: Keep in mind that this container has the minimal set of packages
 required to run HandBrake.  This may limit actions that can be performed in
 hooks.
+
+[TimeZone]: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
