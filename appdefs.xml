@@ -1,0 +1,214 @@
+<!--
+Definitions for HandBrake docker container.
+
+This file is used as data source to generate README.md and unRAID template files
+from Jinja2 templates.
+-->
+<app>
+    <id>3</id>
+    <friendly_name>HandBrake</friendly_name>
+    <name>{{ app.friendly_name|lower|replace(' ', '-') }}</name>
+    <project>
+      <description>HandBrake is a tool for converting video from nearly any format to a selection of modern, widely supported codecs.</description>
+      <url>https://handbrake.fr/</url>
+    </project>
+    <unraid>
+      <support_url>https://forums.lime-technology.com/topic/57420-support-handbrake/</support_url>
+      <category>MediaApp:Video</category>
+    </unraid>
+    <container>
+      <overview>A fully automated mode is also available: drop files into a watch folder and let {{ app.friendly_name }} process them without any user interaction.</overview>
+      <rough_download_size>80MB</rough_download_size>
+      <storage_permissions>ro</storage_permissions>
+      <!-- Environment variables -->
+      <environment_variable>
+        <name>AUTOMATED_CONVERSION_PRESET</name>
+        <description>HandBrake preset used by the automatic video converter.  See the [Automatic Video Conversion](#automatic-video-conversion) section for more details.</description>
+        <default>Very Fast 1080p30</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Preset</title>
+          <description>Preset used by the automatic video converter.  Name of all available presets can be seen via the HandBrake GUI.</description>
+          <display>always</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
+        <name>AUTOMATED_CONVERSION_FORMAT</name>
+        <description>Video container format used by the automatic video converter for output files.  This is typically the video filename extension.  See the [Automatic Video Conversion](#automatic-video-conversion) section for more details.</description>
+        <default>mp4</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Format</title>
+          <description>Video container format used by the automatic video converter for output files.  This is typically the video filename extension.</description>
+          <display>always</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
+        <name>AUTOMATED_CONVERSION_KEEP_SOURCE</name>
+        <description>When set to `0`, a video that has been successfully converted is removed from the watch folder.</description>
+        <default>1</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Keep Source Files</title>
+          <description>Set to 0 to remove successfully converted videos from the watch folder, 1 to keep them.</description>
+          <display>always</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
+        <name>AUTOMATED_CONVERSION_SOURCE_STABLE_TIME</name>
+        <description>Time during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied.</description>
+        <default>5</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Source File Stable Time</title>
+          <description>Time during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied.</description>
+          <display>advanced</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
+        <name>HANDBRAKE_DEBUG</name>
+        <description>Setting this to `1` enables HandBrake debug logging.  Log messages are sent to `/config/handbrake.debug.log` (container path).  **NOTE**: When enabled, a lot of information is generated and the log file will grow quickly.  Make sure to enable this temporarily and only when needed.</description>
+        <default/>
+      </environment_variable>
+      <!-- Volumes -->
+      <volume>
+        <container_path>/watch</container_path>
+        <host_path_example>$HOME/HandBrake/watch</host_path_example>
+        <description>This is where videos to be automatically converted are located.</description>
+        <permissions>rw</permissions>
+        <include_in_quick_start>true</include_in_quick_start>
+        <unraid_template>
+          <title>Watch Directory</title>
+          <description>This is the watch folder of the automatic video converter.  Any video copied into this folder will be automatically converted by HandBrake.[br]Container path: /watch</description>
+          <default/>
+          <display>always</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </volume>
+      <volume>
+        <container_path>/output</container_path>
+        <host_path_example>$HOME/HandBrake/output</host_path_example>
+        <description>This is where automatically converted video files are written.</description>
+        <permissions>rw</permissions>
+        <include_in_quick_start>true</include_in_quick_start>
+        <unraid_template>
+          <title>Output Directory</title>
+          <description>This is the default output folder for converted videos.  Also used by the automatic video converter.[br]Container path: /output</description>
+          <display>always</display>
+          <required>true</required>
+          <mask>false</mask>
+        </unraid_template>
+      </volume>
+      <!-- Network ports -->
+      <!-- Devices -->
+    </container>
+    <!-- Extra stuff to be added to the documentation. -->
+    <documentation>
+      <section>
+        <title level="2">Automatic Video Conversion</title>
+        <content>
+This container has an automatic video converter built-in.  This is useful to
+batch-convert videos without user interaction.
+
+Basically, files copied to the `/watch` container folder are automatically
+converted by HandBrake to a pre-defined video format according to a pre-defined
+preset.  Both the format and the preset are specified via environment variables:
+
+| Variable       | Default |
+|----------------|---------|
+|`AUTOMATED_CONVERSION_PRESET` | "Very Fast 1080p30" |
+|`AUTOMATED_CONVERSION_FORMAT` | "mp4" |
+
+See the [Environment Variables](#environment-variables) section for details
+about setting environment variables.
+
+**NOTE**: Converted videos are stored to the `/output` folder of the container.
+
+**NOTE**: All default presets, along with personalized/custom ones, can be seen
+with the HandBrake GUI.
+        </content>
+      </section>
+      <section>
+        <title level="3">Hooks</title>
+        <content>
+Custom actions can be performed using hooks.  Hooks are shell scripts executed
+by the automatic video converter.
+
+**NOTE**: Hooks are always invoked via `/bin/sh`, ignoring any shebang the
+script may have.
+
+Hooks are optional and by default, no one is defined.  A hook is defined and
+executed when the script is found at a specific location.
+
+The following table describe available hooks:
+
+| Container location | Description | Parameter(s) |
+|--------------------|-------------|--------------|
+| `/config/hooks/post_conversion.sh` | Hook executed when the conversion of a video file is terminated. | The first parameter is the status of the conversion.  A value of `0` indicates that the conversion terminated successfuly.  Any other value represent a failure.  The second argument is the path to the converted video (the output). |
+
+During the first start of the container, example hooks are installed in
+`/config/hooks/`.  Example scripts have the suffix `.example`.  For example,
+you can use `/config/hooks/post_conversion.sh.example` as a starting point.
+
+**NOTE**: Keep in mind that this container has the minimal set of packages
+required to run HandBrake.  This may limit actions that can be performed in
+hooks.
+        </content>
+      </section>
+    </documentation>
+    <!-- Changelog of the application. -->
+    <history>
+      <release>
+        <version>1.2.0</version>
+        <date>2017-05-31</date>
+        <change>Added support for post-conversion hook.</change>
+      </release>
+      <release>
+        <version>1.1.4</version>
+        <date>2017-05-30</date>
+        <change>Now using baseimage v1.3.2, which brings the following changes:</change>
+        <change level="2">Fixed password modal window not showing up when required.</change>
+      </release>
+      <release>
+        <version>1.1.3</version>
+        <date>2017-05-26</date>
+        <change>Watch folder: Fixed issue where, after a first successful conversion, conversion of next available video files would not start.</change>
+        <change>Renamed the 'Watch Folder' service to 'Automatic Video Converter'.</change>
+      </release>
+      <release>
+        <version>1.1.2</version>
+        <date>2017-05-24</date>
+        <change>Watch folder: Changed the way files being transferred are detected. Method used previously was not working properly in all cases.</change>
+      </release>
+      <release>
+        <version>1.1.1</version>
+        <date>2017-05-24</date>
+        <change>Watch folder: temporarily skip files being accessed/transferred.</change>
+        <change>Watch folder: improved robustness.</change>
+      </release>
+      <release>
+        <version>1.1.0</version>
+        <date>2017-05-23</date>
+        <change>Watch folder: properly support filenames containing spaces.</change>
+        <change>Watch folder: added support for symbolic links.</change>
+        <change>HandBrake debug can now be enabled via the HANDBRAKE_DEBUG environment variable.</change>
+        <change>Take ownership of the `/output` folder.</change>
+        <change>Added the ability to remove video source files from the watch folder after successfully conversion.</change>
+      </release>
+      <release>
+        <version>1.0.1</version>
+        <date>2017-05-18</date>
+        <change>The watch folder is now monitored without inotify for better compatibility.</change>
+      </release>
+      <release>
+        <version>1.0.0</version>
+        <date>2017-05-18</date>
+        <change>Initial release.</change>
+      </release>
+    </history>
+</app>
