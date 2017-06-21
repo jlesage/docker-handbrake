@@ -9,8 +9,7 @@ A fully automated mode is also available: drop files into a watch folder and let
 
 ---
 
-[![HandBrake logo](https://images.weserv.nl/?url=raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/images/handbrake-icon.png&w=200)](https://handbrake.fr/)
-[![HandBrake](https://dummyimage.com/400x110/ffffff/575757&text=HandBrake)](https://handbrake.fr/)
+[![HandBrake logo](https://images.weserv.nl/?url=raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/images/handbrake-icon.png&w=200)](https://handbrake.fr/)[![HandBrake](https://dummyimage.com/400x110/ffffff/575757&text=HandBrake)](https://handbrake.fr/)
 
 HandBrake is a tool for converting video from nearly any format to a selection of modern, widely supported codecs.
 
