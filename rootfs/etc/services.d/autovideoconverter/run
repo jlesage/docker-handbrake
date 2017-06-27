@@ -18,7 +18,7 @@ log() {
 }
 
 WATCHDIR_HASH_calculate() {
-    find /watch -follow -maxdepth 1 -type f -printf '%T@:%s:%p\n' | md5sum | cut -d' ' -f1
+    find /watch -follow -type f -printf '%T@:%s:%p\n' | md5sum | cut -d' ' -f1
 }
 
 WATCHDIR_HASH_isset() {
@@ -73,8 +73,12 @@ process_file() {
 
     log "Starting conversion of '$file' ($hash)..."
     basename="$(basename "$file" | sed 's/\.[^.]*$//')"
+#    dirname="$(dirname "$file" | sed 's|^/watch||')"
+#    OUTPUT_FILE="/output/$dirname/$basename.$AUTOMATED_CONVERSION_FORMAT"
+#    s6-setuidgid $USER_ID:$GROUP_ID mkdir -p "/output/$dirname"
+    OUTPUT_FILE="/output/$basename.$AUTOMATED_CONVERSION_FORMAT"
     $HANDBRAKE_CLI -i "$file" \
-                   -o /output/"$basename.$AUTOMATED_CONVERSION_FORMAT" \
+                   -o "$OUTPUT_FILE" \
                    --preset "$AUTOMATED_CONVERSION_PRESET"
     hb_rc=$?
     if [ $hb_rc -eq 0 ]; then
@@ -92,7 +96,7 @@ process_file() {
     # Call post conversion hook.
     if [ -f /config/hooks/post_conversion.sh ]; then
         log "Executing post-conversion hook..."
-        /usr/bin/with-contenv sh /config/hooks/post_conversion.sh $hb_rc "/output/$basename.$AUTOMATED_CONVERSION_FORMAT"
+        /usr/bin/with-contenv sh /config/hooks/post_conversion.sh $hb_rc "$OUTPUT_FILE"
         log "Post-conversion hook exited with $?"
     fi
 }
@@ -113,13 +117,18 @@ while true; do
         WATCHDIR_HASH_update
         log "Processing watch folder..."  
         FILELIST="$(mktemp)"
-        find /watch -follow -maxdepth 1 -type f > "$FILELIST"
+        find /watch -follow -type f > "$FILELIST"
         while read -u 3 FILE
         do
             process_file "$FILE"
         done 3<"$FILELIST"
         rm "$FILELIST"
         log "Watch folder processing terminated."
+
+        # Remove empty directories.
+        if [ "${AUTOMATED_CONVERSION_KEEP_SOURCE:-1}" -eq 0 ]; then
+            find /watch/ -mindepth 1 -type d -empty -delete
+        fi
     fi
 
     sleep 5
