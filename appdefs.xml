@@ -175,6 +175,12 @@ hooks.
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.3.3</version>
+        <date>2017-06-30</date>
+        <change>Watch folder: Added handling of environment variable AUTOMATED_CONVERSION_OUTPUT_SUBDIR, which allows customization of the output location of automatically converted videos..</change>
+        <change>The default source folder is now /storage.</change>
+      </release>
+      <release>
         <version>1.3.2</version>
         <date>2017-06-27</date>
         <change>Watch folder: also process files in subfolders.</change>
