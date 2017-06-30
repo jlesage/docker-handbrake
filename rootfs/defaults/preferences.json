@@ -18,7 +18,7 @@
         "auto_name": true,
         "auto_name_template": "{source}",
         "check_updates": "weekly",
-        "default_source": "/dev/dvd",
+        "default_source": "/storage/dvd",
         "destination_dir": "/output",
         "hbfd": false,
         "hbfd_feature": false,
