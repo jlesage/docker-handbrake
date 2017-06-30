@@ -12,12 +12,12 @@ WORKDIR /tmp
 
 # Install HandBrake
 RUN \
-    echo "http://nl.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
-    echo "http://nl.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
     apk --no-cache add \
         # For live preview:
         gst-libav1 \
-        gst-plugins-good1 \
+        gst-plugins-good \
         # For main, big icons:
         librsvg \
         # For all other small icons:
