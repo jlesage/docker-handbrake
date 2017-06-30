@@ -72,11 +72,22 @@ process_file() {
     fi
 
     log "Starting conversion of '$file' ($hash)..."
+    case "${AUTOMATED_CONVERSION_OUTPUT_SUBDIR:-UNSET}" in
+        UNSET)
+            OUTPUT_DIR="/output"
+            ;;
+        SAME_AS_SRC)
+            dirname="$(dirname "$file" | sed 's|^/watch||')"
+            OUTPUT_DIR="/output/$dirname"
+            ;;
+        *)
+            OUTPUT_DIR="/output/$AUTOMATED_CONVERSION_OUTPUT_SUBDIR"
+            ;;
+    esac
+    OUTPUT_DIR="$(echo "$OUTPUT_DIR" | sed 's|/\+|/|g' | sed 's|/\+$||')"
+    s6-setuidgid $USER_ID:$GROUP_ID mkdir -p "$OUTPUT_DIR"
     basename="$(basename "$file" | sed 's/\.[^.]*$//')"
-#    dirname="$(dirname "$file" | sed 's|^/watch||')"
-#    OUTPUT_FILE="/output/$dirname/$basename.$AUTOMATED_CONVERSION_FORMAT"
-#    s6-setuidgid $USER_ID:$GROUP_ID mkdir -p "/output/$dirname"
-    OUTPUT_FILE="/output/$basename.$AUTOMATED_CONVERSION_FORMAT"
+    OUTPUT_FILE="$OUTPUT_DIR/$basename.$AUTOMATED_CONVERSION_FORMAT"
     $HANDBRAKE_CLI -i "$file" \
                    -o "$OUTPUT_FILE" \
                    --preset "$AUTOMATED_CONVERSION_PRESET"

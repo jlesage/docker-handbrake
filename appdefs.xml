@@ -58,6 +58,17 @@ from Jinja2 templates.
         </unraid_template>
       </environment_variable>
       <environment_variable>
+        <name>AUTOMATED_CONVERSION_OUTPUT_SUBDIR</name>
+        <description>Subdirectory of the output folder into which converted videos should be written.  By default, this variable is not set, meaning that videos are saved directly into `/output/`.  If `Home/Movies` is set, converted videos will be written to `/output/Home/Movies`.  Use the special value `SAME_AS_SRC` to use the same subfolder as the source.  For example, if the video source file is `/watch/Movies/mymovie.mkv`, the converted video will be written to `/output/Movies/`.</description>
+        <unraid_template>
+          <title>Automatic Video Converter: Output Subdirectory</title>
+          <description>Subdirectory of the output folder into which converted videos should be written.[ul][li]Leave value empty to save converted videos directly into [b][i]/output/[/i][/b].[/li][li]Use the special value [b][i]SAME_AS_SRC[/i][/b] to use the same subfolder as the source.  For example, if the video source file is [b][i]/watch/Movies/mymovie.mkv[/i][/b], the converted video will be written to [b][i]/output/Movies/[/i][/b].[/li][li]Use any subfolder name.  For example, setting the value [b][i]Home/Movies[/i][/b] will make converted videos written to [b][i]/output/Home/Movies[/i][/b]/[/li][/ul]</description>
+          <display>always</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
         <name>AUTOMATED_CONVERSION_SOURCE_STABLE_TIME</name>
         <description>Time during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied.</description>
         <default>5</default>
