@@ -8,6 +8,11 @@ if [ ! -L "$0" ]; then
     exec "$(dirname "$0")/autovideoconverter" "$@"
 fi
 
+# Set umask.
+if [ "${UMASK:-UNSET}" != "UNSET" ]; then
+    umask "$UMASK"
+fi
+
 AUTOMATED_CONVERSION_PRESET="${AUTOMATED_CONVERSION_PRESET:-Very Fast 1080p30}"
 AUTOMATED_CONVERSION_FORMAT="${AUTOMATED_CONVERSION_FORMAT:-mp4}"
 AUTOMATED_CONVERSION_SOURCE_STABLE_TIME="${AUTOMATED_CONVERSION_SOURCE_STABLE_TIME:-5}"
