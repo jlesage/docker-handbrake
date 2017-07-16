@@ -4,10 +4,12 @@ Definitions for HandBrake docker container.
 This file is used as data source to generate README.md and unRAID template files
 from Jinja2 templates.
 -->
-<app>
+<defs>
+  <app>
     <id>3</id>
+    <gui>True</gui>
     <friendly_name>HandBrake</friendly_name>
-    <name>{{ app.friendly_name|lower|replace(' ', '-') }}</name>
+    <name>{{ defs.app.friendly_name|lower|replace(' ', '-') }}</name>
     <project>
       <description>HandBrake is a tool for converting video from nearly any format to a selection of modern, widely supported codecs.</description>
       <url>https://handbrake.fr/</url>
@@ -17,106 +19,9 @@ from Jinja2 templates.
       <category>MediaApp:Video</category>
     </unraid>
     <container>
-      <overview>A fully automated mode is also available: drop files into a watch folder and let {{ app.friendly_name }} process them without any user interaction.</overview>
+      <overview>A fully automated mode is also available: drop files into a watch folder and let {{ defs.app.friendly_name }} process them without any user interaction.</overview>
       <rough_download_size>80MB</rough_download_size>
       <storage_permissions>ro</storage_permissions>
-      <!-- Environment variables -->
-      <environment_variable>
-        <name>AUTOMATED_CONVERSION_PRESET</name>
-        <description>HandBrake preset used by the automatic video converter.  See the [Automatic Video Conversion](#automatic-video-conversion) section for more details.</description>
-        <default>Very Fast 1080p30</default>
-        <unraid_template>
-          <title>Automatic Video Converter: Preset</title>
-          <description>Preset used by the automatic video converter.  Name of all available presets can be seen via the HandBrake GUI.</description>
-          <display>always</display>
-          <required>false</required>
-          <mask>false</mask>
-        </unraid_template>
-      </environment_variable>
-      <environment_variable>
-        <name>AUTOMATED_CONVERSION_FORMAT</name>
-        <description>Video container format used by the automatic video converter for output files.  This is typically the video filename extension.  See the [Automatic Video Conversion](#automatic-video-conversion) section for more details.</description>
-        <default>mp4</default>
-        <unraid_template>
-          <title>Automatic Video Converter: Format</title>
-          <description>Video container format used by the automatic video converter for output files.  This is typically the video filename extension.</description>
-          <display>always</display>
-          <required>false</required>
-          <mask>false</mask>
-        </unraid_template>
-      </environment_variable>
-      <environment_variable>
-        <name>AUTOMATED_CONVERSION_KEEP_SOURCE</name>
-        <description>When set to `0`, a video that has been successfully converted is removed from the watch folder.</description>
-        <default>1</default>
-        <unraid_template>
-          <title>Automatic Video Converter: Keep Source Files</title>
-          <description>Set to 0 to remove successfully converted videos from the watch folder, 1 to keep them.</description>
-          <display>always</display>
-          <required>false</required>
-          <mask>false</mask>
-        </unraid_template>
-      </environment_variable>
-      <environment_variable>
-        <name>AUTOMATED_CONVERSION_OUTPUT_SUBDIR</name>
-        <description>Subdirectory of the output folder into which converted videos should be written.  By default, this variable is not set, meaning that videos are saved directly into `/output/`.  If `Home/Movies` is set, converted videos will be written to `/output/Home/Movies`.  Use the special value `SAME_AS_SRC` to use the same subfolder as the source.  For example, if the video source file is `/watch/Movies/mymovie.mkv`, the converted video will be written to `/output/Movies/`.</description>
-        <unraid_template>
-          <title>Automatic Video Converter: Output Subdirectory</title>
-          <description>Subdirectory of the output folder into which converted videos should be written.[ul][li]Leave value empty to save converted videos directly into [b][i]/output/[/i][/b].[/li][li]Use the special value [b][i]SAME_AS_SRC[/i][/b] to use the same subfolder as the source.  For example, if the video source file is [b][i]/watch/Movies/mymovie.mkv[/i][/b], the converted video will be written to [b][i]/output/Movies/[/i][/b].[/li][li]Use any subfolder name.  For example, setting the value [b][i]Home/Movies[/i][/b] will make converted videos written to [b][i]/output/Home/Movies[/i][/b]/[/li][/ul]</description>
-          <display>always</display>
-          <required>false</required>
-          <mask>false</mask>
-        </unraid_template>
-      </environment_variable>
-      <environment_variable>
-        <name>AUTOMATED_CONVERSION_SOURCE_STABLE_TIME</name>
-        <description>Time during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied.</description>
-        <default>5</default>
-        <unraid_template>
-          <title>Automatic Video Converter: Source File Stable Time</title>
-          <description>Time during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied.</description>
-          <display>advanced</display>
-          <required>false</required>
-          <mask>false</mask>
-        </unraid_template>
-      </environment_variable>
-      <environment_variable>
-        <name>HANDBRAKE_DEBUG</name>
-        <description>Setting this to `1` enables HandBrake debug logging.  Log messages are sent to `/config/handbrake.debug.log` (container path).  **NOTE**: When enabled, a lot of information is generated and the log file will grow quickly.  Make sure to enable this temporarily and only when needed.</description>
-        <default/>
-      </environment_variable>
-      <!-- Volumes -->
-      <volume>
-        <container_path>/watch</container_path>
-        <host_path_example>$HOME/HandBrake/watch</host_path_example>
-        <description>This is where videos to be automatically converted are located.</description>
-        <permissions>rw</permissions>
-        <include_in_quick_start>true</include_in_quick_start>
-        <unraid_template>
-          <title>Watch Directory</title>
-          <description>This is the watch folder of the automatic video converter.  Any video copied into this folder will be automatically converted by HandBrake.[br]Container path: /watch</description>
-          <default/>
-          <display>always</display>
-          <required>false</required>
-          <mask>false</mask>
-        </unraid_template>
-      </volume>
-      <volume>
-        <container_path>/output</container_path>
-        <host_path_example>$HOME/HandBrake/output</host_path_example>
-        <description>This is where automatically converted video files are written.</description>
-        <permissions>rw</permissions>
-        <include_in_quick_start>true</include_in_quick_start>
-        <unraid_template>
-          <title>Output Directory</title>
-          <description>This is the default output folder for converted videos.  Also used by the automatic video converter.[br]Container path: /output</description>
-          <display>always</display>
-          <required>true</required>
-          <mask>false</mask>
-        </unraid_template>
-      </volume>
-      <!-- Network ports -->
-      <!-- Devices -->
     </container>
     <!-- Extra stuff to be added to the documentation. -->
     <documentation>
@@ -261,4 +166,110 @@ hooks.
         <change>Initial release.</change>
       </release>
     </history>
-</app>
+  </app>
+  <container>
+    <!-- Environment variables -->
+    <environment_variables>
+      <environment_variable>
+        <name>AUTOMATED_CONVERSION_PRESET</name>
+        <description>HandBrake preset used by the automatic video converter.  See the [Automatic Video Conversion](#automatic-video-conversion) section for more details.</description>
+        <default>Very Fast 1080p30</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Preset</title>
+          <description>Preset used by the automatic video converter.  Name of all available presets can be seen via the HandBrake GUI.</description>
+          <display>always</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
+        <name>AUTOMATED_CONVERSION_FORMAT</name>
+        <description>Video container format used by the automatic video converter for output files.  This is typically the video filename extension.  See the [Automatic Video Conversion](#automatic-video-conversion) section for more details.</description>
+        <default>mp4</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Format</title>
+          <description>Video container format used by the automatic video converter for output files.  This is typically the video filename extension.</description>
+          <display>always</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
+        <name>AUTOMATED_CONVERSION_KEEP_SOURCE</name>
+        <description>When set to `0`, a video that has been successfully converted is removed from the watch folder.</description>
+        <default>1</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Keep Source Files</title>
+          <description>Set to 0 to remove successfully converted videos from the watch folder, 1 to keep them.</description>
+          <display>always</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
+        <name>AUTOMATED_CONVERSION_OUTPUT_SUBDIR</name>
+        <description>Subdirectory of the output folder into which converted videos should be written.  By default, this variable is not set, meaning that videos are saved directly into `/output/`.  If `Home/Movies` is set, converted videos will be written to `/output/Home/Movies`.  Use the special value `SAME_AS_SRC` to use the same subfolder as the source.  For example, if the video source file is `/watch/Movies/mymovie.mkv`, the converted video will be written to `/output/Movies/`.</description>
+        <unraid_template>
+          <title>Automatic Video Converter: Output Subdirectory</title>
+          <description>Subdirectory of the output folder into which converted videos should be written.[ul][li]Leave value empty to save converted videos directly into [b][i]/output/[/i][/b].[/li][li]Use the special value [b][i]SAME_AS_SRC[/i][/b] to use the same subfolder as the source.  For example, if the video source file is [b][i]/watch/Movies/mymovie.mkv[/i][/b], the converted video will be written to [b][i]/output/Movies/[/i][/b].[/li][li]Use any subfolder name.  For example, setting the value [b][i]Home/Movies[/i][/b] will make converted videos written to [b][i]/output/Home/Movies[/i][/b]/[/li][/ul]</description>
+          <display>always</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
+        <name>AUTOMATED_CONVERSION_SOURCE_STABLE_TIME</name>
+        <description>Time during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied.</description>
+        <default>5</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Source File Stable Time</title>
+          <description>Time during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied.</description>
+          <display>advanced</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
+        <name>HANDBRAKE_DEBUG</name>
+        <description>Setting this to `1` enables HandBrake debug logging.  Log messages are sent to `/config/handbrake.debug.log` (container path).  **NOTE**: When enabled, a lot of information is generated and the log file will grow quickly.  Make sure to enable this temporarily and only when needed.</description>
+        <default/>
+      </environment_variable>
+    </environment_variables>
+    <!-- Volumes -->
+    <volumes>
+      <volume>
+        <container_path>/watch</container_path>
+        <host_path_example>$HOME/HandBrake/watch</host_path_example>
+        <description>This is where videos to be automatically converted are located.</description>
+        <permissions>rw</permissions>
+        <include_in_quick_start>true</include_in_quick_start>
+        <unraid_template>
+          <title>Watch Directory</title>
+          <description>This is the watch folder of the automatic video converter.  Any video copied into this folder will be automatically converted by HandBrake.[br]Container path: /watch</description>
+          <default/>
+          <display>always</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </volume>
+      <volume>
+        <container_path>/output</container_path>
+        <host_path_example>$HOME/HandBrake/output</host_path_example>
+        <description>This is where automatically converted video files are written.</description>
+        <permissions>rw</permissions>
+        <include_in_quick_start>true</include_in_quick_start>
+        <unraid_template>
+          <title>Output Directory</title>
+          <description>This is the default output folder for converted videos.  Also used by the automatic video converter.[br]Container path: /output</description>
+          <display>always</display>
+          <required>true</required>
+          <mask>false</mask>
+        </unraid_template>
+      </volume>
+    </volumes>
+    <!-- Network ports -->
+    <ports/>
+    <!-- Devices -->
+    <devices/>
+  </container>
+</defs>
