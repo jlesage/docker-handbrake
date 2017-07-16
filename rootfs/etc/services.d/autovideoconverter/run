@@ -109,6 +109,12 @@ process_file() {
         if [ "${AUTOMATED_CONVERSION_KEEP_SOURCE:-1}" -eq 0 ]; then
             rm "$file"
             log "Removed file '$file'."
+            # Remove directory if empty (hidden files/folders are ignored).
+            filedir="$(dirname "$file")"
+            if [ -z "$(ls "$filedir")" ]; then
+                log "Removed directory '$filedir'."
+                rm -rf "$filedir"
+            fi
         fi
     else
         log "Conversion failed."
@@ -146,11 +152,6 @@ while true; do
         done 3<"$FILELIST"
         rm "$FILELIST"
         log "Watch folder processing terminated."
-
-        # Remove empty directories.
-        if [ "${AUTOMATED_CONVERSION_KEEP_SOURCE:-1}" -eq 0 ]; then
-            find /watch/ -mindepth 1 -type d -empty -delete
-        fi
     fi
 
     sleep 5
