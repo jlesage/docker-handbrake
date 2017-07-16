@@ -5,7 +5,7 @@
 #
 
 # Pull base image.
-FROM jlesage/baseimage-gui:alpine-3.6
+FROM jlesage/baseimage-gui:alpine-3.6-v2.0.0
 
 # Define working directory.
 WORKDIR /tmp
@@ -14,7 +14,7 @@ WORKDIR /tmp
 RUN \
     echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories && \
     echo "http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories && \
-    apk --no-cache add \
+    add-pkg \
         # For live preview:
         gst-libav1 \
         gst-plugins-good \
@@ -26,19 +26,19 @@ RUN \
         handbrake-gtk
 
 # Maximize only the main/initial window.
-RUN sed -i 's/<application type="normal">/<application type="normal" title="HandBrake">/' \
-    $HOME/.config/openbox/rc.xml
+RUN sed-patch 's/<application type="normal">/<application type="normal" title="HandBrake">/' \
+    /etc/xdg/openbox/rc.xml
 
 # Install dependencies.
 RUN \
-    apk --no-cache add \
+    add-pkg \
         # For watchfolder
         findutils
 
 # Generate and install favicons.
 RUN \
     APP_ICON_URL=https://raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/images/handbrake-icon.png && \
-    /opt/install_app_icon.sh "$APP_ICON_URL"
+    install_app_icon.sh "$APP_ICON_URL"
 
 # Add files.
 COPY rootfs/ /
