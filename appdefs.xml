@@ -80,6 +80,15 @@ hooks.
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.5.0</version>
+        <date>2017-07-17</date>
+        <change>Now using baseimage v2.0.0, which brings the following changes:</change>
+        <change level="2">Various internal enhancements.</change>
+        <change level="2">Fixed the way a service waits for another one.</change>
+        <change>Watch folder: ignore hidden files and folders.</change>
+        <change>Watch folder: adjusted the way empty folders are removed.</change>
+      </release>
+      <release>
         <version>1.4.0</version>
         <date>2017-07-04</date>
         <change>Watch folder: Make sure to respect the configured umask.</change>
