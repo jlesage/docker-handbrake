@@ -80,6 +80,12 @@ hooks.
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.5.2</version>
+        <date>2017-07-23</date>
+        <change>Now using baseimage v2.0.2, which brings the following changes:</change>
+        <change level="2">Proper VNC port is exposed.</change>
+      </release>
+      <release>
         <version>1.5.1</version>
         <date>2017-07-18</date>
         <change>Now using baseimage v2.0.1, which brings the following changes:</change>
