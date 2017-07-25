@@ -83,6 +83,7 @@ hooks.
         <version>1.5.3</version>
         <date>2017-07-25</date>
         <change>Fixed HandBrake CLI crash that was occuring when working with ISO files or DVD folders.</change>
+        <change>Small adjustments to the default configuration file.</change>
       </release>
       <release>
         <version>1.5.2</version>
