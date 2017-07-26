@@ -113,6 +113,13 @@ hooks.
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.5.4</version>
+        <date>2017-07-26</date>
+        <change>Watch folder: properly support video discs (ISO files, DVD/Blu-ray folders).</change>
+        <change>Watch folder: when removing empty folders, ignore the watch folder itself.</change>
+        <change>Watch folder: make sure to abort if destination file already exists.</change>
+      </release>
+      <release>
         <version>1.5.3</version>
         <date>2017-07-25</date>
         <change>Fixed HandBrake CLI crash that was occuring when working with ISO files or DVD folders.</change>
