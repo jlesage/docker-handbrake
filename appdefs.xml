@@ -50,6 +50,39 @@ with the HandBrake GUI.
         </content>
       </section>
       <section>
+        <title level="3">Video Discs</title>
+        <content>
+The automatic video converter supports video discs, in the folllowing format:
+  - ISO image file.
+  - `VIDEO_TS` folder (DVD disc).
+  - `BDMV` folder (Blu-ray disc).
+
+Note that folder names are case sensitive.  For example, `video_ts`, `Video_Ts`
+or `Bdmv` won't be treated as discs, but as normal directories.
+
+Video discs can have multiple titles (the main movie, previews, extras, etc).
+In a such case, each title is converted to its own file.  These files have the
+suffix `.title-XX`, where `XX` is the title number. For example, if the file
+`MyMovie.iso` has 2 titles, the following files would be generated:
+  - `MyMovie.title-1.mp4`
+  - `MyMovie.title-2.mp4`
+
+It is possible to ignore titles shorted than a specific amount of time.  By
+default, only titles longer than 10 seconds are processed.  This duration can be
+adjusted via the `AUTOMATED_CONVERSION_SOURCE_MIN_DURATION` environment
+variable.  See the [Environment Variables](#environment-variables) section for
+details about setting environment variables.
+
+When the source is a disc folder, the name of the converted video file will
+match its parent folder's name, if any.  For example:
+
+| Watch folder path       | Converted video filename |
+|-------------------------|--------------------------|
+| /watch/VIDEO_TS         | VIDEO_TS.mp4             |
+| /watch/MyMovie/VIDEO_TS | MyMovie.mp4              |
+        </content>
+      </section>
+      <section>
         <title level="3">Hooks</title>
         <content>
 Custom actions can be performed using hooks.  Hooks are shell scripts executed
@@ -252,6 +285,18 @@ hooks.
         <unraid_template>
           <title>Automatic Video Converter: Source File Stable Time</title>
           <description>Time during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied.</description>
+          <display>advanced</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
+        <name>AUTOMATED_CONVERSION_SOURCE_MIN_DURATION</name>
+        <description>Minimum title duration (in seconds).  Shorter titles will be ignored.  This applies only to video disc sources (ISO file, `VIDEO_TS` folder or `BDMV` folder).</description>
+        <default>10</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Minimum Title Duration</title>
+          <description>Minimum title duration (in seconds).  Shorter titles will be ignored.  This applies only to video disc sources (ISO file, [i]VIDEO_TS[/i] folder or [i]BDMV[/i] folder).</description>
           <display>advanced</display>
           <required>false</required>
           <mask>false</mask>

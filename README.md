@@ -81,6 +81,7 @@ of this parameter has the format `<VARIABLE_NAME>=<VALUE>`.
 |`AUTOMATED_CONVERSION_KEEP_SOURCE`| When set to `0`, a video that has been successfully converted is removed from the watch folder. | `1` |
 |`AUTOMATED_CONVERSION_OUTPUT_SUBDIR`| Subdirectory of the output folder into which converted videos should be written.  By default, this variable is not set, meaning that videos are saved directly into `/output/`.  If `Home/Movies` is set, converted videos will be written to `/output/Home/Movies`.  Use the special value `SAME_AS_SRC` to use the same subfolder as the source.  For example, if the video source file is `/watch/Movies/mymovie.mkv`, the converted video will be written to `/output/Movies/`. | (unset) |
 |`AUTOMATED_CONVERSION_SOURCE_STABLE_TIME`| Time during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied. | `5` |
+|`AUTOMATED_CONVERSION_SOURCE_MIN_DURATION`| Minimum title duration (in seconds).  Shorter titles will be ignored.  This applies only to video disc sources (ISO file, `VIDEO_TS` folder or `BDMV` folder). | `10` |
 |`HANDBRAKE_DEBUG`| Setting this to `1` enables HandBrake debug logging.  Log messages are sent to `/config/handbrake.debug.log` (container path).  **NOTE**: When enabled, a lot of information is generated and the log file will grow quickly.  Make sure to enable this temporarily and only when needed. | (unset) |
 
 ### Data Volumes
@@ -192,6 +193,37 @@ about setting environment variables.
 
 **NOTE**: All default presets, along with personalized/custom ones, can be seen
 with the HandBrake GUI.
+
+### Video Discs
+
+The automatic video converter supports video discs, in the folllowing format:
+  - ISO image file.
+  - `VIDEO_TS` folder (DVD disc).
+  - `BDMV` folder (Blu-ray disc).
+
+Note that folder names are case sensitive.  For example, `video_ts`, `Video_Ts`
+or `Bdmv` won't be treated as discs, but as normal directories.
+
+Video discs can have multiple titles (the main movie, previews, extras, etc).
+In a such case, each title is converted to its own file.  These files have the
+suffix `.title-XX`, where `XX` is the title number. For example, if the file
+`MyMovie.iso` has 2 titles, the following files would be generated:
+  - `MyMovie.title-1.mp4`
+  - `MyMovie.title-2.mp4`
+
+It is possible to ignore titles shorted than a specific amount of time.  By
+default, only titles longer than 10 seconds are processed.  This duration can be
+adjusted via the `AUTOMATED_CONVERSION_SOURCE_MIN_DURATION` environment
+variable.  See the [Environment Variables](#environment-variables) section for
+details about setting environment variables.
+
+When the source is a disc folder, the name of the converted video file will
+match its parent folder's name, if any.  For example:
+
+| Watch folder path       | Converted video filename |
+|-------------------------|--------------------------|
+| /watch/VIDEO_TS         | VIDEO_TS.mp4             |
+| /watch/MyMovie/VIDEO_TS | MyMovie.mp4              |
 
 ### Hooks
 

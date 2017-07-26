@@ -16,6 +16,7 @@ fi
 AUTOMATED_CONVERSION_PRESET="${AUTOMATED_CONVERSION_PRESET:-Very Fast 1080p30}"
 AUTOMATED_CONVERSION_FORMAT="${AUTOMATED_CONVERSION_FORMAT:-mp4}"
 AUTOMATED_CONVERSION_SOURCE_STABLE_TIME="${AUTOMATED_CONVERSION_SOURCE_STABLE_TIME:-5}"
+AUTOMATED_CONVERSION_SOURCE_MIN_DURATION="${AUTOMATED_CONVERSION_SOURCE_MIN_DURATION:-10}"
 
 FAILED_CONVERSIONS="/config/failed_conversions"
 SUCCESSFUL_CONVERSIONS="/config/successful_conversions"
@@ -44,51 +45,63 @@ WATCHDIR_HASH_changed() {
     [ "$WATCHDIR_HASH" != "$(WATCHDIR_HASH_calculate)" ]
 }
 
-get_hash() {
-    file="$1"
-    stat -c '%n %s %Y' "$file" | md5sum | cut -d' ' -f1
+get_video_hash() {
+    video="$1"
+    if [ -f "$video" ]; then
+        stat -c '%n %s %Y' "$video" | md5sum | cut -d' ' -f1
+    else
+        find "$video" -type f -exec stat -c '%n %s %Y' {} \; | md5sum | cut -d' ' -f1
+    fi
 }
 
-process_file() {
-    file="$1"
+get_video_titles() {
+    video="$1"
+    $HANDBRAKE_CLI -i "$video" \
+                   -t0 \
+                   --min-duration $AUTOMATED_CONVERSION_SOURCE_MIN_DURATION 2>&1 -t0 |
+    grep "^+ title " | sed 's/^+ title \([0-9]\+\):$/\1/'
+}
 
-    # Skip file if it doesn't exists (may have been removed while processing
+process_video() {
+    video="$1"
+
+    # Skip video if it doesn't exists (may have been removed while processing
     # the watch directory).
-    if [ ! -f "$file" ]; then
-        log "Skipping file '$file': no longer exists."
+    if [ ! -f "$video" ] && [ ! -d "$video" ]; then
+        log "Skipping '$video': no longer exists."
         return
     fi
 
-    # Get hash of the file from its properties.
-    hash="$(get_hash "$file")"
+    # Get hash of the video from its properties.
+    hash="$(get_video_hash "$video")"
 
-    # Skip file if it has been already successfully processed.
+    # Skip video if it has been already successfully processed.
     if grep -q -w "$hash" "$SUCCESSFUL_CONVERSIONS"; then
-        log "Skipping file '$file' ($hash): already processed successfully."
+        log "Skipping video '$video' ($hash): already processed successfully."
         return
     fi
 
-    # Skip file if we already failed to process it.
+    # Skip video if we already failed to process it.
     if grep -q -w "$hash" "$FAILED_CONVERSIONS"; then
-        log "Skipping file '$file' ($hash): already processed with failure."
+        log "Skipping '$video' ($hash): already processed with failure."
         return
     fi
 
-    # Skip file if it is not stable.
-    log "Waiting $AUTOMATED_CONVERSION_SOURCE_STABLE_TIME seconds before processing '$file'..."
+    # Skip video if it is not stable.
+    log "Waiting $AUTOMATED_CONVERSION_SOURCE_STABLE_TIME seconds before processing '$video'..."
     sleep $AUTOMATED_CONVERSION_SOURCE_STABLE_TIME
-    if [ "$hash" != "$(get_hash "$file")" ]; then
-        log "Skipping file '$file': currently being copied."
+    if [ "$hash" != "$(get_video_hash "$video")" ]; then
+        log "Skipping '$video': currently being copied."
         return
     fi
 
-    log "Starting conversion of '$file' ($hash)..."
+    # Set the output directory.
     case "${AUTOMATED_CONVERSION_OUTPUT_SUBDIR:-UNSET}" in
         UNSET)
             OUTPUT_DIR="/output"
             ;;
         SAME_AS_SRC)
-            dirname="$(dirname "$file" | sed 's|^/watch||')"
+            dirname="$(dirname "$video" | sed 's|^/watch||')"
             OUTPUT_DIR="/output/$dirname"
             ;;
         *)
@@ -97,35 +110,75 @@ process_file() {
     esac
     OUTPUT_DIR="$(echo "$OUTPUT_DIR" | sed 's|/\+|/|g' | sed 's|/\+$||')"
     s6-setuidgid $USER_ID:$GROUP_ID mkdir -p "$OUTPUT_DIR"
-    basename="$(basename "$file" | sed 's/\.[^.]*$//')"
-    OUTPUT_FILE="$OUTPUT_DIR/$basename.$AUTOMATED_CONVERSION_FORMAT"
-    $HANDBRAKE_CLI -i "$file" \
-                   -o "$OUTPUT_FILE" \
-                   --preset "$AUTOMATED_CONVERSION_PRESET"
-    hb_rc=$?
+
+    # Get video titles.
+    VIDEO_TITLES="$(get_video_titles "$video")"
+    VIDEO_TITLES="${VIDEO_TITLES:-UNSET}"
+    if [ "$VIDEO_TITLES" != "UNSET" ]; then
+        NUM_VIDEO_TITLES="$(echo "$VIDEO_TITLES" | wc -l)"
+    else
+        NUM_VIDEO_TITLES="0"
+    fi
+
+    log "Starting conversion of '$video' ($hash)..."
+    log "$NUM_VIDEO_TITLES title(s) to process."
+    hb_rc=0
+    for TITLE in "$VIDEO_TITLES"; do
+        [ "$TITLE" != "UNSET" ] || continue
+
+        # Get the output file basename: start with the one of the input file.
+        basename="$(basename "$video" | sed 's/\.[^.]*$//')"
+        # Special case when video is a DVD/Blu-ray folder: use the parent's
+        # directory.
+        if [ "$basename" = "VIDEO_TS" ] || [ "$basename" = "BDMV" ]; then
+            if [ "$(dirname "$video")" != "/watch" ]; then
+                basename="$(basename "$(dirname "$video")")"
+            fi
+        fi
+        # If multiple titles, add the '.title-XX' suffix.
+        [ "$NUM_VIDEO_TITLES" -eq 1 ] || baseimage="$baseimage.title-$TITLE"
+
+        # Now set the final output filename by adding the extension.
+        OUTPUT_FILE="$OUTPUT_DIR/$basename.$AUTOMATED_CONVERSION_FORMAT"
+        if [ -f "$OUTPUT_FILE" ]; then
+            hb_rc=1
+            log "ERROR: Destination file '$OUTPUT_FILE' already exists."
+            break
+        fi
+
+        # Invoke HandBrake.
+        $HANDBRAKE_CLI -i "$video" \
+                       -o "$OUTPUT_FILE" \
+                       --title "$TITLE" \
+                       --preset "$AUTOMATED_CONVERSION_PRESET"
+        hb_rc=$?
+
+        # Call post conversion hook.
+        if [ -f /config/hooks/post_conversion.sh ]; then
+            log "Executing post-conversion hook..."
+            /usr/bin/with-contenv sh /config/hooks/post_conversion.sh $hb_rc "$OUTPUT_FILE"
+            log "Post-conversion hook exited with $?"
+        fi
+
+        [ $hb_rc -eq 0 ] || break
+    done
+
     if [ $hb_rc -eq 0 ]; then
         log "Conversion ended successfully."
-        echo "$file $hash" >> "$SUCCESSFUL_CONVERSIONS"
+        echo "$video $hash" >> "$SUCCESSFUL_CONVERSIONS"
         if [ "${AUTOMATED_CONVERSION_KEEP_SOURCE:-1}" -eq 0 ]; then
-            rm "$file"
-            log "Removed file '$file'."
+            rm -r "$video"
+            log "Removed $video'."
             # Remove directory if empty (hidden files/folders are ignored).
-            filedir="$(dirname "$file")"
-            if [ -z "$(ls "$filedir")" ]; then
-                log "Removed directory '$filedir'."
-                rm -rf "$filedir"
+            videodir="$(dirname "$video")"
+            if [ "$videodir" != "/watch" ] && [ -z "$(ls "$videodir")" ]; then
+                log "Removed directory '$videodir'."
+                rm -rf "$videodir"
             fi
         fi
     else
         log "Conversion failed."
-        echo "$file $hash" >> "$FAILED_CONVERSIONS"
-    fi
-
-    # Call post conversion hook.
-    if [ -f /config/hooks/post_conversion.sh ]; then
-        log "Executing post-conversion hook..."
-        /usr/bin/with-contenv sh /config/hooks/post_conversion.sh $hb_rc "$OUTPUT_FILE"
-        log "Post-conversion hook exited with $?"
+        echo "$video $hash" >> "$FAILED_CONVERSIONS"
     fi
 }
 
@@ -145,10 +198,13 @@ while true; do
         WATCHDIR_HASH_update
         log "Processing watch folder..."  
         FILELIST="$(mktemp)"
-        find /watch -follow -type f -not -path '*/\.*' > "$FILELIST"
+        find /watch/ -follow -type f -not -path '*/\.*' | \
+            sed 's|/VIDEO_TS/.*$|/VIDEO_TS|g' | \
+            sed 's|/BDMV/.*$|/BDMV|g' | \
+            uniq > "$FILELIST"
         while read -u 3 FILE
         do
-            process_file "$FILE"
+            process_video "$FILE"
         done 3<"$FILELIST"
         rm "$FILELIST"
         log "Watch folder processing terminated."
