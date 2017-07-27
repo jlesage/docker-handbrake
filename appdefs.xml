@@ -113,6 +113,12 @@ hooks.
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.5.5</version>
+        <date>2017-07-27</date>
+        <change>Now using baseimage v2.0.3, which brings the following changes:</change>
+        <change level="2">Improved robustness of the X server starting process.</change>
+      </release>
+      <release>
         <version>1.5.4</version>
         <date>2017-07-26</date>
         <change>Watch folder: properly support video discs (ISO files, DVD/Blu-ray folders).</change>
