@@ -113,6 +113,11 @@ hooks.
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.5.6</version>
+        <date>2017-07-27</date>
+        <change>Watch folder: recursively remove empty directories.</change>
+      </release>
+      <release>
         <version>1.5.5</version>
         <date>2017-07-27</date>
         <change>Now using baseimage v2.0.3, which brings the following changes:</change>
