@@ -171,10 +171,11 @@ process_video() {
             log "Removed $video'."
             # Remove directory if empty (hidden files/folders are ignored).
             videodir="$(dirname "$video")"
-            if [ "$videodir" != "/watch" ] && [ -z "$(ls "$videodir")" ]; then
+            while [ "$videodir" != "/watch" ] && [ -z "$(ls "$videodir")" ]; do
                 log "Removed directory '$videodir'."
                 rm -rf "$videodir"
-            fi
+                videodir="$(dirname "$videodir")"
+            done
         fi
     else
         log "Conversion failed."
