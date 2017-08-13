@@ -136,7 +136,7 @@ process_video() {
             fi
         fi
         # If multiple titles, add the '.title-XX' suffix.
-        [ "$NUM_VIDEO_TITLES" -eq 1 ] || baseimage="$baseimage.title-$TITLE"
+        [ "$NUM_VIDEO_TITLES" -eq 1 ] || basename="$basename.title-$TITLE"
 
         # Now set the final output filename by adding the extension.
         OUTPUT_FILE="$OUTPUT_DIR/$basename.$AUTOMATED_CONVERSION_FORMAT"
