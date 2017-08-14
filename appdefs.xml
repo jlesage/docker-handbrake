@@ -113,6 +113,12 @@ hooks.
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.5.9</version>
+        <date>2017-08-14</date>
+        <change>Now using baseimage v2.0.6, which brings the following changes:</change>
+        <change level="2">Upgraded S6 overlay to version 1.20.0.0.</change>
+      </release>
+      <release>
         <version>1.5.8</version>
         <date>2017-08-12</date>
         <change>Fixed conversion of videos containing multiple titles.</change>
