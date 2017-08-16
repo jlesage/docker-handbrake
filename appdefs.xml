@@ -113,6 +113,11 @@ hooks.
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.6.0</version>
+        <date>2017-08-16</date>
+        <change>Added libdvdcss to allow reading of encrypted DVD video files.</change>
+      </release>
+      <release>
         <version>1.5.9</version>
         <date>2017-08-14</date>
         <change>Now using baseimage v2.0.6, which brings the following changes:</change>
