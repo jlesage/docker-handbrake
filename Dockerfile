@@ -83,6 +83,8 @@ RUN \
         jansson \
         opus \
         lame \
+        # To read encrypted DVDs
+        libdvdcss \
         # For live preview:
         gst-libav1 \
         # For main, big icons:
