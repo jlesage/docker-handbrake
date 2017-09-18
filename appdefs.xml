@@ -152,6 +152,12 @@ hooks.
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.7.0</version>
+        <date>2017-09-18</date>
+        <change>Added support for optical drive(s) access.</change>
+        <change>Removed some useless shortcuts in the video source selection window.</change>
+      </release>
+      <release>
         <version>1.6.1</version>
         <date>2017-09-08</date>
         <change>Now using baseimage v2.0.8, which brings the following changes (from last used version):</change>
