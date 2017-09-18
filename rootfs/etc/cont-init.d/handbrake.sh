@@ -22,6 +22,10 @@ do
   cp /defaults/hooks/$hook.example /config/hooks/
 done
 
+# Clear the fstab file to make sure its content is not displayed in HandBrake
+# when opening the source video.
+echo > /etc/fstab
+
 # Take ownership of the config directory.
 chown -R $USER_ID:$GROUP_ID /config
 
