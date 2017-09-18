@@ -91,6 +91,8 @@ RUN \
         librsvg \
         # For all other small icons:
         adwaita-icon-theme \
+        # For optical drive listing:
+        lsscsi \
         # For watchfolder
         findutils
 

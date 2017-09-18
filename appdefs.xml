@@ -17,6 +17,14 @@ from Jinja2 templates.
     <unraid>
       <support_url>https://forums.lime-technology.com/topic/57420-support-handbrake/</support_url>
       <category>MediaApp:Video</category>
+      <extra_description>
+[span style='color: red;'][b]NOTE:[/b][/span] For the container to have
+access to your optical drive(s), you need to allow access to the proper
+device (usually [b][i]/dev/sr0[/i][/b]) by adding the parameter
+[b][i]--device DEV[/i][/b] in the [i]Extra Parameters[/i] field (shown when
+[i]Advanced View[/i] is enabled). For example, if your optical drive is at
+[b][i]/dev/sr0[/i][/b], you need to add [b][i]--device /dev/sr0[/i][/b].
+      </extra_description>
     </unraid>
     <container>
       <overview>A fully automated mode is also available: drop files into a watch folder and let {{ defs.app.friendly_name }} process them without any user interaction.</overview>
@@ -25,6 +33,37 @@ from Jinja2 templates.
     </container>
     <!-- Extra stuff to be added to the documentation. -->
     <documentation>
+      <section>
+        <title level="2">Access to Optical Drive(s)</title>
+        <content>
+By default, a Docker container doesn't have access to host's devices.  However,
+access to one or more device can be granted with the `--device DEV` parameter.
+
+Optical drives usually have `/dev/srX` as device.  For example, the first drive
+is `/dev/sr0`, the second `/dev/sr1`, and so on.  To allow HandBrake to access
+the first drive, this parameter is needed:
+```
+--device /dev/sr0
+```
+
+To easily find devices of optical drives, start the container and look at its
+log for messages similar to these ones:
+```
+...
+[cont-init.d] 95-check-optical-drive.sh: executing...
+[cont-init.d] 95-check-optical-drive.sh: looking for usable optical drives...
+[cont-init.d] 95-check-optical-drive.sh: found optical drive /dev/sr0, but it is not usable because is not exposed to the container.
+[cont-init.d] 95-check-optical-drive.sh: no usable optical drive found.
+[cont-init.d] 95-check-optical-drive.sh: exited 0.
+...
+```
+
+Since HandBrake can decrypt DVD video discs, their conversion can be performed
+directly from the optical device.  From the graphical interface, click the
+`Open Source` button and browse through the file system to find your optical
+drive device (e.g. `/dev/sr0`).
+        </content>
+      </section>
       <section>
         <title level="2">Automatic Video Conversion</title>
         <content>

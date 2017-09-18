@@ -173,6 +173,35 @@ be done via two methods:
 **NOTE**: This is a very basic way to restrict access to the application and it
 should not be considered as secure in any way.
 
+## Access to Optical Drive(s)
+
+By default, a Docker container doesn't have access to host's devices.  However,
+access to one or more device can be granted with the `--device DEV` parameter.
+
+Optical drives usually have `/dev/srX` as device.  For example, the first drive
+is `/dev/sr0`, the second `/dev/sr1`, and so on.  To allow HandBrake to access
+the first drive, this parameter is needed:
+```
+--device /dev/sr0
+```
+
+To easily find devices of optical drives, start the container and look at its
+log for messages similar to these ones:
+```
+...
+[cont-init.d] 95-check-optical-drive.sh: executing...
+[cont-init.d] 95-check-optical-drive.sh: looking for usable optical drives...
+[cont-init.d] 95-check-optical-drive.sh: found optical drive /dev/sr0, but it is not usable because is not exposed to the container.
+[cont-init.d] 95-check-optical-drive.sh: no usable optical drive found.
+[cont-init.d] 95-check-optical-drive.sh: exited 0.
+...
+```
+
+Since HandBrake can decrypt DVD video discs, their conversion can be performed
+directly from the optical device.  From the graphical interface, click the
+`Open Source` button and browse through the file system to find your optical
+drive device (e.g. `/dev/sr0`).
+
 ## Automatic Video Conversion
 
 This container has an automatic video converter built-in.  This is useful to
