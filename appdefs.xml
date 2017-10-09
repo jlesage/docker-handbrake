@@ -152,6 +152,13 @@ hooks.
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.8.0</version>
+        <date>2017-10-09</date>
+        <change>Now using baseimage v3.0.2, which brings the following changes:</change>
+        <change level="2">Better support for service dependencies.</change>
+        <change level="2">Added support for secure access to the application's GUI.</change>
+      </release>
+      <release>
         <version>1.7.0</version>
         <date>2017-09-18</date>
         <change>Added support for optical drive(s) access.</change>
