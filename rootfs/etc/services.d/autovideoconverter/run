@@ -4,8 +4,9 @@ set -u # Treat unset variables as an error.
 
 # Make sure we appear with a proper name under `ps`.
 if [ ! -L "$0" ]; then
-    ln -sf run "$(dirname "$0")/autovideoconverter"
-    exec "$(dirname "$0")/autovideoconverter" "$@"
+    SV_NAME="$(basename "$(pwd)")"
+    ln -sf run "$SV_NAME"
+    exec ./"$SV_NAME" "$@"
 fi
 
 # Set umask.
@@ -26,7 +27,7 @@ HANDBRAKE_CLI="$APP_NICE_CMD s6-setuidgid $USER_ID:$GROUP_ID /usr/bin/HandBrakeC
 WATCHDIR_HASH=UNSET
 
 log() {
-    echo "autoVideoConverter: $*"
+    echo "[$(basename "$0")] $*"
 }
 
 WATCHDIR_HASH_calculate() {
@@ -183,7 +184,7 @@ process_video() {
     fi
 }
 
-echo "Starting Automatic Video Converter service..."
+log "starting..."
 
 [ -f "$FAILED_CONVERSIONS" ] || touch "$FAILED_CONVERSIONS"
 [ -f "$SUCCESSFUL_CONVERSIONS" ] || touch "$SUCCESSFUL_CONVERSIONS"
