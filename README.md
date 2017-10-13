@@ -309,3 +309,10 @@ required to run HandBrake.  This may limit actions that can be performed in
 hooks.
 
 [TimeZone]: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+
+## Support or Contact
+
+Having troubles with the container or have questions?  Please
+[create a new issue].
+
+[open an issue]: https://github.com/jlesage/docker-handbrake/issues
