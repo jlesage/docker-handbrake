@@ -26,8 +26,50 @@ HANDBRAKE_CLI="$APP_NICE_CMD s6-setuidgid $USER_ID:$GROUP_ID /usr/bin/HandBrakeC
 
 WATCHDIR_HASH=UNSET
 
+# http://cfajohnson.com/shell/cus-faq-2.html#Q11
+run() {
+    j=1
+    while eval "\${pipestatus_$j+:} false"; do
+        unset pipestatus_$j
+        j=$(($j+1))
+    done
+    j=1 com= k=1 l=
+    for a; do
+        if [ "x$a" = 'x|' ]; then
+            com="$com { $l "'3>&-
+                          echo "pipestatus_'$j'=$?" >&3
+                      } 4>&- |'
+            j=$(($j+1)) l=
+        else
+            l="$l \"\$$k\""
+        fi
+        k=$(($k+1))
+    done
+    com="$com $l"' 3>&- >&4 4>&-
+        echo "pipestatus_'$j'=$?"'
+    exec 4>&1
+    eval "$(exec 3>&1; eval "$com")"
+    exec 4>&-
+    j=1
+    while eval "\${pipestatus_$j+:} false"; do
+        eval "[ \$pipestatus_$j -eq 0 ]" || return 1
+        j=$(($j+1))
+    done
+    return 0
+}
+
 log() {
     echo "[$(basename "$0")] $*"
+}
+
+log_hb_encode_progress() {
+    LINE_COUNT=0
+    while read OUTPUT; do
+        if [ "$(expr $LINE_COUNT % 6)" = "0" ]; then
+            log "Encoding:$(echo "$OUTPUT" | cut -d',' -f2-)"
+        fi
+        LINE_COUNT="$(expr $LINE_COUNT + 1)"
+    done
 }
 
 WATCHDIR_HASH_calculate() {
@@ -148,11 +190,16 @@ process_video() {
         fi
 
         # Invoke HandBrake.
-        $HANDBRAKE_CLI -i "$video" \
+        echo "------- CONVERSION OUTPUT $(date) -------" >> \
+            /config/log/hb/conversion.log
+        run $HANDBRAKE_CLI -i "$video" \
                        -o "$OUTPUT_FILE" \
                        --title "$TITLE" \
-                       --preset "$AUTOMATED_CONVERSION_PRESET"
-        hb_rc=$?
+                       --preset "$AUTOMATED_CONVERSION_PRESET" 2>> \
+            /config/log/hb/conversion.log \| \
+            /usr/bin/unbuffer -p grep "^Encoding" \| \
+            log_hb_encode_progress
+        hb_rc=$pipestatus_1
 
         # Call post conversion hook.
         if [ -f /config/hooks/post_conversion.sh ]; then

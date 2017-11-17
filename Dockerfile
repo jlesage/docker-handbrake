@@ -94,7 +94,8 @@ RUN \
         # For optical drive listing:
         lsscsi \
         # For watchfolder
-        findutils
+        findutils \
+        expect
 
 
 # Maximize only the main/initial window.

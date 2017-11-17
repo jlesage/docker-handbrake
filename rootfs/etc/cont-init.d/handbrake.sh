@@ -7,14 +7,17 @@ set -u # Treat unset variables as an error.
 echo "Generating machine-id..."
 cat /proc/sys/kernel/random/uuid | tr -d '-' > /etc/machine-id
 
+# Make sure mandatory directories exist.
+mkdir -p /config/ghb
+mkdir -p /config/hooks
+mkdir -p /config/log/hb
+
 # Copy default configuration if needed.
 if [ ! -f /config/ghb/preferences.json ]; then
-  mkdir -p /config/ghb
   cp /defaults/preferences.json /config/ghb/preferences.json
 fi
 
 # Copy example hooks if needed.
-mkdir -p /config/hooks
 for hook in post_conversion.sh
 do
   [ ! -f /config/hooks/$hook ] || continue
