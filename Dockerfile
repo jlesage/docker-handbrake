@@ -66,7 +66,7 @@ RUN \
     cd .. && \
     # Cleanup.
     del-pkg build-dependencies && \
-    rm -rf /tmp/*
+    rm -rf /tmp/* /tmp/.[!.]*
 
 # Install dependencies.
 RUN \
