@@ -110,6 +110,24 @@ container cannot be changed, but you are free to use any port on the host side.
 | 5800 | Mandatory | Port used to access the application's GUI via the web interface. |
 | 5900 | Optional | Port used to access the application's GUI via the VNC protocol.  Optional if no VNC client is used. |
 
+## Docker Compose File
+Here is an example of a `docker-compose.yml` file that can be used with
+[Docker Compose](https://docs.docker.com/compose/overview/):
+```yaml
+version: '3'
+services:
+  handbrake:
+    build: .
+    ports:
+      - "5800:5800"
+      - "5900:5900"
+    volumes:
+      - "/docker/appdata/handbrake:/config:rw"
+      - "$HOME:/storage:ro"
+      - "$HOME/HandBrake/watch:/watch:rw"
+      - "$HOME/HandBrake/output:/output:rw"
+```
+
 ## Docker Image Update
 
 If the system on which the container runs doesn't provide a way to easily update
