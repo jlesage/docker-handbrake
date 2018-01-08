@@ -145,7 +145,7 @@ docker stop handbrake
 ```
   3. Remove the container:
 ```
-docker stop handbrake
+docker rm handbrake
 ```
   4. Start the container using the `docker run` command.
 
