@@ -29,10 +29,18 @@ done
 # when opening the source video.
 echo > /etc/fstab
 
-# Take ownership of the config directory.
-chown -R $USER_ID:$GROUP_ID /config
+# Take ownership of the config directory content.
+chown -R $USER_ID:$GROUP_ID /config/*
 
 # Take ownership of the output directory.
-chown $USER_ID:$GROUP_ID /output
+if ! chown $USER_ID:$GROUP_ID /output; then
+    # Failed to take ownership of /output.  This could happen when,
+    # for example, the folder is mapped to a network share.
+    # Continue if we have write permission, else fail.
+    if s6-setuidgid $USER_ID:$GROUP_ID [ ! -w /output ]; then
+        log "ERROR: Failed to take ownership and no write permission on /output."
+        exit 1
+    fi
+fi
 
 # vim: set ft=sh :
