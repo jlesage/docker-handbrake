@@ -211,7 +211,7 @@ process_video() {
         # Call post conversion hook.
         if [ -f /config/hooks/post_conversion.sh ]; then
             log "Executing post-conversion hook..."
-            /usr/bin/with-contenv sh /config/hooks/post_conversion.sh $hb_rc "$OUTPUT_FILE"
+            /usr/bin/with-contenv sh /config/hooks/post_conversion.sh $hb_rc "$OUTPUT_FILE" "$video" "$AC_PRESET"
             log "Post-conversion hook exited with $?"
         fi
 
