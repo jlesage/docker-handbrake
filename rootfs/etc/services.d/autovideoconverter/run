@@ -293,7 +293,7 @@ while true; do
         process_watch_folder "$DIR"
     done
 
-    sleep 5
+    sleep "${AUTOMATED_CONVERSION_CHECK_INTERVAL:-5}"
 done
 
 # vim: set ft=sh :

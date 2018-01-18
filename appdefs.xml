@@ -477,6 +477,17 @@ hooks.
         </unraid_template>
       </environment_variable>
       <environment_variable>
+        <name>AUTOMATED_CONVERSION_CHECK_INTERVAL</name>
+        <description>Interval (in seconds) at which the automatic video converter checks for new files.</description>
+        <default>5</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Check Interval</title>
+          <display>advanced</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
         <name>HANDBRAKE_DEBUG</name>
         <description>Setting this to `1` enables HandBrake debug logging.  Log messages are sent to `/config/handbrake.debug.log` (container path).  **NOTE**: When enabled, a lot of information is generated and the log file will grow quickly.  Make sure to enable this temporarily and only when needed.</description>
         <default/>
