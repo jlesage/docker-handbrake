@@ -305,12 +305,25 @@ If needed, up to 4 additionnal watch folders can be used:
   - `/watch5`
 
 This is useful in scenarios where videos need to be converted by different
-presets.  Settings associated to a particular watch folder can be overrided by
-adding its index to the corresponding environment variable name.
+presets.  For example, one could use a watch folder for movies and another watch
+folder for TV shows, both having different encoding quality requirements.
 
-For example, to set the preset of `/watch2`, one would define the environment
-variable `AUTOMATED_CONVERSION_PRESET_2`.  `AUTOMATED_CONVERSION_PRESET_3` would
-be used for `/watch3`, and so on.
+By default, additional watch folders inherits the same settings has the main one
+(`/watch`).  A setting for a particular watch folder can be overrided by adding
+its index to the corresponding environment variable name.
+
+For example, to set the HandBrake preset used to convert videos in `/watch2`,
+the environment variable `AUTOMATED_CONVERSION_PRESET_2` is used.
+`AUTOMATED_CONVERSION_PRESET_3` is used for `/watch3`, and so on.
+
+All settings related to the automatic video converter can be overrided for each
+additional watch folder:
+  - `AUTOMATED_CONVERSION_PRESET`
+  - `AUTOMATED_CONVERSION_FORMAT`
+  - `AUTOMATED_CONVERSION_SOURCE_STABLE_TIME`
+  - `AUTOMATED_CONVERSION_SOURCE_MIN_DURATION`
+  - `AUTOMATED_CONVERSION_OUTPUT_SUBDIR`
+  - `AUTOMATED_CONVERSION_KEEP_SOURCE`
 
 ### Video Discs
 
