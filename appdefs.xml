@@ -183,6 +183,13 @@ hooks.
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.10.0</version>
+        <date>2018-01-18</date>
+        <change>Added support for multiple watch folders.</change>
+        <change>Added environment variable to set the interval at which the automatic video converter checks for new files.</change>
+        <change>Source file and HandBrake preset name are now passed to the post hook script.</change>
+      </release>
+      <release>
         <version>1.9.4</version>
         <date>2018-01-11</date>
         <change>Now using baseimage v3.2.2, which brings the following changes (since last used version):</change>
