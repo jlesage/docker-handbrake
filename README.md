@@ -295,6 +295,22 @@ about setting environment variables.
 **NOTE**: All default presets, along with personalized/custom ones, can be seen
 with the HandBrake GUI.
 
+### Multiple Watch Folders
+
+If needed, up to 4 additionnal watch folders can be used:
+  - `/watch2`
+  - `/watch3`
+  - `/watch4`
+  - `/watch5`
+
+This is useful in scenarios where videos need to be converted by different
+presets.  Settings associated to a particular watch folder can be overrided by
+adding its index to the corresponding environment variable name.
+
+For example, to set the preset of `/watch2`, one would define the environment
+variable `AUTOMATED_CONVERSION_PRESET_2`.  `AUTOMATED_CONVERSION_PRESET_3` would
+be used for `/watch3`, and so on.
+
 ### Video Discs
 
 The automatic video converter supports video discs, in the folllowing format:

@@ -14,17 +14,18 @@ if [ "${UMASK:-UNSET}" != "UNSET" ]; then
     umask "$UMASK"
 fi
 
-AUTOMATED_CONVERSION_PRESET="${AUTOMATED_CONVERSION_PRESET:-Very Fast 1080p30}"
-AUTOMATED_CONVERSION_FORMAT="${AUTOMATED_CONVERSION_FORMAT:-mp4}"
-AUTOMATED_CONVERSION_SOURCE_STABLE_TIME="${AUTOMATED_CONVERSION_SOURCE_STABLE_TIME:-5}"
-AUTOMATED_CONVERSION_SOURCE_MIN_DURATION="${AUTOMATED_CONVERSION_SOURCE_MIN_DURATION:-10}"
-
 FAILED_CONVERSIONS="/config/failed_conversions"
 SUCCESSFUL_CONVERSIONS="/config/successful_conversions"
 
 HANDBRAKE_CLI="$APP_NICE_CMD s6-setuidgid $USER_ID:$GROUP_ID /usr/bin/HandBrakeCLI --preset-import-file /config/ghb/presets.json"
 
-WATCHDIR_HASH=UNSET
+WATCHDIR_HASH="$(mktemp -d)"
+
+trap "exit" TERM QUIT INT
+trap "clean_exit" EXIT
+clean_exit() {
+    rm -rf "$WATCHDIR_HASH"
+}
 
 # http://cfajohnson.com/shell/cus-faq-2.html#Q11
 run() {
@@ -73,19 +74,25 @@ log_hb_encode_progress() {
 }
 
 WATCHDIR_HASH_calculate() {
-    find /watch -follow -type f -not -path '*/\.*' -printf '%T@:%s:%p\n' | md5sum | cut -d' ' -f1
+    WATCHDIR="$1"
+    find "$WATCHDIR" -follow -type f -not -path '*/\.*' -printf '%T@:%s:%p\n' | md5sum | cut -d' ' -f1
 }
 
 WATCHDIR_HASH_isset() {
-    [ "$WATCHDIR_HASH" != "UNSET" ]
+    WATCHDIR="$1"
+    [ -f "$WATCHDIR_HASH/$WATCHDIR/hash" ]
 }
 
 WATCHDIR_HASH_update() {
-    WATCHDIR_HASH="$(WATCHDIR_HASH_calculate)"
+    WATCHDIR="$1"
+    mkdir -p "$WATCHDIR_HASH/$WATCHDIR"
+    WATCHDIR_HASH_calculate "$WATCHDIR" > "$WATCHDIR_HASH/$WATCHDIR/hash"
 }
 
 WATCHDIR_HASH_changed() {
-    [ "$WATCHDIR_HASH" != "$(WATCHDIR_HASH_calculate)" ]
+    WATCHDIR="$1"
+    [ ! -f "$WATCHDIR_HASH/$WATCHDIR/hash" ] || \
+    [ "$(cat "$WATCHDIR_HASH/$WATCHDIR/hash")" != "$(WATCHDIR_HASH_calculate "$WATCHDIR")" ]
 }
 
 get_video_hash() {
@@ -101,7 +108,7 @@ get_video_titles() {
     video="$1"
     $HANDBRAKE_CLI -i "$video" \
                    -t0 \
-                   --min-duration $AUTOMATED_CONVERSION_SOURCE_MIN_DURATION 2>&1 -t0 |
+                   --min-duration $AC_SOURCE_MIN_DURATION 2>&1 -t0 |
     grep "^+ title " | sed 's/^+ title \([0-9]\+\):$/\1/'
 }
 
@@ -131,15 +138,15 @@ process_video() {
     fi
 
     # Skip video if it is not stable.
-    log "Waiting $AUTOMATED_CONVERSION_SOURCE_STABLE_TIME seconds before processing '$video'..."
-    sleep $AUTOMATED_CONVERSION_SOURCE_STABLE_TIME
+    log "Waiting $AC_SOURCE_STABLE_TIME seconds before processing '$video'..."
+    sleep $AC_SOURCE_STABLE_TIME
     if [ "$hash" != "$(get_video_hash "$video")" ]; then
         log "Skipping '$video': currently being copied."
         return
     fi
 
     # Set the output directory.
-    case "${AUTOMATED_CONVERSION_OUTPUT_SUBDIR:-UNSET}" in
+    case "$AC_OUTPUT_SUBDIR" in
         UNSET)
             OUTPUT_DIR="/output"
             ;;
@@ -148,7 +155,7 @@ process_video() {
             OUTPUT_DIR="/output/$dirname"
             ;;
         *)
-            OUTPUT_DIR="/output/$AUTOMATED_CONVERSION_OUTPUT_SUBDIR"
+            OUTPUT_DIR="/output/$AC_OUTPUT_SUBDIR"
             ;;
     esac
     OUTPUT_DIR="$(echo "$OUTPUT_DIR" | sed 's|/\+|/|g' | sed 's|/\+$||')"
@@ -163,7 +170,7 @@ process_video() {
         NUM_VIDEO_TITLES="0"
     fi
 
-    log "Starting conversion of '$video' ($hash)..."
+    log "Starting conversion of '$video' ($hash) using preset '$AC_PRESET'..."
     log "$NUM_VIDEO_TITLES title(s) to process."
     hb_rc=0
     for TITLE in "$VIDEO_TITLES"; do
@@ -182,7 +189,7 @@ process_video() {
         [ "$NUM_VIDEO_TITLES" -eq 1 ] || basename="$basename.title-$TITLE"
 
         # Now set the final output filename by adding the extension.
-        OUTPUT_FILE="$OUTPUT_DIR/$basename.$AUTOMATED_CONVERSION_FORMAT"
+        OUTPUT_FILE="$OUTPUT_DIR/$basename.$AC_FORMAT"
         if [ -f "$OUTPUT_FILE" ]; then
             hb_rc=1
             log "ERROR: Destination file '$OUTPUT_FILE' already exists."
@@ -195,7 +202,7 @@ process_video() {
         run $HANDBRAKE_CLI -i "$video" \
                        -o "$OUTPUT_FILE" \
                        --title "$TITLE" \
-                       --preset "$AUTOMATED_CONVERSION_PRESET" 2>> \
+                       --preset "$AC_PRESET" 2>> \
             /config/log/hb/conversion.log \| \
             /usr/bin/unbuffer -p grep "^Encoding" \| \
             log_hb_encode_progress
@@ -214,7 +221,7 @@ process_video() {
     if [ $hb_rc -eq 0 ]; then
         log "Conversion ended successfully."
         echo "$video $hash" >> "$SUCCESSFUL_CONVERSIONS"
-        if [ "${AUTOMATED_CONVERSION_KEEP_SOURCE:-1}" -eq 0 ]; then
+        if [ "$AC_KEEP_SOURCE" -eq 0 ]; then
             rm -r "$video"
             log "Removed $video'."
             # Remove directory if empty (hidden files/folders are ignored).
@@ -231,33 +238,60 @@ process_video() {
     fi
 }
 
+process_watch_folder() {
+    WF="$1"
+
+    [ -d "$WF" ] || return
+    WATCHDIR_HASH_changed "$WF" || return
+
+    if WATCHDIR_HASH_isset "$WF"; then
+        log "Change detected in watch folder '$WF'."
+    fi
+
+    # Make sure to update the watch directory hash before processing it.
+    # This is to make sure we catch, on the next round, changes occuring
+    # during the processing.
+    WATCHDIR_HASH_update "$WF"
+    log "Processing watch folder '$WF'..."
+    FILELIST="$(mktemp)"
+    find "$WF" -follow -type f -not -path '*/\.*' | \
+        sed 's|/VIDEO_TS/.*$|/VIDEO_TS|g' | \
+        sed 's|/BDMV/.*$|/BDMV|g' | \
+        uniq > "$FILELIST"
+    while read -u 3 FILE
+    do
+        process_video "$FILE"
+    done 3<"$FILELIST"
+    rm "$FILELIST"
+    log "Watch folder '$WF' processing terminated."
+}
+
 log "starting..."
 
 [ -f "$FAILED_CONVERSIONS" ] || touch "$FAILED_CONVERSIONS"
 [ -f "$SUCCESSFUL_CONVERSIONS" ] || touch "$SUCCESSFUL_CONVERSIONS"
 
 while true; do
-    if WATCHDIR_HASH_changed; then
-        if WATCHDIR_HASH_isset; then
-            log "Change detected in watch folder"
+    for DIR in /watch /watch2 /watch3 /watch4 /watch5; do
+        # Set default settings.
+        AC_PRESET="${AUTOMATED_CONVERSION_PRESET:-Very Fast 1080p30}"
+        AC_FORMAT="${AUTOMATED_CONVERSION_FORMAT:-mp4}"
+        AC_SOURCE_STABLE_TIME="${AUTOMATED_CONVERSION_SOURCE_STABLE_TIME:-5}"
+        AC_SOURCE_MIN_DURATION="${AUTOMATED_CONVERSION_SOURCE_MIN_DURATION:-10}"
+        AC_OUTPUT_SUBDIR="${AUTOMATED_CONVERSION_OUTPUT_SUBDIR:-UNSET}"
+        AC_KEEP_SOURCE="${AUTOMATED_CONVERSION_KEEP_SOURCE:-1}"
+
+        # Apply per-watch folder settings.
+        if [ -n "${DIR#*/watch}" ]; then
+            for VAR in PRESET FORMAT SOURCE_STABLE_TIME SOURCE_MIN_DURATION OUTPUT_SUBDIR KEEP_SOURCE
+            do
+                eval "AC_$VAR=\"\${AUTOMATED_CONVERSION_${VAR}_${DIR#*/watch}:-\$AC_$VAR}\""
+            done
         fi
-        # Make sure to update the watch directory hash before processing it.
-        # This is to make sure we catch, on the next round, changes occuring
-        # during the processing.
-        WATCHDIR_HASH_update
-        log "Processing watch folder..."  
-        FILELIST="$(mktemp)"
-        find /watch/ -follow -type f -not -path '*/\.*' | \
-            sed 's|/VIDEO_TS/.*$|/VIDEO_TS|g' | \
-            sed 's|/BDMV/.*$|/BDMV|g' | \
-            uniq > "$FILELIST"
-        while read -u 3 FILE
-        do
-            process_video "$FILE"
-        done 3<"$FILELIST"
-        rm "$FILELIST"
-        log "Watch folder processing terminated."
-    fi
+
+        # Process watch folder.
+        process_watch_folder "$DIR"
+    done
 
     sleep 5
 done
