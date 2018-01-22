@@ -183,6 +183,14 @@ hooks.
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.11.0</version>
+        <date>2018-01-22</date>
+        <change>Now using baseimage v3.3.0, which brings the following changes (since last used version):</change>
+        <change level="2">For Alpine Linux images with glibc, automatically update dynamic linker's cache after new libraries are installed.</change>
+        <change level="2">Fixed the LANG environment variable not being set properly.</change>
+        <change level="2">Added the ability to automatically install a CJK (Chinese/Japanese/Korean) font.</change>
+      </release>
+      <release>
         <version>1.10.0</version>
         <date>2018-01-18</date>
         <change>Added support for multiple watch folders.</change>
