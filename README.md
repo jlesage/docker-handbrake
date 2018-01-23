@@ -17,6 +17,9 @@ HandBrake is a tool for converting video from nearly any format to a selection o
 
 ## Quick Start
 
+**NOTE**: The Docker command provided in this quick start is given as an example
+and parameters should be adjusted to your need.
+
 Launch the HandBrake docker container with the following command:
 ```
 docker run -d \
