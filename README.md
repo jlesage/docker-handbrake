@@ -15,6 +15,32 @@ HandBrake is a tool for converting video from nearly any format to a selection o
 
 ---
 
+## Table of Content
+
+   * [Docker container for HandBrake](#docker-container-for-handbrake)
+      * [Table of Content](#table-of-content)
+      * [Quick Start](#quick-start)
+      * [Usage](#usage)
+         * [Environment Variables](#environment-variables)
+         * [Data Volumes](#data-volumes)
+         * [Ports](#ports)
+      * [Docker Compose File](#docker-compose-file)
+      * [Docker Image Update](#docker-image-update)
+      * [User/Group IDs](#usergroup-ids)
+      * [Accessing the GUI](#accessing-the-gui)
+      * [Security](#security)
+         * [Certificates](#certificates)
+         * [VNC Password](#vnc-password)
+      * [Access to Optical Drive(s)](#access-to-optical-drives)
+      * [Automatic Video Conversion](#automatic-video-conversion)
+         * [Multiple Watch Folders](#multiple-watch-folders)
+         * [Video Discs](#video-discs)
+         * [Hooks](#hooks)
+      * [Reverse Proxy](#reverse-proxy)
+         * [Routing Based on Hostname](#routing-based-on-hostname)
+         * [Routing Based on URL Path](#routing-based-on-url-path)
+      * [Support or Contact](#support-or-contact)
+
 ## Quick Start
 
 **NOTE**: The Docker command provided in this quick start is given as an example
