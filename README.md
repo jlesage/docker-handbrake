@@ -1,5 +1,5 @@
 # Docker container for HandBrake
-[![Docker Automated build](https://img.shields.io/docker/automated/jlesage/handbrake.svg)](https://hub.docker.com/r/jlesage/handbrake/) [![](https://images.microbadger.com/badges/image/jlesage/handbrake.svg)](http://microbadger.com/#/images/jlesage/handbrake "Get your own image badge on microbadger.com") [![Build Status](https://travis-ci.org/jlesage/docker-handbrake.svg?branch=master)](https://travis-ci.org/jlesage/docker-handbrake) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/JocelynLeSage)
+[![Docker Automated build](https://img.shields.io/docker/automated/jlesage/handbrake.svg)](https://hub.docker.com/r/jlesage/handbrake/) [![Docker Image](https://images.microbadger.com/badges/image/jlesage/handbrake.svg)](http://microbadger.com/#/images/jlesage/handbrake) [![Build Status](https://travis-ci.org/jlesage/docker-handbrake.svg?branch=master)](https://travis-ci.org/jlesage/docker-handbrake) [![GitHub Release](https://img.shields.io/github/release/jlesage/docker-handbrake.svg)](https://github.com/jlesage/docker-handbrake/releases/latest) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/JocelynLeSage)
 
 This is a Docker container for HandBrake.
 
@@ -115,6 +115,7 @@ container cannot be changed, but you are free to use any port on the host side.
 | 5900 | Optional | Port used to access the application's GUI via the VNC protocol.  Optional if no VNC client is used. |
 
 ## Docker Compose File
+
 Here is an example of a `docker-compose.yml` file that can be used with
 [Docker Compose](https://docs.docker.com/compose/overview/).
 
