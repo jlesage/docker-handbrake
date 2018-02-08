@@ -7,11 +7,9 @@
 # Pull base image.
 FROM jlesage/baseimage-gui:alpine-3.6-v3.3.2
 
-# Define software versions.
+# Define software versions. version numbers and github are both options
 ARG HANDBRAKE_VERSION=1.0.7
-
-# Define software download URLs.
-ARG HANDBRAKE_URL=https://download.handbrake.fr/releases/${HANDBRAKE_VERSION}/HandBrake-${HANDBRAKE_VERSION}.tar.bz2
+COPY download.sh /download.sh
 
 # Define working directory.
 WORKDIR /tmp
@@ -19,6 +17,7 @@ WORKDIR /tmp
 # Compile HandBrake
 RUN \
     add-pkg --virtual build-dependencies \
+        git \
         curl \
         build-base \
         yasm \
@@ -53,16 +52,18 @@ RUN \
         gstreamer0.10-dev \
         && \
     # Download sources.
-    curl -# -L ${HANDBRAKE_URL} | tar xj && \
+    chmod 755 /download.sh && \
+    /download.sh && \
     # Compile.
-    cd HandBrake-${HANDBRAKE_VERSION} && \
+    cd HandBrake* && \
+    ls | echo && \
     ./configure --prefix=/usr \
                 --disable-gtk-update-checks \
                 --enable-x265 \
                 --enable-fdk-aac \
                 && \
     cd build && \
-    make && make install && \
+    make -j$(nproc) && make install && \
     cd .. && \
     # Cleanup.
     del-pkg build-dependencies && \
