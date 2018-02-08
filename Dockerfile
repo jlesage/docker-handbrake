@@ -51,11 +51,10 @@ RUN \
         libgudev-dev \
         gstreamer0.10-dev \
         && \
-    # Download sources.        
+    # Download sources.
     chmod 755 /download.sh && \
     /download.sh && \
     # Compile.
-
     cd HandBrake* && \
     ls | echo && \
     ./configure --prefix=/usr \
@@ -64,7 +63,7 @@ RUN \
                 --enable-fdk-aac \
                 && \
     cd build && \
-    make && make install && \
+    make -j$(nproc) && make install && \
     cd .. && \
     # Cleanup.
     del-pkg build-dependencies && \
