@@ -59,7 +59,6 @@ RUN \
     ./configure --prefix=/usr \
                 --disable-gtk-update-checks \
                 --enable-x265 \
-                --enable-fdk-aac \
                 && \
     cd build && \
     make && make install && \
