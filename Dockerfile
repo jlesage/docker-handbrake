@@ -59,9 +59,10 @@ RUN \
     ./configure --prefix=/usr \
                 --disable-gtk-update-checks \
                 --enable-x265 \
+                --launch-jobs=$(nproc) \
+                --launch \
                 && \
-    cd build && \
-    make && make install && \
+    make --directory=build install && \
     cd .. && \
     # Cleanup.
     del-pkg build-dependencies && \
