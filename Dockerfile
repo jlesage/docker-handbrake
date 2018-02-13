@@ -32,18 +32,20 @@ RUN \
         tar \
         file \
         python \
-        libxml2-dev \
         jansson-dev \
         libtheora-dev \
         x264-dev \
         lame-dev \
         opus-dev \
+        ffmpeg-dev \
+        x265-dev \
+        libbluray-dev \
+        libvpx-dev \
         libsamplerate-dev \
         libass-dev \
         libvorbis-dev \
         libogg-dev \
         linux-headers \
-        harfbuzz-dev \
         intltool \
         # gtk
         gtk+3.0-dev \
@@ -53,12 +55,19 @@ RUN \
         gstreamer0.10-dev \
         && \
     # Download sources.
-    curl -# -L ${HANDBRAKE_URL} | tar xj && \
+    mkdir HandBrake && \
+    curl -# -L ${HANDBRAKE_URL} | tar xj --strip 1 -C HandBrake && \
+    # Apply patches from https://git.alpinelinux.org/cgit/aports/tree/testing/handbrake?h=master
+    wget https://git.alpinelinux.org/cgit/aports/plain/testing/handbrake/handbrake-9999-fix-missing-x265-link-flag.patch && \
+    wget https://git.alpinelinux.org/cgit/aports/plain/testing/handbrake/handbrake-9999-remove-dvdnav-dup.patch && \
+    patch -d HandBrake -p0 < handbrake-9999-fix-missing-x265-link-flag.patch && \
+    patch -d HandBrake -p0 < handbrake-9999-remove-dvdnav-dup.patch && \
+    # Use external libraries, except for libdvdread and libdvdnav.
+    sed-patch -E '/.*contrib\/.*/{/libdvdread|libdvdnav/!d;}' HandBrake/make/include/main.defs && \
     # Compile.
-    cd HandBrake-${HANDBRAKE_VERSION} && \
+    cd HandBrake && \
     ./configure --prefix=/usr \
                 --disable-gtk-update-checks \
-                --enable-x265 \
                 --launch-jobs=$(nproc) \
                 --launch \
                 && \
@@ -83,6 +92,8 @@ RUN \
         jansson \
         opus \
         lame \
+        libbluray \
+        x265 \
         # To read encrypted DVDs
         libdvdcss \
         # For live preview:
