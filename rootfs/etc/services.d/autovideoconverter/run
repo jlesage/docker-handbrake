@@ -173,8 +173,12 @@ process_video() {
     log "Starting conversion of '$video' ($hash) using preset '$AC_PRESET'..."
     log "$NUM_VIDEO_TITLES title(s) to process."
     hb_rc=0
-    for TITLE in "$VIDEO_TITLES"; do
+    CUR_VIDEO_TITLE=0
+    for TITLE in $VIDEO_TITLES; do
         [ "$TITLE" != "UNSET" ] || continue
+
+        CUR_VIDEO_TITLE="$(expr $CUR_VIDEO_TITLE + 1)"
+        [ "$NUM_VIDEO_TITLES" -eq 1 ] || log "Processing title $TITLE ($CUR_VIDEO_TITLE/$NUM_VIDEO_TITLES)..."
 
         # Get the output file basename: start with the one of the input file.
         basename="$(basename "$video" | sed 's/\.[^.]*$//')"
