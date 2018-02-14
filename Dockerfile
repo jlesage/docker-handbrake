@@ -58,8 +58,8 @@ RUN \
     mkdir HandBrake && \
     curl -# -L ${HANDBRAKE_URL} | tar xj --strip 1 -C HandBrake && \
     # Apply patches from https://git.alpinelinux.org/cgit/aports/tree/testing/handbrake?h=master
-    wget https://git.alpinelinux.org/cgit/aports/plain/testing/handbrake/handbrake-9999-fix-missing-x265-link-flag.patch && \
-    wget https://git.alpinelinux.org/cgit/aports/plain/testing/handbrake/handbrake-9999-remove-dvdnav-dup.patch && \
+    wget https://raw.githubusercontent.com/alpinelinux/aports/373000a/testing/handbrake/handbrake-9999-fix-missing-x265-link-flag.patch && \
+    wget https://raw.githubusercontent.com/alpinelinux/aports/373000a/testing/handbrake/handbrake-9999-remove-dvdnav-dup.patch && \
     patch -d HandBrake -p0 < handbrake-9999-fix-missing-x265-link-flag.patch && \
     patch -d HandBrake -p0 < handbrake-9999-remove-dvdnav-dup.patch && \
     # Use external libraries, except for libdvdread and libdvdnav.
