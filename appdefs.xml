@@ -557,5 +557,7 @@ hooks.
     <ports/>
     <!-- Devices -->
     <devices/>
+    <!-- Extra parameters -->
+    <extra_params/>
   </container>
 </defs>
