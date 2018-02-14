@@ -183,6 +183,14 @@ hooks.
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.11.3</version>
+        <date>2018-02-13</date>
+        <change>Fixed an issue where encoding audio to FLAC would cause a crash.</change>
+        <change>Use AAC encoder from libavcodec.</change>
+        <change>Fixed an issue where automatic conversion of a multi-titles medias would produce only the first one.</change>
+        <change>Improved logging of the automatic video converter while processing multi-titles medias.</change>
+      </release>
+      <release>
         <version>1.11.2</version>
         <date>2018-02-03</date>
         <change>Now using baseimage v3.3.2, which brings the following changes:</change>
