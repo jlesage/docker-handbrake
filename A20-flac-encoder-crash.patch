@@ -1,0 +1,42 @@
+--- a/libavcodec/flacenc.c.orig	2018-02-27 20:43:55.239012630 -0500
++++ b/libavcodec/flacenc.c	2018-02-28 05:51:59.964440480 -0500
+@@ -606,7 +606,7 @@
+ 
+ 
+ static void calc_sums(int pmin, int pmax, uint32_t *data, int n, int pred_order,
+-                      uint64_t sums[][MAX_PARTITIONS])
++                      uint64_t **sums)
+ {
+     int i, j;
+     int parts;
+@@ -639,12 +639,19 @@
+     uint64_t bits[MAX_PARTITION_ORDER+1];
+     int opt_porder;
+     RiceContext tmp_rc;
+-    uint64_t sums[MAX_PARTITION_ORDER + 1][MAX_PARTITIONS] = { { 0 } };
++    uint64_t **sums;
+ 
+     assert(pmin >= 0 && pmin <= MAX_PARTITION_ORDER);
+     assert(pmax >= 0 && pmax <= MAX_PARTITION_ORDER);
+     assert(pmin <= pmax);
+ 
++    sums = calloc(1, (MAX_PARTITION_ORDER + 1) * sizeof(uint64_t*));
++    assert(sums);
++    for (i = 0; i < (MAX_PARTITION_ORDER + 1); i++) {
++        sums[i] = calloc(1, MAX_PARTITIONS * sizeof(uint64_t));
++        assert(sums[i] != NULL);
++    }
++
+     tmp_rc.coding_mode = rc->coding_mode;
+ 
+     for (i = 0; i < n; i++)
+@@ -662,6 +669,9 @@
+         }
+     }
+ 
++    for (i = 0; i < (MAX_PARTITION_ORDER + 1); i++)
++        free(sums[i]);
++    free(sums);
+     return bits[opt_porder];
+ }
+ 

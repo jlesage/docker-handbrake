@@ -13,12 +13,18 @@ ARG HANDBRAKE_VERSION=1.0.7
 # Define software download URLs.
 ARG HANDBRAKE_URL=https://download.handbrake.fr/releases/${HANDBRAKE_VERSION}/HandBrake-${HANDBRAKE_VERSION}.tar.bz2
 
+# Other build arguments.
+
+# Set to 'max' to keep debug symbols.
+ARG HANDBRAKE_DEBUG_MODE=none
+
 # Define working directory.
 WORKDIR /tmp
 
 # Compile HandBrake
 RUN \
     add-pkg --virtual build-dependencies \
+        # build tools.
         curl \
         build-base \
         yasm \
@@ -32,21 +38,19 @@ RUN \
         tar \
         file \
         python \
+        linux-headers \
+        intltool \
+        # misc libraries
         jansson-dev \
+        # media libraries
+        libsamplerate-dev \
+        libass-dev \
+        # media codecs
         libtheora-dev \
         x264-dev \
         lame-dev \
         opus-dev \
-        ffmpeg-dev \
-        x265-dev \
-        libbluray-dev \
-        libvpx-dev \
-        libsamplerate-dev \
-        libass-dev \
         libvorbis-dev \
-        libogg-dev \
-        linux-headers \
-        intltool \
         # gtk
         gtk+3.0-dev \
         dbus-glib-dev \
@@ -57,21 +61,23 @@ RUN \
     # Download sources.
     mkdir HandBrake && \
     curl -# -L ${HANDBRAKE_URL} | tar xj --strip 1 -C HandBrake && \
-    # Apply patches from https://git.alpinelinux.org/cgit/aports/tree/testing/handbrake?h=master
-    wget https://raw.githubusercontent.com/alpinelinux/aports/373000a/testing/handbrake/handbrake-9999-fix-missing-x265-link-flag.patch && \
-    wget https://raw.githubusercontent.com/alpinelinux/aports/373000a/testing/handbrake/handbrake-9999-remove-dvdnav-dup.patch && \
-    patch -d HandBrake -p0 < handbrake-9999-fix-missing-x265-link-flag.patch && \
-    patch -d HandBrake -p0 < handbrake-9999-remove-dvdnav-dup.patch && \
-    # Use external libraries, except for libdvdread and libdvdnav.
-    sed-patch -E '/.*contrib\/.*/{/libdvdread|libdvdnav/!d;}' HandBrake/make/include/main.defs && \
+    # Download the patch that fixes flac encoder crash.
+    curl -# -L -o HandBrake/contrib/ffmpeg/A20-flac-encoder-crash.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A20-flac-encoder-crash.patch && \
     # Compile.
     cd HandBrake && \
     ./configure --prefix=/usr \
+                --debug=$HANDBRAKE_DEBUG_MODE \
                 --disable-gtk-update-checks \
+                --enable-fdk-aac \
+                --enable-x265 \
                 --launch-jobs=$(nproc) \
                 --launch \
                 && \
     make --directory=build install && \
+    if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then \
+        strip /usr/bin/ghb \
+              /usr/bin/HandBrakeCLI; \
+    fi && \
     cd .. && \
     # Cleanup.
     del-pkg build-dependencies && \
@@ -84,16 +90,9 @@ RUN \
         libgudev \
         dbus-glib \
         libnotify \
-        x264-libs \
         libsamplerate \
-        libtheora \
-        libvorbis \
         libass \
         jansson \
-        opus \
-        lame \
-        libbluray \
-        x265 \
         # To read encrypted DVDs
         libdvdcss \
         # For live preview:
@@ -107,7 +106,6 @@ RUN \
         # For watchfolder
         findutils \
         expect
-
 
 # Maximize only the main/initial window.
 RUN sed-patch 's/<application type="normal">/<application type="normal" title="HandBrake">/' \
