@@ -43,6 +43,7 @@ RUN \
         git \
         # misc libraries
         jansson-dev \
+        libxml2-dev \
         # media libraries
         libsamplerate-dev \
         libass-dev \
@@ -57,7 +58,6 @@ RUN \
         dbus-glib-dev \
         libnotify-dev \
         libgudev-dev \
-        gstreamer0.10-dev \
         && \
     # Download sources.
     if echo "${HANDBRAKE_URL}" | grep -q '\.git$'; then \
@@ -99,10 +99,14 @@ RUN \
         libsamplerate \
         libass \
         jansson \
+        # Media codecs:
+        libtheora \
+        x264-libs \
+        lame \
+        opus \
+        libvorbis \
         # To read encrypted DVDs
         libdvdcss \
-        # For live preview:
-        gst-libav1 \
         # For main, big icons:
         librsvg \
         # For all other small icons:
