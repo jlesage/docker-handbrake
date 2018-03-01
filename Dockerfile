@@ -40,6 +40,7 @@ RUN \
         python \
         linux-headers \
         intltool \
+        git \
         # misc libraries
         jansson-dev \
         # media libraries
@@ -59,8 +60,13 @@ RUN \
         gstreamer0.10-dev \
         && \
     # Download sources.
-    mkdir HandBrake && \
-    curl -# -L ${HANDBRAKE_URL} | tar xj --strip 1 -C HandBrake && \
+    if echo "${HANDBRAKE_URL}" | grep -q '\.git$'; then \
+        git clone ${HANDBRAKE_URL} HandBrake && \
+        git -C HandBrake checkout "${HANDBRAKE_VERSION}"; \
+    else \
+        mkdir HandBrake && \
+        curl -# -L ${HANDBRAKE_URL} | tar xj --strip 1 -C HandBrake; \
+    fi && \
     # Download the patch that fixes flac encoder crash.
     curl -# -L -o HandBrake/contrib/ffmpeg/A20-flac-encoder-crash.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A20-flac-encoder-crash.patch && \
     # Compile.
