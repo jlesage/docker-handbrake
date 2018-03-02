@@ -5,7 +5,7 @@
 #
 
 # Pull base image.
-FROM jlesage/baseimage-gui:alpine-3.6-v3.3.2
+FROM jlesage/baseimage-gui:alpine-3.6-v3.3.4
 
 # Define software versions.
 ARG HANDBRAKE_VERSION=1.0.7
