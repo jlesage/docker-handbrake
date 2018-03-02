@@ -183,6 +183,13 @@ hooks.
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.11.4</version>
+        <date>2018-03-01</date>
+        <change>Since HandBrake doesn't work well with ffmpeg, reverted to libav.</change>
+        <change>Thus, the FLAC encoder crash has been fixed in libav instead.</change>
+        <change>Make sure the main window is always visible in background.</change>
+      </release>
+      <release>
         <version>1.11.3</version>
         <date>2018-02-13</date>
         <change>Fixed an issue where encoding audio to FLAC would cause a crash.</change>
