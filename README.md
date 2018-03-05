@@ -32,14 +32,14 @@ HandBrake is a tool for converting video from nearly any format to a selection o
       * [Security](#security)
          * [Certificates](#certificates)
          * [VNC Password](#vnc-password)
+      * [Reverse Proxy](#reverse-proxy)
+         * [Routing Based on Hostname](#routing-based-on-hostname)
+         * [Routing Based on URL Path](#routing-based-on-url-path)
       * [Access to Optical Drive(s)](#access-to-optical-drives)
       * [Automatic Video Conversion](#automatic-video-conversion)
          * [Multiple Watch Folders](#multiple-watch-folders)
          * [Video Discs](#video-discs)
          * [Hooks](#hooks)
-      * [Reverse Proxy](#reverse-proxy)
-         * [Routing Based on Hostname](#routing-based-on-hostname)
-         * [Routing Based on URL Path](#routing-based-on-url-path)
       * [Support or Contact](#support-or-contact)
 
 ## Quick Start
@@ -302,6 +302,103 @@ the Remote Framebuffer Protocol [RFC](https://tools.ietf.org/html/rfc6143) (see
 section [7.2.2](https://tools.ietf.org/html/rfc6143#section-7.2.2)).  Any
 characters beyhond the limit are ignored.
 
+## Reverse Proxy
+
+The following sections contains NGINX configuration that need to be added in
+order to reverse proxy to this container.
+
+A reverse proxy server can route HTTP requests based on the hostname or the URL
+path.
+
+### Routing Based on Hostname
+
+In this scenario, each hostname is routed to a different application/container.
+
+For example, let's say the reverse proxy server is running on the same machine
+as this container.  The server would proxy all HTTP requests sent to
+`handbrake.domain.tld` to the container at `127.0.0.1:5800`.
+
+Here are the relevant configuration elements that would be added to the NGINX
+configuration:
+
+```
+map $http_upgrade $connection_upgrade {
+	default upgrade;
+	''      close;
+}
+
+upstream docker-handbrake {
+	# If the reverse proxy server is not running on the same machine as the
+	# Docker container, use the IP of the Docker host here.
+	# Make sure to adjust the port according to how port 5800 of the
+	# container has been mapped on the host.
+	server 127.0.0.1:5800;
+}
+
+server {
+	[...]
+
+	server_name handbrake.domain.tld;
+
+	location / {
+	        proxy_pass http://docker-handbrake;
+	}
+
+	location /websockify {
+		proxy_pass http://docker-handbrake;
+		proxy_http_version 1.1;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection $connection_upgrade;
+		proxy_read_timeout 86400;
+	}
+}
+
+```
+
+### Routing Based on URL Path
+
+In this scenario, the hostname is the same, but different URL paths are used to
+route to different applications/containers.
+
+For example, let's say the reverse proxy server is running on the same machine
+as this container.  The server would proxy all HTTP requests for
+`server.domain.tld/handbrake` to the container at `127.0.0.1:5800`.
+
+Here are the relevant configuration elements that would be added to the NGINX
+configuration:
+
+```
+map $http_upgrade $connection_upgrade {
+	default upgrade;
+	''      close;
+}
+
+upstream docker-handbrake {
+	# If the reverse proxy server is not running on the same machine as the
+	# Docker container, use the IP of the Docker host here.
+	# Make sure to adjust the port according to how port 5800 of the
+	# container has been mapped on the host.
+	server 127.0.0.1:5800;
+}
+
+server {
+	[...]
+
+	location = /handbrake {return 301 $scheme://$http_host/handbrake/;}
+	location /handbrake/ {
+		proxy_pass http://docker-handbrake/;
+		location /handbrake/websockify {
+			proxy_pass http://docker-handbrake/websockify/;
+			proxy_http_version 1.1;
+			proxy_set_header Upgrade $http_upgrade;
+			proxy_set_header Connection $connection_upgrade;
+			proxy_read_timeout 86400;
+		}
+	}
+}
+
+```
+
 ## Access to Optical Drive(s)
 
 By default, a Docker container doesn't have access to host's devices.  However,
@@ -439,103 +536,6 @@ required to run HandBrake.  This may limit actions that can be performed in
 hooks.
 
 [TimeZone]: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
-
-## Reverse Proxy
-
-The following sections contains NGINX configuration that need to be added in
-order to reverse proxy to this container.
-
-A reverse proxy server can route HTTP requests based on the hostname or the URL
-path.
-
-### Routing Based on Hostname
-
-In this scenario, each hostname is routed to a different application/container.
-
-For example, let's say the reverse proxy server is running on the same machine
-as this container.  The server would proxy all HTTP requests sent to
-`handbrake.domain.tld` to the container at `127.0.0.1:5800`.
-
-Here are the relevant configuration elements that would be added to the NGINX
-configuration:
-
-```
-map $http_upgrade $connection_upgrade {
-	default upgrade;
-	''      close;
-}
-
-upstream docker-handbrake {
-	# If the reverse proxy server is not running on the same machine as the
-	# Docker container, use the IP of the Docker host here.
-	# Make sure to adjust the port according to how port 5800 of the
-	# container has been mapped on the host.
-	server 127.0.0.1:5800;
-}
-
-server {
-	[...]
-
-	server_name handbrake.domain.tld;
-
-	location / {
-	        proxy_pass http://docker-handbrake;
-	}
-
-	location /websockify {
-		proxy_pass http://docker-handbrake;
-		proxy_http_version 1.1;
-		proxy_set_header Upgrade $http_upgrade;
-		proxy_set_header Connection $connection_upgrade;
-		proxy_read_timeout 86400;
-	}
-}
-
-```
-
-### Routing Based on URL Path
-
-In this scenario, the hostname is the same, but different URL paths are used to
-route to different applications/containers.
-
-For example, let's say the reverse proxy server is running on the same machine
-as this container.  The server would proxy all HTTP requests for
-`server.domain.tld/handbrake` to the container at `127.0.0.1:5800`.
-
-Here are the relevant configuration elements that would be added to the NGINX
-configuration:
-
-```
-map $http_upgrade $connection_upgrade {
-	default upgrade;
-	''      close;
-}
-
-upstream docker-handbrake {
-	# If the reverse proxy server is not running on the same machine as the
-	# Docker container, use the IP of the Docker host here.
-	# Make sure to adjust the port according to how port 5800 of the
-	# container has been mapped on the host.
-	server 127.0.0.1:5800;
-}
-
-server {
-	[...]
-
-	location = /handbrake {return 301 $scheme://$http_host/handbrake/;}
-	location /handbrake/ {
-		proxy_pass http://docker-handbrake/;
-		location /handbrake/websockify {
-			proxy_pass http://docker-handbrake/websockify/;
-			proxy_http_version 1.1;
-			proxy_set_header Upgrade $http_upgrade;
-			proxy_set_header Connection $connection_upgrade;
-			proxy_read_timeout 86400;
-		}
-	}
-}
-
-```
 
 ## Support or Contact
 
