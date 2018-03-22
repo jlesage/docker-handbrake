@@ -43,6 +43,7 @@ HandBrake is a tool for converting video from nearly any format to a selection o
          * [Multiple Watch Folders](#multiple-watch-folders)
          * [Video Discs](#video-discs)
          * [Hooks](#hooks)
+      * [Nightly Builds](#nightly-builds)
       * [Support or Contact](#support-or-contact)
 
 ## Quick Start
@@ -575,6 +576,23 @@ you can use `/config/hooks/post_conversion.sh.example` as a starting point.
 **NOTE**: Keep in mind that this container has the minimal set of packages
 required to run HandBrake.  This may limit actions that can be performed in
 hooks.
+
+## Nightly Builds
+
+HandBrake nightly builds are based on the latest development code, which means
+they may or may not be stable.
+
+The latest development version is available by using the `dev-latest` Docker
+image tag.  For other specific development versions, look at available
+[tags on Docker Hub].
+
+When creating the container, the tag needs to be appended to the name of the
+Docker image, like this:
+```
+docker run [OPTIONS..] jlesage/handbrake:dev-latest
+```
+
+[tags on Docker Hub]: https://hub.docker.com/r/jlesage/handbrake/tags/
 
 [TimeZone]: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 

@@ -1,0 +1,58 @@
+#!/bin/sh
+
+set -e # Exit immediately if a command exits with a non-zero status.
+set -u # Treat unset variables as an error.
+
+DOCKER_IMAGE_REPO=jlesage/handbrake
+DOCKER_IMAGE_GIT_REPO=jlesage/docker-handbrake
+HANDBRAKE_GIT_REPO=HandBrake/HandBrake
+
+# Clone required git repositories.
+git clone --branch master --single-branch https://github.com/${HANDBRAKE_GIT_REPO}.git handbrake
+git clone https://github.com/${DOCKER_IMAGE_GIT_REPO}.git docker_build
+
+HANDBRAKE_LAST_COMMIT="$(git -C handbrake log -n 1 --pretty=format:"%h")"
+HANDBRAKE_LAST_COMMIT_DATE="$(git -C handbrake log -1 --format=%cd --date=format:%Y%m%d)"
+DOCKER_IMAGE_LAST_VERSION="$(git -C docker_build tag | grep -E '^v[0-9.]+$' | sort -t. -k 1,1n -k 2,2n -k 3,3n | tail -n1)"
+DOCKER_IMAGE_NIGHTLY_VERSION="${DOCKER_IMAGE_LAST_VERSION}-dev-${HANDBRAKE_LAST_COMMIT_DATE}-${HANDBRAKE_LAST_COMMIT}"
+
+# Skip the build if it is already done.
+if curl -s -L https://index.docker.io/v1/repositories/${DOCKER_IMAGE_REPO}/tags | grep -E "\"${DOCKER_IMAGE_NIGHTLY_VERSION}\""
+then
+    echo "Skipping cron build: Docker image ${DOCKER_IMAGE_LAST_VERSION} based on HandBrake git hash $HANDBRAKE_LAST_COMMIT already exists."
+    exit 0
+fi
+
+# Prepare Docker image build.
+git -C docker_build checkout "$DOCKER_IMAGE_LAST_VERSION"
+# Set the version in Dockerfile
+sed -i "s/org.label-schema.version=\"unknown\"/org.label-schema.version=\"$DOCKER_IMAGE_NIGHTLY_VERSION\"/" docker_build/Dockerfile
+
+echo "----------------------------------------------"
+echo "HANDBRAKE_LAST_COMMIT=$HANDBRAKE_LAST_COMMIT"
+echo "HANDBRAKE_LAST_COMMIT_DATE=$HANDBRAKE_LAST_COMMIT_DATE"
+echo "DOCKER_IMAGE_LAST_VERSION=$DOCKER_IMAGE_LAST_VERSION"
+echo "DOCKER_IMAGE_NIGHTLY_VERSION=$DOCKER_IMAGE_NIGHTLY_VERSION"
+echo "----------------------------------------------"
+
+# Build Docker image.
+echo "Starting cron build of Docker image..."
+docker build \
+    --no-cache \
+    --pull \
+    --build-arg HANDBRAKE_URL=https://github.com/${HANDBRAKE_GIT_REPO}.git \
+    --build-arg HANDBRAKE_VERSION=$HANDBRAKE_LAST_COMMIT \
+    -t $DOCKER_IMAGE_REPO docker_build
+
+echo "Creating Docker image tags..."
+docker tag $DOCKER_IMAGE_REPO $DOCKER_IMAGE_REPO:dev-latest
+docker tag $DOCKER_IMAGE_REPO $DOCKER_IMAGE_REPO:$DOCKER_IMAGE_NIGHTLY_VERSION
+
+# Push image to Docker hub.
+echo "Logging to Docker hub..."
+docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASS"
+echo "Pushing Docker image tags..."
+docker push $DOCKER_IMAGE_REPO:dev-latest
+docker push $DOCKER_IMAGE_REPO:dev-$DOCKER_IMAGE_NIGHTLY_VERSION
+docker logout
+echo "Done!"

@@ -14,5 +14,13 @@ before_script:
   - docker run --rm -v "$(pwd)/Dockerfile:/Dockerfile:ro" redcoolbeans/dockerlint:0.2.0
 
 script:
-  - echo "Starting build of Docker image..."
-  - docker build --no-cache --pull -t $TRAVIS_REPO_SLUG:$TRAVIS_JOB_ID .
+  - |
+    if [[ "$TRAVIS_EVENT_TYPE" = "cron" ]]; then
+      sh .travis.nightly
+    else
+      echo "Starting build of Docker image..."
+      docker build \
+        --no-cache \
+        --pull \
+        -t $TRAVIS_REPO_SLUG:$TRAVIS_JOB_ID .
+    fi
