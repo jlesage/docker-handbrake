@@ -203,6 +203,13 @@ docker run [OPTIONS..] jlesage/{{ defs.app.name }}:dev-latest
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.12.0</version>
+        <date>2018-03-22</date>
+        <change>Added pre-conversion hook for the automatic video converter.</change>
+        <change>Added support for creation of image based on the latest HandBrake development code.</change>
+        <change>Switched to a baseimage based on Alpine Linux 3.7.</change>
+      </release>
+      <release>
         <version>1.11.5</version>
         <date>2018-03-02</date>
         <change>Now using baseimage v3.3.4, which brings the following changes (since last used version):</change>
