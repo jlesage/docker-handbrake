@@ -53,6 +53,6 @@ echo "Logging to Docker hub..."
 docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASS"
 echo "Pushing Docker image tags..."
 docker push $DOCKER_IMAGE_REPO:dev-latest
-docker push $DOCKER_IMAGE_REPO:dev-$DOCKER_IMAGE_NIGHTLY_VERSION
+docker push $DOCKER_IMAGE_REPO:$DOCKER_IMAGE_NIGHTLY_VERSION
 docker logout
 echo "Done!"
