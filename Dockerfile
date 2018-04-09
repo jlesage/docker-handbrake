@@ -8,10 +8,10 @@
 FROM jlesage/baseimage-gui:alpine-3.7-v3.3.4
 
 # Define software versions.
-ARG HANDBRAKE_VERSION=1.0.7
+ARG HANDBRAKE_VERSION=1.1.0
 
 # Define software download URLs.
-ARG HANDBRAKE_URL=https://download.handbrake.fr/releases/${HANDBRAKE_VERSION}/HandBrake-${HANDBRAKE_VERSION}.tar.bz2
+ARG HANDBRAKE_URL=https://download.handbrake.fr/releases/${HANDBRAKE_VERSION}/HandBrake-${HANDBRAKE_VERSION}-source.tar.bz2
 
 # Other build arguments.
 
