@@ -203,6 +203,11 @@ docker run [OPTIONS..] jlesage/{{ defs.app.name }}:dev-latest
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.13.0</version>
+        <date>2018-04-09</date>
+        <change>Upgraded HandBrake to version 1.1.0.</change>
+      </release>
+      <release>
         <version>1.12.0</version>
         <date>2018-03-22</date>
         <change>Added pre-conversion hook for the automatic video converter.</change>
