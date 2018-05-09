@@ -69,6 +69,7 @@ RUN \
     fi && \
     # Download the patch that fixes flac encoder crash.
     curl -# -L -o HandBrake/contrib/ffmpeg/A20-flac-encoder-crash.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A20-flac-encoder-crash.patch && \
+    curl -# -L -o HandBrake/contrib/libdvdread/A02-libdvdread-crash.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A02-libdvdread-crash.patch && \
     # Compile.
     cd HandBrake && \
     ./configure --prefix=/usr \
