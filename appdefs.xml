@@ -203,6 +203,11 @@ docker run [OPTIONS..] jlesage/{{ defs.app.name }}:dev-latest
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.13.2</version>
+        <date>2018-05-09</date>
+        <change>Fixed issue where handling DVD structure would cause a crash.</change>
+      </release>
+      <release>
         <version>1.13.1</version>
         <date>2018-04-26</date>
         <change>Improved fix for FLAC encoder crash.</change>
