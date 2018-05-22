@@ -491,6 +491,11 @@ about setting environment variables.
 **NOTE**: All default presets, along with personalized/custom ones, can be seen
 with the HandBrake GUI.
 
+**NOTE**: The status and progression of conversions performed by the automatic
+video converter can only be seen in the container's log.  It is not something
+visible from the GUI.  Container's log can be obtained by executing the command
+`docker log handbrake`, where `handbrake` is the name of the container.
+
 ### Multiple Watch Folders
 
 If needed, up to 4 additionnal watch folders can be used:
