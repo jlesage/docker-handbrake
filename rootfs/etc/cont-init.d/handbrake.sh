@@ -25,6 +25,9 @@ do
   cp /defaults/hooks/$hook.example /config/hooks/
 done
 
+# Make sure the debug log is under the proper directory.
+[ ! -f /config/handbrake.debug.log ] || mv /config/handbrake.debug.log /config/log/hb/handbrake.debug.log
+
 # Clear the fstab file to make sure its content is not displayed in HandBrake
 # when opening the source video.
 echo > /etc/fstab
