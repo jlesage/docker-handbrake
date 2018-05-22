@@ -41,6 +41,7 @@ RUN \
         linux-headers \
         intltool \
         git \
+        diffutils \
         # misc libraries
         jansson-dev \
         libxml2-dev \
