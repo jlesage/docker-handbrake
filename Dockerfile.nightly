@@ -58,6 +58,10 @@ RUN \
         dbus-glib-dev \
         libnotify-dev \
         libgudev-dev \
+        # for the nightly build
+        diffutils \
+        speex-dev \
+        xz-dev \
         && \
     # Download sources.
     if echo "${HANDBRAKE_URL}" | grep -q '\.git$'; then \
@@ -67,8 +71,6 @@ RUN \
         mkdir HandBrake && \
         curl -# -L ${HANDBRAKE_URL} | tar xj --strip 1 -C HandBrake; \
     fi && \
-    # Download the patch that fixes flac encoder crash.
-    curl -# -L -o HandBrake/contrib/ffmpeg/A20-flac-encoder-crash.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A20-flac-encoder-crash.patch && \
     curl -# -L -o HandBrake/contrib/libdvdread/A02-libdvdread-crash.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A02-libdvdread-crash.patch && \
     # Compile.
     cd HandBrake && \
@@ -116,7 +118,10 @@ RUN \
         lsscsi \
         # For watchfolder
         findutils \
-        expect
+        expect \
+        # for the nightly build
+        speex \
+        xz
 
 # Adjust the openbox config.
 RUN \
