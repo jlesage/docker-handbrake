@@ -42,7 +42,7 @@ docker build \
     --pull \
     --build-arg HANDBRAKE_URL=https://github.com/${HANDBRAKE_GIT_REPO}.git \
     --build-arg HANDBRAKE_VERSION=$HANDBRAKE_LAST_COMMIT \
-    -f Dockerfile.nightly \
+    -f docker_build/Dockerfile.nightly \
     -t $DOCKER_IMAGE_REPO docker_build
 
 echo "Creating Docker image tags..."
