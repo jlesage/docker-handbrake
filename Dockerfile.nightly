@@ -60,6 +60,7 @@ RUN \
         libgudev-dev \
         # for the nightly build
         diffutils \
+        nasm \
         speex-dev \
         xz-dev \
         && \
