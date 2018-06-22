@@ -37,6 +37,7 @@ echo "----------------------------------------------"
 
 # Build Docker image.
 echo "Starting cron build of Docker image..."
+travis_wait 30 \
 docker build \
     --no-cache \
     --pull \
