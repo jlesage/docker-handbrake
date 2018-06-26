@@ -16,7 +16,7 @@ before_script:
 script:
   - |
     if [[ "$TRAVIS_EVENT_TYPE" = "cron" ]]; then
-      sh .travis.nightly
+      travis_wait 30 sh .travis.nightly
     else
       echo "Starting build of Docker image..."
       docker build \
