@@ -1,0 +1,17 @@
+--- a/gtk/src/videohandler.c	2018-04-05 13:31:47.000000000 -0400
++++ b/gtk/src/videohandler.c	2018-07-04 05:46:16.431868443 -0400
+@@ -103,7 +103,13 @@
+     {
+         gtk_range_set_range(GTK_RANGE(presetSlider), 0, count-1);
+     }
+-    ghb_set_video_preset(ud->settings, encoder, "medium");
++    if (!ghb_set_video_preset(ud->settings, encoder, "medium"))
++    {
++        if (video_presets && count)
++        {
++            ghb_set_video_preset(ud->settings, encoder, video_presets[count-1]);
++        }
++    }
+     GhbValue *gval = ghb_dict_get_value(ud->settings, "VideoPresetSlider");
+     ghb_ui_settings_update(ud, ud->settings, "VideoPresetSlider", gval);
+ 

@@ -72,9 +72,12 @@ RUN \
         mkdir HandBrake && \
         curl -# -L ${HANDBRAKE_URL} | tar xj --strip 1 -C HandBrake; \
     fi && \
+    # Download patches.
     curl -# -L -o HandBrake/contrib/libdvdread/A02-libdvdread-crash.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A02-libdvdread-crash.patch && \
+    curl -# -L -o HandBrake/A00-hb-video-preset.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A00-hb-video-preset.patch && \
     # Compile.
     cd HandBrake && \
+    patch -p1 < A00-hb-video-preset.patch && \
     ./configure --prefix=/usr \
                 --debug=$HANDBRAKE_DEBUG_MODE \
                 --disable-gtk-update-checks \
