@@ -30,7 +30,10 @@ if [ "${DRV_GRP:-UNSET}" = "UNSET" ]; then
     log "no usable optical drive found."
 else
     # Save as comma separated list of supplementary group IDs.
-    echo "$GRPS" | tr ' ' '\n' | grep -v '^$' | sort -nub | tr '\n' ',' | sed 's/.$//' > /var/run/s6/container_environment/SUP_GROUP_IDS
+    if [ -f /var/run/s6/container_environment/SUP_GROUP_IDS ]; then
+        echo -n "," >> /var/run/s6/container_environment/SUP_GROUP_IDS
+    fi
+    echo "$GRPS" | tr ' ' '\n' | grep -v '^$' | sort -nub | tr '\n' ',' | sed 's/.$//' >> /var/run/s6/container_environment/SUP_GROUP_IDS
 fi
 
 # vim: set ft=sh :

@@ -9,9 +9,11 @@ FROM jlesage/baseimage-gui:alpine-3.8-v3.4.0
 
 # Define software versions.
 ARG HANDBRAKE_VERSION=1.1.0
+ARG INTEL_MEDIA_SDK_VERSION=2018-Q2.1
 
 # Define software download URLs.
 ARG HANDBRAKE_URL=https://download.handbrake.fr/releases/${HANDBRAKE_VERSION}/HandBrake-${HANDBRAKE_VERSION}-source.tar.bz2
+ARG INTEL_MEDIA_SDK_URL=https://github.com/Intel-Media-SDK/MediaSDK/archive/MediaSDK-${INTEL_MEDIA_SDK_VERSION}.tar.gz
 
 # Other build arguments.
 
@@ -44,6 +46,7 @@ RUN \
         # misc libraries
         jansson-dev \
         libxml2-dev \
+        libva-dev \
         # media libraries
         libsamplerate-dev \
         libass-dev \
@@ -83,6 +86,7 @@ RUN \
                 --disable-gtk-update-checks \
                 --enable-fdk-aac \
                 --enable-x265 \
+                --enable-qsv \
                 --launch-jobs=$(nproc) \
                 --launch \
                 && \
@@ -92,6 +96,33 @@ RUN \
               /usr/bin/HandBrakeCLI; \
     fi && \
     cd .. && \
+    # Cleanup.
+    del-pkg build-dependencies && \
+    rm -rf /tmp/* /tmp/.[!.]*
+
+# Compile Intel Media SDK.
+RUN \
+    add-pkg --virtual build-dependencies \
+        curl \
+        build-base \
+        cmake \
+        libva-dev \
+        && \
+    mkdir MediaSDK && \
+    curl -# -L ${INTEL_MEDIA_SDK_URL} | tar xz --strip 1 -C MediaSDK && \
+    cd MediaSDK && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make -j$(nproc) install && \
+    cd .. && \
+    cd .. && \
+    # Remove unwanted files.
+    rm -r /opt/intel/mediasdk/include \
+          /opt/intel/mediasdk/lib64/pkgconfig \
+          /opt/intel/mediasdk/lib64/*.a \
+          /opt/intel/mediasdk/samples \
+          && \
     # Cleanup.
     del-pkg build-dependencies && \
     rm -rf /tmp/* /tmp/.[!.]*
@@ -106,6 +137,8 @@ RUN \
         libsamplerate \
         libass \
         jansson \
+        libva \
+        libva-intel-driver \
         # Media codecs:
         libtheora \
         x264-libs \
