@@ -43,6 +43,8 @@ HandBrake is a tool for converting video from nearly any format to a selection o
          * [Multiple Watch Folders](#multiple-watch-folders)
          * [Video Discs](#video-discs)
          * [Hooks](#hooks)
+      * [Intel Quick Sync Video](#intel-quick-sync-video)
+         * [unRAID](#unraid-1)
       * [Nightly Builds](#nightly-builds)
       * [Support or Contact](#support-or-contact)
 
@@ -583,6 +585,51 @@ you can use `/config/hooks/post_conversion.sh.example` as a starting point.
 **NOTE**: Keep in mind that this container has the minimal set of packages
 required to run HandBrake.  This may limit actions that can be performed in
 hooks.
+
+## Intel Quick Sync Video
+
+Intel Quick Sync Video is Intel's brand for its dedicated video encoding and
+decoding hardware core.  It is a technology that is capable of offloading video
+decoding and encoding task to the integrated GPU, thus saving the CPU usage to
+do other tasks.  As a specialized hardware core on the processor die, Quick Sync
+offers a much more power efficient video processing which is much superior to
+video encoding on a CPU.
+
+For HandBrake to be able to use hardware-accelerated encoding, the following are
+required:
+
+  - Have a compatible Intel processor.  To determine if your CPU has the Quick
+    Sync Video hardware, consult this [list] from the [Intel Ark] website.  The
+    model name of your processor is printed to the container's log during its
+    startup.  Look for a message like this:
+    ```
+    [cont-init.d] 95-check-qsv.sh: Processor: Intel(R) Core(TM) i7-2600 CPU @ 3.40GHz
+    ```
+  - The Intel i915 graphic driver must be loaded on the **host**.
+  - The `/dev/dri` device must be exposed to the container.  This is done by
+    adding the `--device /dev/dri` parameter to the `docker run` command.
+
+When Intel Quick Sync Video is properly enabled, HandBrake offers the following
+video encoder:
+```
+H.264 (Intel QSV)
+```
+
+If this encoder is not part of the list, something is wrong and looking at the
+container's log can give more details about the issue.
+
+[list]: https://ark.intel.com/Search/FeatureFilter?productType=processors&QuickSyncVideo=true
+[Intel Ark]: https://ark.intel.com
+
+### unRAID
+
+The Intel i915 driver is already included in unRAID.  To automatically load the
+driver during the startup of the host, the following lines must be added to
+`/boot/config/go`:
+```
+# Load the i915 driver.
+modprobe i915
+```
 
 ## Nightly Builds
 

@@ -186,6 +186,55 @@ hooks.
         </content>
       </section>
       <section>
+        <title level="2">Intel Quick Sync Video</title>
+        <content>
+Intel Quick Sync Video is Intel's brand for its dedicated video encoding and
+decoding hardware core.  It is a technology that is capable of offloading video
+decoding and encoding task to the integrated GPU, thus saving the CPU usage to
+do other tasks.  As a specialized hardware core on the processor die, Quick Sync
+offers a much more power efficient video processing which is much superior to
+video encoding on a CPU.
+
+For HandBrake to be able to use hardware-accelerated encoding, the following are
+required:
+
+  - Have a compatible Intel processor.  To determine if your CPU has the Quick
+    Sync Video hardware, consult this [list] from the [Intel Ark] website.  The
+    model name of your processor is printed to the container's log during its
+    startup.  Look for a message like this:
+    ```
+    [cont-init.d] 95-check-qsv.sh: Processor: Intel(R) Core(TM) i7-2600 CPU @ 3.40GHz
+    ```
+  - The Intel i915 graphic driver must be loaded on the **host**.
+  - The `/dev/dri` device must be exposed to the container.  This is done by
+    adding the `--device /dev/dri` parameter to the `docker run` command.
+
+When Intel Quick Sync Video is properly enabled, HandBrake offers the following
+video encoder:
+```
+H.264 (Intel QSV)
+```
+
+If this encoder is not part of the list, something is wrong and looking at the
+container's log can give more details about the issue.
+
+[list]: https://ark.intel.com/Search/FeatureFilter?productType=processors&amp;QuickSyncVideo=true
+[Intel Ark]: https://ark.intel.com
+        </content>
+      </section>
+      <section>
+        <title level="3">unRAID</title>
+        <content>
+The Intel i915 driver is already included in unRAID.  To automatically load the
+driver during the startup of the host, the following lines must be added to
+`/boot/config/go`:
+```
+# Load the i915 driver.
+modprobe i915
+```
+        </content>
+      </section>
+      <section>
         <title level="2">Nightly Builds</title>
         <content>
 {{ defs.app.friendly_name }} nightly builds are based on the latest development code, which means
