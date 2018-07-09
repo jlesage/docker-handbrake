@@ -186,7 +186,7 @@ process_video() {
         # Special case when video is a DVD/Blu-ray folder: use the parent's
         # directory.
         if [ "$basename" = "VIDEO_TS" ] || [ "$basename" = "BDMV" ]; then
-            if [ "$(dirname "$video")" != "/watch" ]; then
+            if [ "$(dirname "$video")" != "$wf" ]; then
                 basename="$(basename "$(dirname "$video")")"
             fi
         fi
