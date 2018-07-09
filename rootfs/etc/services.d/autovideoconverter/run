@@ -114,6 +114,7 @@ get_video_titles() {
 
 process_video() {
     video="$1"
+    wf="$2"
 
     # Skip video if it doesn't exists (may have been removed while processing
     # the watch directory).
@@ -151,7 +152,7 @@ process_video() {
             OUTPUT_DIR="/output"
             ;;
         SAME_AS_SRC)
-            dirname="$(dirname "$video" | sed 's|^/watch||')"
+            dirname="$(dirname "$video" | sed "s|^$wf||")"
             OUTPUT_DIR="/output/$dirname"
             ;;
         *)
@@ -271,7 +272,7 @@ process_watch_folder() {
         uniq > "$FILELIST"
     while read -u 3 FILE
     do
-        process_video "$FILE"
+        process_video "$FILE" "$WF"
     done 3<"$FILELIST"
     rm "$FILELIST"
     log "Watch folder '$WF' processing terminated."
