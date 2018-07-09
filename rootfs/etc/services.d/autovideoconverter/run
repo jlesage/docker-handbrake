@@ -238,7 +238,7 @@ process_video() {
             log "Removed $video'."
             # Remove directory if empty (hidden files/folders are ignored).
             videodir="$(dirname "$video")"
-            while [ "$videodir" != "/watch" ] && [ -z "$(ls "$videodir")" ]; do
+            while [ "$videodir" != "$wf" ] && [ -z "$(ls "$videodir")" ]; do
                 log "Removed directory '$videodir'."
                 rm -rf "$videodir"
                 videodir="$(dirname "$videodir")"
