@@ -257,6 +257,16 @@ docker run [OPTIONS..] jlesage/{{ defs.app.name }}:dev-latest
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.14.0</version>
+        <date>2018-07-09</date>
+        <change>Added support for Intel Quick Sync Video hardware-accelerated encoding.</change>
+        <change>Now using baseimage v3.4.0, which is based on Alpine Linux 3.8.</change>
+        <change>Fixed issue where selecting a different video encoder would result in incorrect video preset selection.</change>
+        <change>Fixed an issue where the automatic video converter would choose an incorrect output subfolder when `SAME_AS_SRC` is used.</change>
+        <change>Fixed an issue where the automatic video converter, during source cleanup, would try to remove the watch folder itself.</change>
+        <change>Fixed an issue where the automatic video converter would choose an incorrect output filename when the source is a DVD/Blu-Ray folder.</change>
+      </release>
+      <release>
         <version>1.13.5</version>
         <date>2018-06-18</date>
         <change>Fixed nightly build.</change>
