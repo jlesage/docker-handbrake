@@ -70,6 +70,9 @@ RUN \
         mkdir HandBrake && \
         curl -# -L ${HANDBRAKE_URL} | tar xj --strip 1 -C HandBrake; \
     fi && \
+    # Download helper.
+    curl -# -L -o /tmp/run_cmd https://raw.githubusercontent.com/jlesage/docker-mgmt-tools/master/run_cmd && \
+    chmod +x /tmp/run_cmd && \
     # Download patches.
     curl -# -L -o HandBrake/contrib/ffmpeg/A20-flac-encoder-crash.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A20-flac-encoder-crash.patch && \
     curl -# -L -o HandBrake/contrib/libdvdread/A02-libdvdread-crash.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A02-libdvdread-crash.patch && \
@@ -86,7 +89,7 @@ RUN \
                 --launch-jobs=$(nproc) \
                 --launch \
                 && \
-    make --directory=build install && \
+    /tmp/run_cmd -i 600 -m "HandBrake still compiling..." make --directory=build install && \
     if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then \
         strip /usr/bin/ghb \
               /usr/bin/HandBrakeCLI; \
