@@ -17,7 +17,7 @@ fi
 FAILED_CONVERSIONS="/config/failed_conversions"
 SUCCESSFUL_CONVERSIONS="/config/successful_conversions"
 
-HANDBRAKE_CLI="$APP_NICE_CMD s6-setuidgid $USER_ID:$GROUP_ID /usr/bin/HandBrakeCLI --preset-import-file /config/ghb/presets.json"
+HANDBRAKE_CLI="$APP_NICE_CMD s6-applyuidgid -u $USER_ID -g $GROUP_ID -G ${SUP_GROUP_IDS:-$GROUP_ID} /usr/bin/HandBrakeCLI --preset-import-file /config/ghb/presets.json"
 
 WATCHDIR_HASH="$(mktemp -d)"
 
