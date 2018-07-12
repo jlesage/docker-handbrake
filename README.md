@@ -71,8 +71,8 @@ Where:
   - `$HOME/HandBrake/watch`: This is where videos to be automatically converted are located.
   - `$HOME/HandBrake/output`: This is where automatically converted video files are written.
 
-Browse to `http://your-host-ip:5800` to access the HandBrake GUI.  Files from
-the host appear under the `/storage` folder in the container.
+Browse to `http://your-host-ip:5800` to access the HandBrake GUI.
+Files from the host appear under the `/storage` folder in the container.
 
 ## Usage
 
