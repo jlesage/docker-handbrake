@@ -257,6 +257,11 @@ docker run [OPTIONS..] jlesage/{{ defs.app.name }}:dev-latest
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.14.1</version>
+        <date>2018-07-12</date>
+        <change>Fixed an issue where the automatic video converter would not be able to access the device required to enable Intel Quick Sync Video hardware-accelerated encoding.</change>
+      </release>
+      <release>
         <version>1.14.0</version>
         <date>2018-07-09</date>
         <change>Added support for Intel Quick Sync Video hardware-accelerated encoding.</change>
