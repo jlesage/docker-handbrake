@@ -124,6 +124,7 @@ RUN \
     rm -r /opt/intel/mediasdk/include \
           /opt/intel/mediasdk/lib64/pkgconfig \
           /opt/intel/mediasdk/lib64/*.a \
+          /opt/intel/mediasdk/plugins/plugins_eval.cfg \
           /opt/intel/mediasdk/samples \
           && \
     # Cleanup.
