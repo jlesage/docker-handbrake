@@ -8,7 +8,7 @@
 FROM jlesage/baseimage-gui:alpine-3.8-v3.4.0
 
 # Define software versions.
-ARG HANDBRAKE_VERSION=1.1.0
+ARG HANDBRAKE_VERSION=1.1.1
 ARG INTEL_MEDIA_SDK_VERSION=2018-Q2.1
 
 # Define software download URLs.
@@ -43,6 +43,7 @@ RUN \
         linux-headers \
         intltool \
         git \
+        diffutils \
         # misc libraries
         jansson-dev \
         libxml2-dev \
@@ -62,7 +63,6 @@ RUN \
         libnotify-dev \
         libgudev-dev \
         # for the nightly build
-        diffutils \
         nasm \
         speex-dev \
         xz-dev \
