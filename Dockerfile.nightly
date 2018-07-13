@@ -127,6 +127,10 @@ RUN \
           /opt/intel/mediasdk/plugins/plugins_eval.cfg \
           /opt/intel/mediasdk/samples \
           && \
+    # Strip symbols.
+    if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then \
+        strip -s /opt/intel/mediasdk/*/*.so; \
+    fi && \
     # Cleanup.
     del-pkg build-dependencies && \
     rm -rf /tmp/* /tmp/.[!.]*
