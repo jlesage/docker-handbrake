@@ -46,6 +46,7 @@ HandBrake is a tool for converting video from nearly any format to a selection o
       * [Intel Quick Sync Video](#intel-quick-sync-video)
          * [unRAID](#unraid-1)
       * [Nightly Builds](#nightly-builds)
+      * [Debug Builds](#debug-builds)
       * [Support or Contact](#support-or-contact)
 
 ## Quick Start
@@ -644,6 +645,46 @@ When creating the container, the tag needs to be appended to the name of the
 Docker image, like this:
 ```
 docker run [OPTIONS..] jlesage/handbrake:dev-latest
+```
+
+[tags on Docker Hub]: https://hub.docker.com/r/jlesage/handbrake/tags/
+
+## Debug Builds
+
+Debug builds can be used to better investigate problems that can occur with
+HandBrake.  These builds have HandBrake
+compiled in debug mode and all symbols are kept.
+
+The main use case of debug builds is debugging a crash.  To do it, a core dump
+needs to be generated when HandBrake crashes.  To make sure
+this appends, two things are required:
+
+  1. Core dumps must be enabled.  This is done by setting the maximum size of
+     cores via the `--ulimit core=-1` parameter of the `docker run` command.
+     A value of `-1` mean "unlimited".
+  2. Location of the cores must be set.  This can be done by executing the
+     following command on the **host**:
+     ```
+     echo 'CORE_PATTERN' | sudo tee /proc/sys/kernel/core_pattern
+     ```
+     Where `CORE_PATTERN` is the template that defines the naming of core dump
+     files.  For example, to set the files in the config folder for easy
+     retrieval, use the pattern `/config/core.%e.%t`.
+
+     **NOTE**: Since the core dump files pattern is shared between the host and
+     the container, you may want to revert to the original pattern once
+     done.
+
+     **NOTE**: The current value of the pattern can be obtained by executing
+     `cat /proc/sys/kernel/core_pattern`.
+
+Debug builds are available by using Docker image tags with the `debug` suffix.
+Make sure to look at available [tags on Docker Hub].
+
+When creating the container, the tag needs to be appended to the name of the
+Docker image, like this:
+```
+docker run [OPTIONS..] jlesage/handbrake:v1.14.3-debug
 ```
 
 [tags on Docker Hub]: https://hub.docker.com/r/jlesage/handbrake/tags/

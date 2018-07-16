@@ -253,6 +253,48 @@ docker run [OPTIONS..] jlesage/{{ defs.app.name }}:dev-latest
 [tags on Docker Hub]: https://hub.docker.com/r/jlesage/{{ defs.app.name }}/tags/
         </content>
       </section>
+      <section>
+        <title level="2">Debug Builds</title>
+        <content>
+Debug builds can be used to better investigate problems that can occur with
+{{ defs.app.friendly_name }}.  These builds have {{ defs.app.friendly_name }}
+compiled in debug mode and all symbols are kept.
+
+The main use case of debug builds is debugging a crash.  To do it, a core dump
+needs to be generated when {{ defs.app.friendly_name }} crashes.  To make sure
+this appends, two things are required:
+
+  1. Core dumps must be enabled.  This is done by setting the maximum size of
+     cores via the `--ulimit core=-1` parameter of the `docker run` command.
+     A value of `-1` mean "unlimited".
+  2. Location of the cores must be set.  This can be done by executing the
+     following command on the **host**:
+     ```
+     echo 'CORE_PATTERN' | sudo tee /proc/sys/kernel/core_pattern
+     ```
+     Where `CORE_PATTERN` is the template that defines the naming of core dump
+     files.  For example, to set the files in the config folder for easy
+     retrieval, use the pattern `/config/core.%e.%t`.
+
+     **NOTE**: Since the core dump files pattern is shared between the host and
+     the container, you may want to revert to the original pattern once
+     done.
+
+     **NOTE**: The current value of the pattern can be obtained by executing
+     `cat /proc/sys/kernel/core_pattern`.
+
+Debug builds are available by using Docker image tags with the `debug` suffix.
+Make sure to look at available [tags on Docker Hub].
+
+When creating the container, the tag needs to be appended to the name of the
+Docker image, like this:
+```
+docker run [OPTIONS..] jlesage/{{ defs.app.name }}:v1.14.3-debug
+```
+
+[tags on Docker Hub]: https://hub.docker.com/r/jlesage/{{ defs.app.name }}/tags/
+        </content>
+      </section>
     </documentation>
     <!-- Changelog of the application. -->
     <history>
