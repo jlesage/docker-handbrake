@@ -299,6 +299,11 @@ docker run [OPTIONS..] jlesage/{{ defs.app.name }}:v1.14.3-debug
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.14.3</version>
+        <date>2018-07-16</date>
+        <change>Added support for debug images.</change>
+      </release>
+      <release>
         <version>1.14.2</version>
         <date>2018-07-13</date>
         <change>Upgraded HandBrake to version 1.1.1.</change>
