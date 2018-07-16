@@ -657,7 +657,7 @@ compiled in debug mode and all symbols are kept.
 
 The main use case of debug builds is debugging a crash.  To do this, a core dump
 needs to be generated when HandBrake crashes.  To make sure
-this crash is properly generated, two things are required:
+this core dump is properly generated, two things are required:
 
   1. Core dumps must be enabled.  This is done by setting the maximum size of
      cores via the `--ulimit core=-1` parameter of the `docker run` command.
