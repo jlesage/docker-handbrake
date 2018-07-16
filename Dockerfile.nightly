@@ -116,7 +116,12 @@ RUN \
     cd MediaSDK && \
     mkdir build && \
     cd build && \
-    cmake .. && \
+    if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then \
+        INTEL_MEDIA_SDK_BUILD_TYPE=RELEASE; \
+    else \
+        INTEL_MEDIA_SDK_BUILD_TYPE=DEBUG; \
+    fi && \
+    cmake -DCMAKE_BUILD_TYPE=$INTEL_MEDIA_SDK_BUILD_TYPE .. && \
     make -j$(nproc) install && \
     cd .. && \
     cd .. && \
