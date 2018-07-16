@@ -36,8 +36,9 @@ done
 # when opening the source video.
 echo > /etc/fstab
 
-# Print the core dump location.
-log "core dump location: $(cat /proc/sys/kernel/core_pattern)"
+# Print the core dump info.
+log "core dump file location: $(cat /proc/sys/kernel/core_pattern)"
+log "core dump file size: $(ulimit -a | grep "core file size" | awk '{print $NF}') (blocks)"
 
 # Take ownership of the config directory content.
 chown -R $USER_ID:$GROUP_ID /config/*
