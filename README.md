@@ -655,15 +655,16 @@ Debug builds can be used to better investigate problems that can occur with
 HandBrake.  These builds have HandBrake
 compiled in debug mode and all symbols are kept.
 
-The main use case of debug builds is debugging a crash.  To do it, a core dump
+The main use case of debug builds is debugging a crash.  To do this, a core dump
 needs to be generated when HandBrake crashes.  To make sure
-this appends, two things are required:
+this crash is properly generated, two things are required:
 
   1. Core dumps must be enabled.  This is done by setting the maximum size of
      cores via the `--ulimit core=-1` parameter of the `docker run` command.
-     A value of `-1` mean "unlimited".
+     A value of `-1` mean "unlimited". This can easily be set by adding 
+     --ulimit core=-1 to the "Extra Parameters:" field of the container options.
   2. Location of the cores must be set.  This can be done by executing the
-     following command on the **host**:
+     following command on the **UnRaid Host OS**:
      ```
      echo 'CORE_PATTERN' | sudo tee /proc/sys/kernel/core_pattern
      ```
