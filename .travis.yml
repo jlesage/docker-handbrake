@@ -9,10 +9,6 @@ language: generic
 services:
   - docker
 
-before_script:
-  - echo "Validating Dockerfile..."
-  - docker run --rm -v "$(pwd)/Dockerfile:/Dockerfile:ro" redcoolbeans/dockerlint:0.2.0
-
 script:
   - |
     if [[ "$TRAVIS_EVENT_TYPE" = "cron" ]]; then
