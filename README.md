@@ -47,6 +47,7 @@ HandBrake is a tool for converting video from nearly any format to a selection o
          * [unRAID](#unraid-1)
       * [Nightly Builds](#nightly-builds)
       * [Debug Builds](#debug-builds)
+         * [unRAID](#unraid-2)
       * [Support or Contact](#support-or-contact)
 
 ## Quick Start
@@ -655,9 +656,9 @@ Debug builds can be used to better investigate problems that can occur with
 HandBrake.  These builds have HandBrake
 compiled in debug mode and all symbols are kept.
 
-The main use case of debug builds is debugging a crash.  To do it, a core dump
+The main use case of debug builds is debugging a crash.  To do this, a core dump
 needs to be generated when HandBrake crashes.  To make sure
-this appends, two things are required:
+this core dump is properly generated, two things are required:
 
   1. Core dumps must be enabled.  This is done by setting the maximum size of
      cores via the `--ulimit core=-1` parameter of the `docker run` command.
@@ -668,8 +669,15 @@ this appends, two things are required:
      echo 'CORE_PATTERN' | sudo tee /proc/sys/kernel/core_pattern
      ```
      Where `CORE_PATTERN` is the template that defines the naming of core dump
-     files.  For example, to set the files in the config folder for easy
-     retrieval, use the pattern `/config/core.%e.%t`.
+     files.  For example, to set the files in the configuration volume of the
+     container (for easy retrieval from the host), use the pattern
+     `/config/core.%e.%t`.
+
+     **NOTE**: Because a core file contains the complete memory layout of an
+     application, it is created with restrictive permissions.  If another user
+     other than the one used to run HandBrake needs to access
+     the core file, permissions must be changed by executing
+     `chmod a+r CORE`, where `CORE` is the path to the core file.
 
      **NOTE**: Since the core dump files pattern is shared between the host and
      the container, you may want to revert to the original pattern once
@@ -688,6 +696,11 @@ docker run [OPTIONS..] jlesage/handbrake:v1.14.3-debug
 ```
 
 [tags on Docker Hub]: https://hub.docker.com/r/jlesage/handbrake/tags/
+
+### unRAID
+
+On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
+`Extra Parameters` field of the container settings.
 
 [TimeZone]: http://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 
