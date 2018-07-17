@@ -313,6 +313,11 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.14.4</version>
+        <date>2018-07-17</date>
+        <change>Fixed an issue where HandBrake could crash while encoding a video using x264.</change>
+      </release>
+      <release>
         <version>1.14.3</version>
         <date>2018-07-16</date>
         <change>Added support for debug images.</change>
