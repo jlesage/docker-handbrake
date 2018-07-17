@@ -655,25 +655,30 @@ Debug builds can be used to better investigate problems that can occur with
 HandBrake.  These builds have HandBrake
 compiled in debug mode and all symbols are kept.
 
-The main use case of debug builds is debugging a crash.  To do it, a core dump
+The main use case of debug builds is debugging a crash.  To do this, a core dump
 needs to be generated when HandBrake crashes.  To make sure
-this appends, two things are required:
+this core dump is properly generated, two things are required:
 
   1. Core dumps must be enabled.  This is done by setting the maximum size of
      cores via the `--ulimit core=-1` parameter of the `docker run` command.
-     A value of `-1` mean "unlimited".
+     A value of `-1` mean "unlimited". This can easily be set by adding 
+     --ulimit core=-1 to the "Extra Parameters:" field of the container options.
   2. Location of the cores must be set.  This can be done by executing the
-     following command on the **host**:
+     following command on the **UnRaid Host OS**:
      ```
      echo 'CORE_PATTERN' | sudo tee /proc/sys/kernel/core_pattern
      ```
      Where `CORE_PATTERN` is the template that defines the naming of core dump
      files.  For example, to set the files in the config folder for easy
-     retrieval, use the pattern `/config/core.%e.%t`.
+     retrieval, use the pattern `/config/core.%e.%t`. This path will correlate to 
+     "/mnt/user/appdata/handbrake" on your main host.
 
      **NOTE**: Since the core dump files pattern is shared between the host and
      the container, you may want to revert to the original pattern once
      done.
+     
+     **NOTE**: The initial dump will need to be chmod 755 before you can
+     retreive it for upload.
 
      **NOTE**: The current value of the pattern can be obtained by executing
      `cat /proc/sys/kernel/core_pattern`.
