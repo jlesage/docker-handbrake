@@ -670,11 +670,15 @@ this core dump is properly generated, two things are required:
      ```
      Where `CORE_PATTERN` is the template that defines the naming of core dump
      files.  For example, to set the files in the config folder for easy
-     retrieval, use the pattern `/config/core.%e.%t`.
+     retrieval, use the pattern `/config/core.%e.%t`. This path will correlate to 
+     "/mnt/user/appdata/handbrake" on your main host.
 
      **NOTE**: Since the core dump files pattern is shared between the host and
      the container, you may want to revert to the original pattern once
      done.
+     
+     **NOTE**: The initial dump will need to be chmod 755 before you can
+     retreive it for upload.
 
      **NOTE**: The current value of the pattern can be obtained by executing
      `cat /proc/sys/kernel/core_pattern`.
