@@ -136,10 +136,13 @@ RUN \
         build-base \
         cmake \
         libva-dev \
+        patch \
         && \
     mkdir MediaSDK && \
     curl -# -L ${INTEL_MEDIA_SDK_URL} | tar xz --strip 1 -C MediaSDK && \
+    curl -# -L -o MediaSDK/intel-media-sdk-debug-no-assert.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/intel-media-sdk-debug-no-assert.patch && \
     cd MediaSDK && \
+    patch -p1 < intel-media-sdk-debug-no-assert.patch && \
     mkdir build && \
     cd build && \
     if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then \
