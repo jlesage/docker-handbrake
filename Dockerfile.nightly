@@ -8,11 +8,14 @@
 FROM jlesage/baseimage-gui:alpine-3.8-v3.4.0
 
 # Define software versions.
+# NOTE: x264 version 20171224 is the most recent one that doesn't crash.
 ARG HANDBRAKE_VERSION=1.1.1
+ARG X264_VERSION=20171224
 ARG INTEL_MEDIA_SDK_VERSION=2018-Q2.1
 
 # Define software download URLs.
 ARG HANDBRAKE_URL=https://download.handbrake.fr/releases/${HANDBRAKE_VERSION}/HandBrake-${HANDBRAKE_VERSION}-source.tar.bz2
+ARG X264_URL=https://download.videolan.org/pub/videolan/x264/snapshots/x264-snapshot-${X264_VERSION}-2245-stable.tar.bz2
 ARG INTEL_MEDIA_SDK_URL=https://github.com/Intel-Media-SDK/MediaSDK/archive/MediaSDK-${INTEL_MEDIA_SDK_VERSION}.tar.gz
 
 # Other build arguments.
@@ -44,6 +47,7 @@ RUN \
         intltool \
         git \
         diffutils \
+        bash \
         # misc libraries
         jansson-dev \
         libxml2-dev \
@@ -53,7 +57,6 @@ RUN \
         libass-dev \
         # media codecs
         libtheora-dev \
-        x264-dev \
         lame-dev \
         opus-dev \
         libvorbis-dev \
@@ -67,7 +70,10 @@ RUN \
         speex-dev \
         xz-dev \
         && \
-    # Download sources.
+    # Download x264 sources.
+    mkdir x264 && \
+    curl -# -L ${X264_URL} | tar xj --strip 1 -C x264 && \
+    # Download HandBrake sources.
     if echo "${HANDBRAKE_URL}" | grep -q '\.git$'; then \
         git clone ${HANDBRAKE_URL} HandBrake && \
         git -C HandBrake checkout "${HANDBRAKE_VERSION}"; \
@@ -81,7 +87,23 @@ RUN \
     # Download patches.
     curl -# -L -o HandBrake/contrib/libdvdread/A02-libdvdread-crash.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A02-libdvdread-crash.patch && \
     curl -# -L -o HandBrake/A00-hb-video-preset.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A00-hb-video-preset.patch && \
-    # Compile.
+    # Compile x264.
+    cd x264 && \
+    if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then \
+        X264_CMAKE_OPTS=--enable-strip; \
+    else \
+        X264_CMAKE_OPTS=--enable-debug; \
+    fi && \
+    ./configure \
+        --prefix=/usr \
+        --enable-shared \
+        --enable-pic \
+        --disable-cli \
+        $X264_CMAKE_OPTS \
+        && \
+    make -j$(nproc) install && \
+    cd ../ && \
+    # Compile HandBrake.
     cd HandBrake && \
     patch -p1 < A00-hb-video-preset.patch && \
     ./configure --prefix=/usr \
@@ -101,6 +123,13 @@ RUN \
     cd .. && \
     # Cleanup.
     del-pkg build-dependencies && \
+    rm /usr/include/x264.h \
+       /usr/include/x264_config.h \
+       /usr/lib/pkgconfig/x264.pc \
+       && \
+    rm -r /usr/lib/pkgconfig \
+          /usr/include \
+           && \
     rm -rf /tmp/* /tmp/.[!.]*
 
 # Compile Intel Media SDK.
@@ -154,7 +183,6 @@ RUN \
         libva-intel-driver \
         # Media codecs:
         libtheora \
-        x264-libs \
         lame \
         opus \
         libvorbis \
