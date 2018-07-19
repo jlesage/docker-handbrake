@@ -186,6 +186,31 @@ hooks.
         </content>
       </section>
       <section>
+        <title level="3">Temporary Conversion Directory</title>
+        <content>
+A video being converted is written in a hidden, temporary directory under the
+root of the output directory (`/output`).  Once a conversion successfully
+terminates, the video file is moved to its final location.
+
+This feature can be useful for scenarios where the output folder is monitored
+by another application: with proper configuration, one can make sure this
+application only "sees" the final, converted video file and not the transient
+versions.
+
+If the monitoring application ignores hidden directories, then nothing special
+is required and the application should always see the final file.
+
+However, if the monitoring application handles hidden directories, the automatic
+video converter should be configured with the
+`AUTOMATED_CONVERSION_OUTPUT_SUBDIR` environment variable sets to a
+subdirectory.  The application can then be configured to monitor this
+subdirectory.  For example, if `AUTOMATED_CONVERSION_OUTPUT_SUBDIR` is set to
+`TV Shows` and `/output` is mapped to `$HOME/appvolumes/HandBrake` on the host,
+`$HOME/appvolumes/HandBrake/TV Shows` should be monitored by the application.
+application.
+        </content>
+      </section>
+      <section>
         <title level="2">Intel Quick Sync Video</title>
         <content>
 Intel Quick Sync Video is Intel's brand for its dedicated video encoding and

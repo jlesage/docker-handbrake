@@ -43,6 +43,7 @@ HandBrake is a tool for converting video from nearly any format to a selection o
          * [Multiple Watch Folders](#multiple-watch-folders)
          * [Video Discs](#video-discs)
          * [Hooks](#hooks)
+         * [Temporary Conversion Directory](#temporary-conversion-directory)
       * [Intel Quick Sync Video](#intel-quick-sync-video)
          * [unRAID](#unraid-1)
       * [Nightly Builds](#nightly-builds)
@@ -587,6 +588,29 @@ you can use `/config/hooks/post_conversion.sh.example` as a starting point.
 **NOTE**: Keep in mind that this container has the minimal set of packages
 required to run HandBrake.  This may limit actions that can be performed in
 hooks.
+
+### Temporary Conversion Directory
+
+A video being converted is written in a hidden, temporary directory under the
+root of the output directory (`/output`).  Once a conversion successfully
+terminates, the video file is moved to its final location.
+
+This feature can be useful for scenarios where the output folder is monitored
+by another application: with proper configuration, one can make sure this
+application only "sees" the final, converted video file and not the transient
+versions.
+
+If the monitoring application ignores hidden directories, then nothing special
+is required and the application should always see the final file.
+
+However, if the monitoring application handles hidden directories, the automatic
+video converter should be configured with the
+`AUTOMATED_CONVERSION_OUTPUT_SUBDIR` environment variable sets to a
+subdirectory.  The application can then be configured to monitor this
+subdirectory.  For example, if `AUTOMATED_CONVERSION_OUTPUT_SUBDIR` is set to
+`TV Shows` and `/output` is mapped to `$HOME/appvolumes/HandBrake` on the host,
+`$HOME/appvolumes/HandBrake/TV Shows` should be monitored by the application.
+application.
 
 ## Intel Quick Sync Video
 
