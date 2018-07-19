@@ -162,6 +162,11 @@ process_video() {
     OUTPUT_DIR="$(echo "$OUTPUT_DIR" | sed 's|/\+|/|g' | sed 's|/\+$||')"
     s6-setuidgid $USER_ID:$GROUP_ID mkdir -p "$OUTPUT_DIR"
 
+    # Set the temporary output directory: this is where the video will be
+    # actually written before being moved its final location once conversion is
+    # terminated.
+    OUTPUT_DIR_TMP="$(s6-setuidgid $USER_ID:$GROUP_ID mktemp -d "/output/.XXXXXX")"
+
     # Get video titles.
     VIDEO_TITLES="$(get_video_titles "$video")"
     VIDEO_TITLES="${VIDEO_TITLES:-UNSET}"
@@ -201,6 +206,9 @@ process_video() {
             break
         fi
 
+        # Set the temporary output filename.
+        OUTPUT_FILE_TMP="$OUTPUT_DIR_TMP/$basename.$AC_FORMAT"
+
         # Call pre conversion hook.
         if [ -f /config/hooks/pre_conversion.sh ]; then
             log "Executing pre-conversion hook..."
@@ -212,13 +220,20 @@ process_video() {
         echo "------- CONVERSION OUTPUT $(date) -------" >> \
             /config/log/hb/conversion.log
         run $HANDBRAKE_CLI -i "$video" \
-                       -o "$OUTPUT_FILE" \
+                       -o "$OUTPUT_FILE_TMP" \
                        --title "$TITLE" \
                        --preset "$AC_PRESET" 2>> \
             /config/log/hb/conversion.log \| \
             /usr/bin/unbuffer -p grep "^Encoding" \| \
             log_hb_encode_progress
         hb_rc=$pipestatus_1
+
+        # Move the file to its final location if conversion terminated
+        # successfully.
+        if [ $hb_rc -eq 0 ]; then
+            mv "$OUTPUT_FILE_TMP" "$OUTPUT_FILE"
+        fi
+        rm -rf "$OUTPUT_DIR_TMP"
 
         # Call post conversion hook.
         if [ -f /config/hooks/post_conversion.sh ]; then
