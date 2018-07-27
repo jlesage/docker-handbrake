@@ -19,6 +19,10 @@ SUCCESSFUL_CONVERSIONS="/config/successful_conversions"
 
 HANDBRAKE_CLI="$APP_NICE_CMD s6-applyuidgid -u $USER_ID -g $GROUP_ID -G ${SUP_GROUP_IDS:-$GROUP_ID} /usr/bin/HandBrakeCLI --preset-import-file /config/ghb/presets.json"
 
+if [ "${HANDBRAKE_DEBUG:-0}" -eq 1 ]; then
+    HANDBRAKE_CLI="$HANDBRAKE_CLI --verbose=3"
+fi
+
 WATCHDIR_HASH="$(mktemp -d)"
 
 trap "exit" TERM QUIT INT
