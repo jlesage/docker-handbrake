@@ -771,7 +771,7 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
       </environment_variable>
       <environment_variable>
         <name>HANDBRAKE_DEBUG</name>
-        <description>Setting this to `1` enables HandBrake debug logging.  Log messages are sent to `/config/log/hb/handbrake.debug.log` (container path).  **NOTE**: When enabled, a lot of information is generated and the log file will grow quickly.  Make sure to enable this temporarily and only when needed.</description>
+        <description>Setting this to `1` enables HandBrake debug logging for both the GUI and the automatic video converter.  For the latter, the increased verbosity is reflected in `/config/log/hb/conversion.log` (container path).  For the GUI, log messages are sent to `/config/log/hb/handbrake.debug.log` (container path).  **NOTE**: When enabled, a lot of information is generated and the log file will grow quickly.  Make sure to enable this temporarily and only when needed.</description>
         <default/>
       </environment_variable>
     </environment_variables>
