@@ -166,11 +166,6 @@ process_video() {
     OUTPUT_DIR="$(echo "$OUTPUT_DIR" | sed 's|/\+|/|g' | sed 's|/\+$||')"
     s6-setuidgid $USER_ID:$GROUP_ID mkdir -p "$OUTPUT_DIR"
 
-    # Set the temporary output directory: this is where the video will be
-    # actually written before being moved its final location once conversion is
-    # terminated.
-    OUTPUT_DIR_TMP="$(s6-setuidgid $USER_ID:$GROUP_ID mktemp -d "/output/.XXXXXX")"
-
     # Get video titles.
     VIDEO_TITLES="$(get_video_titles "$video")"
     VIDEO_TITLES="${VIDEO_TITLES:-UNSET}"
@@ -209,6 +204,11 @@ process_video() {
             log "ERROR: Destination file '$OUTPUT_FILE' already exists."
             break
         fi
+
+        # Set the temporary output directory: this is where the video will be
+        # actually written before being moved its final location once conversion is
+        # terminated.
+        OUTPUT_DIR_TMP="$(s6-setuidgid $USER_ID:$GROUP_ID mktemp -d "/output/.XXXXXX")"
 
         # Set the temporary output filename.
         OUTPUT_FILE_TMP="$OUTPUT_DIR_TMP/$basename.$AC_FORMAT"
