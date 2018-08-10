@@ -8,8 +8,10 @@ log() {
 }
 
 # Generate machine id.
-log "Generating machine-id..."
-cat /proc/sys/kernel/random/uuid | tr -d '-' > /etc/machine-id
+if [ ! -f /etc/machine-id ]; then
+    log "generating machine-id..."
+    cat /proc/sys/kernel/random/uuid | tr -d '-' > /etc/machine-id
+fi
 
 # Make sure mandatory directories exist.
 mkdir -p /config/ghb
