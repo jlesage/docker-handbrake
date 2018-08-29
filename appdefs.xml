@@ -15,7 +15,7 @@ from Jinja2 templates.
       <url>https://handbrake.fr/</url>
     </project>
     <unraid>
-      <support_url>https://forums.lime-technology.com/topic/57420-support-handbrake/</support_url>
+      <support_url>https://forums.unraid.net/topic/57420-support-handbrake/</support_url>
       <category>MediaApp:Video</category>
       <extra_description>
 [span style='color: red;'][b]NOTE:[/b][/span] For the container to have
