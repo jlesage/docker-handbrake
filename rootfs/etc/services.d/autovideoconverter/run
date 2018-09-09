@@ -131,13 +131,13 @@ process_video() {
     hash="$(get_video_hash "$video")"
 
     # Skip video if it has been already successfully processed.
-    if grep -q -w "$hash" "$SUCCESSFUL_CONVERSIONS"; then
+    if [ -f "$SUCCESSFUL_CONVERSIONS" ] && grep -q -w "$hash" "$SUCCESSFUL_CONVERSIONS"; then
         log "Skipping video '$video' ($hash): already processed successfully."
         return
     fi
 
     # Skip video if we already failed to process it.
-    if grep -q -w "$hash" "$FAILED_CONVERSIONS"; then
+    if [ -f "$FAILED_CONVERSIONS" ] && grep -q -w "$hash" "$FAILED_CONVERSIONS"; then
         log "Skipping '$video' ($hash): already processed with failure."
         return
     fi
