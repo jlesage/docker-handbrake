@@ -112,7 +112,7 @@ get_video_titles() {
     video="$1"
     $HANDBRAKE_CLI -i "$video" \
                    -t0 \
-                   --min-duration $AC_SOURCE_MIN_DURATION 2>&1 -t0 |
+                   --min-duration $AC_SOURCE_MIN_DURATION 2>&1 |
     grep "^+ title " | sed 's/^+ title \([0-9]\+\):$/\1/'
 }
 
