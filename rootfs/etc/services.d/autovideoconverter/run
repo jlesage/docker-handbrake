@@ -205,6 +205,20 @@ process_video() {
             break
         fi
 
+        # Call pre conversion hook.
+        if [ -f /config/hooks/pre_conversion.sh ]; then
+            log "Executing pre-conversion hook..."
+            /usr/bin/with-contenv sh /config/hooks/pre_conversion.sh "$OUTPUT_FILE" "$video" "$AC_PRESET"
+            log "Pre-conversion hook exited with $?"
+        fi
+
+        # Skip video if it doesn't exists (may have been removed by the
+        # pre-conversion hook).
+        if [ ! -f "$video" ] && [ ! -d "$video" ]; then
+            log "Skipping '$video': no longer exists."
+            continue
+        fi
+
         # Set the temporary output directory: this is where the video will be
         # actually written before being moved its final location once conversion is
         # terminated.
@@ -212,13 +226,6 @@ process_video() {
 
         # Set the temporary output filename.
         OUTPUT_FILE_TMP="$OUTPUT_DIR_TMP/$basename.$AC_FORMAT"
-
-        # Call pre conversion hook.
-        if [ -f /config/hooks/pre_conversion.sh ]; then
-            log "Executing pre-conversion hook..."
-            /usr/bin/with-contenv sh /config/hooks/pre_conversion.sh "$OUTPUT_FILE" "$video" "$AC_PRESET"
-            log "Pre-conversion hook exited with $?"
-        fi
 
         # Invoke HandBrake.
         echo "------- CONVERSION OUTPUT $(date) -------" >> \
