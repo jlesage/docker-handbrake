@@ -127,6 +127,12 @@ process_video() {
         return
     fi
 
+    # Skip video if it is not readable.
+    if [ ! -r "$video" ]; then
+        log "Skipping '$video': not readable, check permissions."
+        return
+    fi
+
     # Get hash of the video from its properties.
     hash="$(get_video_hash "$video")"
 
