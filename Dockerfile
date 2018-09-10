@@ -9,7 +9,7 @@ FROM jlesage/baseimage-gui:alpine-3.8-v3.4.0
 
 # Define software versions.
 # NOTE: x264 version 20171224 is the most recent one that doesn't crash.
-ARG HANDBRAKE_VERSION=1.1.1
+ARG HANDBRAKE_VERSION=1.1.2
 ARG X264_VERSION=20171224
 ARG INTEL_MEDIA_SDK_VERSION=2018-Q2.1
 
@@ -82,7 +82,6 @@ RUN \
     chmod +x /tmp/run_cmd && \
     # Download patches.
     curl -# -L -o HandBrake/contrib/ffmpeg/A20-flac-encoder-crash.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A20-flac-encoder-crash.patch && \
-    curl -# -L -o HandBrake/contrib/libdvdread/A02-libdvdread-crash.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A02-libdvdread-crash.patch && \
     curl -# -L -o HandBrake/A00-hb-video-preset.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A00-hb-video-preset.patch && \
     # Compile x264.
     cd x264 && \
