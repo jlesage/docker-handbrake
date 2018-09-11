@@ -9,6 +9,11 @@ if [ ! -L "$0" ]; then
     exec ./"$SV_NAME" "$@"
 fi
 
+# Make sure we don't run as root.
+if [ "$(id -u)" -eq 0 ]; then
+    exec $APP_NICE_CMD s6-applyuidgid -u $USER_ID -g $GROUP_ID -G ${SUP_GROUP_IDS:-$GROUP_ID} "$0" "$@"
+fi
+
 # Set umask.
 if [ "${UMASK:-UNSET}" != "UNSET" ]; then
     umask "$UMASK"
@@ -17,7 +22,7 @@ fi
 FAILED_CONVERSIONS="/config/failed_conversions"
 SUCCESSFUL_CONVERSIONS="/config/successful_conversions"
 
-HANDBRAKE_CLI="$APP_NICE_CMD s6-applyuidgid -u $USER_ID -g $GROUP_ID -G ${SUP_GROUP_IDS:-$GROUP_ID} /usr/bin/HandBrakeCLI --preset-import-file /config/ghb/presets.json"
+HANDBRAKE_CLI="/usr/bin/HandBrakeCLI --preset-import-file /config/ghb/presets.json"
 
 if [ "${HANDBRAKE_DEBUG:-0}" -eq 1 ]; then
     HANDBRAKE_CLI="$HANDBRAKE_CLI --verbose=3"
@@ -170,7 +175,7 @@ process_video() {
             ;;
     esac
     OUTPUT_DIR="$(echo "$OUTPUT_DIR" | sed 's|/\+|/|g' | sed 's|/\+$||')"
-    s6-setuidgid $USER_ID:$GROUP_ID mkdir -p "$OUTPUT_DIR"
+    mkdir -p "$OUTPUT_DIR"
 
     # Get video titles.
     VIDEO_TITLES="$(get_video_titles "$video")"
@@ -228,7 +233,7 @@ process_video() {
         # Set the temporary output directory: this is where the video will be
         # actually written before being moved its final location once conversion is
         # terminated.
-        OUTPUT_DIR_TMP="$(s6-setuidgid $USER_ID:$GROUP_ID mktemp -d "/output/.XXXXXX")"
+        OUTPUT_DIR_TMP="$(mktemp -d "/output/.XXXXXX")"
 
         # Set the temporary output filename.
         OUTPUT_FILE_TMP="$OUTPUT_DIR_TMP/$basename.$AC_FORMAT"
