@@ -340,6 +340,16 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.14.7</version>
+        <date>2018-09-11</date>
+        <change>Upgraded to HandBrake version 1.1.2.</change>
+        <change>Fixes to the automatic video converter:</change>
+        <change level="2">Gracefully handle the case where the pre-conversion hook removes the source video file.</change>
+        <change level="2">Skip unreadable files.</change>
+        <change level="2">Drop root privileges at start.</change>
+        <change level="2">Better handling of unexisting cache files.</change>
+      </release>
+      <release>
         <version>1.14.6</version>
         <date>2018-07-30</date>
         <change>Fixed an issue where the automatic video converter would fail to convert video with multiple titles.</change>
