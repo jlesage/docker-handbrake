@@ -303,7 +303,9 @@ process_watch_folder() {
     WATCHDIR_HASH_update "$WF"
     log "Processing watch folder '$WF'..."
     FILELIST="$(mktemp)"
-    find "$WF" -follow -type f -not -path '*/\.*' | \
+    find "$WF" -follow -type f -not -path '*/\.*' -printf "%T@ %p\n" | \
+        sort -n | \
+        cut -d' ' -f2- | \
         sed 's|/VIDEO_TS/.*$|/VIDEO_TS|g' | \
         sed 's|/BDMV/.*$|/BDMV|g' | \
         uniq > "$FILELIST"
