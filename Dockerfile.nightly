@@ -5,7 +5,7 @@
 #
 
 # Pull base image.
-FROM jlesage/baseimage-gui:alpine-3.8-v3.4.0
+FROM jlesage/baseimage-gui:alpine-3.8-v3.5.1
 
 # Define software versions.
 # NOTE: x264 version 20171224 is the most recent one that doesn't crash.
