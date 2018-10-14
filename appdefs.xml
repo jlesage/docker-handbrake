@@ -90,7 +90,7 @@ with the HandBrake GUI.
 **NOTE**: The status and progression of conversions performed by the automatic
 video converter can only be seen in the container's log.  It is not something
 visible from the GUI.  Container's log can be obtained by executing the command
-`docker log handbrake`, where `handbrake` is the name of the container.  Also,
+`docker logs handbrake`, where `handbrake` is the name of the container.  Also,
 full details about the conversion are stored in `/config/log/hb/conversion.log`
 (container path).
         </content>
