@@ -645,6 +645,24 @@ H.264 (Intel QSV)
 If this encoder is not part of the list, something is wrong and looking at the
 container's log can give more details about the issue.
 
+**NOTE**: In most cases, HandBrake can successfully access the `/dev/dri` device
+without changing anything on the host side.  This is possible because the user
+under which the container is running is automatically added to the group owning
+the `/dev/dri` device.  However, this method doesn't work if the device is owned
+by the group `root`.  The problem can be fixed using one of the following
+methods:
+  - Running the container as root (`USER_ID=0`).
+  - Adding, on the host, read/write permissions for all to the `/dev/dri`
+    device:
+    ```
+    sudo chmod a+wr /dev/dri/*
+    ```
+  - Changing, on the host, the group owning the `/dev/dri` device.  For example,
+    to change the group to `video`:
+    ```
+    sudo chown root:video /dev/dri/*
+    ```
+
 [list]: https://ark.intel.com/Search/FeatureFilter?productType=processors&QuickSyncVideo=true
 [Intel Ark]: https://ark.intel.com
 
