@@ -1,0 +1,13 @@
+--- a/media_driver/linux/common/os/mos_defs_specific.h	2018-12-05 11:11:28.280305757 -0500
++++ b/media_driver/linux/common/os/mos_defs_specific.h	2018-12-05 11:14:28.980306326 -0500
+@@ -80,6 +80,10 @@
+ 
+ /* compile-time ASSERT */
+ 
++#ifndef __CONCAT
++    #define __CONCAT(x,y) x ## y
++#endif
++
+ #ifndef C_ASSERT
+     #define __UNIQUENAME( a1, a2 )  __CONCAT( a1, a2 )
+     #define UNIQUENAME( __text )    __UNIQUENAME( __text, __COUNTER__ )

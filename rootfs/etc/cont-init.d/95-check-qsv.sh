@@ -53,4 +53,34 @@ else
     fi
 fi
 
+# Save the livba driver to use.
+# By default, use the new Intel Media driver (iHD).  If the CPU is not
+# supported, use the Intel VAAPI driver (i965).
+#
+# According to https://github.com/intel/media-driver#supported-platforms, the
+# following CPUs are not supported by the Intel Media driver:
+#   - Sandy Bridge
+#   - Ivy Bridge
+#   - Haswell
+#
+# Family/model numbers taken from:
+#   https://a4lg.com/tech/x86/database/x86-families-and-models.en.html
+LIBVA_DRIVER_NAME=iHD
+
+CPU_FAMILY="$(cat /proc/cpuinfo | grep "cpu family" | head -n1 | awk '{print $4}')"
+CPU_MODEL="$(printf '%x\n' "$(cat /proc/cpuinfo | grep "model" | grep -v "model name" | head -n1 | awk '{print $3}')")"
+
+if [ "$CPU_FAMILY" = "6" ]; then
+    case "$CPU_MODEL" in
+        # Sandy Bridge
+        2a|2d) LIBVA_DRIVER_NAME=i965 ;;
+        # Ivy Bridge
+        3a|3e) LIBVA_DRIVER_NAME=i965 ;;
+        # Haswell
+        3c|3f|45|46) LIBVA_DRIVER_NAME=i965 ;;
+    esac
+fi
+
+echo -n "$LIBVA_DRIVER_NAME" > /var/run/s6/container_environment/LIBVA_DRIVER_NAME
+
 # vim:ts=4:sw=4:et:sts=4
