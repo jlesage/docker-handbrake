@@ -358,6 +358,17 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.14.10</version>
+        <date>2018-12-10</date>
+        <change>Fixed issues related to usage of QSV on recent processors:</change>
+        <change level="2">Added Intel Media driver version 18.3.0.</change>
+        <change level="2">Upgraded Intel VAAPI driver to version 2.3.0.</change>
+        <change level="2">Upgraded to Intel Media SDK to version 18.3.1.</change>
+        <change level="2">Upgraded libva to version 2.3.0.</change>
+        <change level="2">By default, the new Intel Media driver is now used.</change>
+        <change level="2">For processors not supported by the Intel Media driver, use the Intel VAAPI driver.</change>
+      </release>
+      <release>
         <version>1.14.9</version>
         <date>2018-11-12</date>
         <change>The automatic video converter now processes older files first.</change>
