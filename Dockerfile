@@ -163,7 +163,7 @@ RUN \
     echo "Compiling Intel Media driver..." && \
     add-pkg libexecinfo-dev && \
     cd intel-media-driver && \
-    patch -p1 < /tmp/media-driver-c-assert-fix.patch && \
+    patch -p1 < media-driver-c-assert-fix.patch && \
     mkdir build && cd build && \
     cmake \
         -Wno-dev \
