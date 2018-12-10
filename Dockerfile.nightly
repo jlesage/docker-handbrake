@@ -11,12 +11,20 @@ FROM jlesage/baseimage-gui:alpine-3.8-v3.5.1
 # NOTE: x264 version 20171224 is the most recent one that doesn't crash.
 ARG HANDBRAKE_VERSION=1.1.2
 ARG X264_VERSION=20171224
-ARG INTEL_MEDIA_SDK_VERSION=2018-Q2.1
+ARG LIBVA_VERSION=2.3.0
+ARG INTEL_VAAPI_DRIVER_VERSION=2.3.0
+ARG GMMLIB_VERSION=18.3.0
+ARG INTEL_MEDIA_DRIVER_VERSION=18.3.0
+ARG INTEL_MEDIA_SDK_VERSION=18.3.1
 
 # Define software download URLs.
 ARG HANDBRAKE_URL=https://download.handbrake.fr/releases/${HANDBRAKE_VERSION}/HandBrake-${HANDBRAKE_VERSION}-source.tar.bz2
 ARG X264_URL=https://download.videolan.org/pub/videolan/x264/snapshots/x264-snapshot-${X264_VERSION}-2245-stable.tar.bz2
-ARG INTEL_MEDIA_SDK_URL=https://github.com/Intel-Media-SDK/MediaSDK/archive/MediaSDK-${INTEL_MEDIA_SDK_VERSION}.tar.gz
+ARG LIBVA_URL=https://github.com/intel/libva/releases/download/2.3.0/libva-${LIBVA_VERSION}.tar.bz2
+ARG INTEL_VAAPI_DRIVER_URL=https://github.com/intel/intel-vaapi-driver/releases/download/${INTEL_VAAPI_DRIVER_VERSION}/intel-vaapi-driver-${INTEL_VAAPI_DRIVER_VERSION}.tar.bz2
+ARG GMMLIB_URL=https://github.com/intel/gmmlib/archive/intel-gmmlib-${GMMLIB_VERSION}.tar.gz
+ARG INTEL_MEDIA_DRIVER_URL=https://github.com/intel/media-driver/archive/intel-media-${INTEL_MEDIA_DRIVER_VERSION}.tar.gz
+ARG INTEL_MEDIA_SDK_URL=https://github.com/Intel-Media-SDK/MediaSDK/archive/intel-mediasdk-${INTEL_MEDIA_SDK_VERSION}.tar.gz
 
 # Other build arguments.
 
@@ -26,7 +34,7 @@ ARG HANDBRAKE_DEBUG_MODE=none
 # Define working directory.
 WORKDIR /tmp
 
-# Compile HandBrake
+# Compile HandBrake, libva and Intel Media SDK.
 RUN \
     add-pkg --virtual build-dependencies \
         # build tools.
@@ -51,7 +59,7 @@ RUN \
         # misc libraries
         jansson-dev \
         libxml2-dev \
-        libva-dev \
+        libpciaccess-dev \
         # media libraries
         libsamplerate-dev \
         libass-dev \
@@ -71,9 +79,31 @@ RUN \
         xz-dev \
         && \
     # Download x264 sources.
+    echo "Downloading x264 sources..." && \
     mkdir x264 && \
     curl -# -L ${X264_URL} | tar xj --strip 1 -C x264 && \
+    # Download libva sources.
+    echo "Downloading libva sources..." && \
+    mkdir libva && \
+    curl -# -L ${LIBVA_URL} | tar xj --strip 1 -C libva && \
+    # Download Intel VAAPI driver sources.
+    echo "Downloading Intel VAAPI driver sources..." && \
+    mkdir intel-vaapi-driver && \
+    curl -# -L ${INTEL_VAAPI_DRIVER_URL} | tar xj --strip 1 -C intel-vaapi-driver && \
+    # Download gmmlib sources.
+    echo "Downloading gmmlib sources..." && \
+    mkdir gmmlib && \
+    curl -# -L ${GMMLIB_URL} | tar xz --strip 1 -C gmmlib && \
+    # Download Intel Media driver.
+    echo "Downloading Intel Media driver sources..." && \
+    mkdir intel-media-driver && \
+    curl -# -L ${INTEL_MEDIA_DRIVER_URL} | tar xz --strip 1 -C intel-media-driver && \
+    # Download Intel Media SDK sources.
+    echo "Downloading Intel Media SDK sources..." && \
+    mkdir MediaSDK && \
+    curl -# -L ${INTEL_MEDIA_SDK_URL} | tar xz --strip 1 -C MediaSDK && \
     # Download HandBrake sources.
+    echo "Downloading HandBrake sources..." && \
     if echo "${HANDBRAKE_URL}" | grep -q '\.git$'; then \
         git clone ${HANDBRAKE_URL} HandBrake && \
         git -C HandBrake checkout "${HANDBRAKE_VERSION}"; \
@@ -82,11 +112,16 @@ RUN \
         curl -# -L ${HANDBRAKE_URL} | tar xj --strip 1 -C HandBrake; \
     fi && \
     # Download helper.
+    echo "Downloading helpers..." && \
     curl -# -L -o /tmp/run_cmd https://raw.githubusercontent.com/jlesage/docker-mgmt-tools/master/run_cmd && \
     chmod +x /tmp/run_cmd && \
     # Download patches.
+    echo "Downloading patches..." && \
     curl -# -L -o HandBrake/A00-hb-video-preset.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A00-hb-video-preset.patch && \
+    curl -# -L -o MediaSDK/intel-media-sdk-debug-no-assert.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/intel-media-sdk-debug-no-assert.patch && \
+    curl -# -L -o intel-media-driver/media-driver-c-assert-fix.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/media-driver-c-assert-fix.patch && \
     # Compile x264.
+    echo "Compiling x264..." && \
     cd x264 && \
     if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then \
         X264_CMAKE_OPTS=--enable-strip; \
@@ -102,7 +137,79 @@ RUN \
         && \
     make -j$(nproc) install && \
     cd ../ && \
+    # Compile libva.
+    echo "Compiling libva..." && \
+    cd libva && \
+    ./configure \
+        --prefix=/usr \
+        --mandir=/tmp/libva-man \
+        --infodir=/tmp/liva-info \
+        --localstatedir=/var \
+        --enable-x11 \
+        --disable-glx \
+        --disable-wayland \
+        --disable-static \
+        --enable-shared \
+        --with-drivers-path=/opt/intel/mediasdk/lib64 \
+        && \
+    make -j$(nproc) && \
+    make install && \
+    cd ../ && \
+    # Compile Intel VAAPI driver.
+    echo "Compiling Intel VAAPI driver..." && \
+    cd intel-vaapi-driver && \
+    ./configure && \
+    make -j$(nproc) && \
+    make install && \
+    cd .. && \
+    # Compile Intel Media driver.
+    echo "Compiling Intel Media driver..." && \
+    add-pkg libexecinfo-dev && \
+    cd intel-media-driver && \
+    patch -p1 < media-driver-c-assert-fix.patch && \
+    mkdir build && cd build && \
+    cmake \
+        -Wno-dev \
+        -DBUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/opt/intel/mediasdk \
+        -DLIBVA_DRIVERS_PATH=/opt/intel/mediasdk/lib64 \
+        -DINSTALL_DRIVER_SYSCONF=OFF \
+        -DMEDIA_RUN_TEST_SUITE=OFF \
+        ../ && \
+    make -j$(nproc) && \
+    make install && \
+    cd .. && \
+    cd .. && \
+    # Compile Intel Media SDK.
+    echo "Compiling Intel Media SDK..." && \
+    cd MediaSDK && \
+    patch -p1 < intel-media-sdk-debug-no-assert.patch && \
+    mkdir build && \
+    cd build && \
+    if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then \
+        INTEL_MEDIA_SDK_BUILD_TYPE=RELEASE; \
+    else \
+        INTEL_MEDIA_SDK_BUILD_TYPE=DEBUG; \
+    fi && \
+    cmake \
+        -DCMAKE_BUILD_TYPE=$INTEL_MEDIA_SDK_BUILD_TYPE \
+        # HandBrake's libfmx is looking at /opt/intel/mediasdk/plugins for MFX plugins.
+        -DMFX_PLUGINS_DIR=/opt/intel/mediasdk/plugins \
+        -DMFX_PLUGINS_CONF_DIR=/opt/intel/mediasdk/plugins \
+        -DENABLE_OPENCL=OFF \
+        -DENABLE_X11_DRI3=OFF \
+        -DENABLE_WAYLAND=OFF \
+        -DBUILD_DISPATCHER=ON \
+        -DENABLE_ITT=OFF \
+        -DENABLE_TEXTLOG=OFF \
+        -DENABLE_STAT=OFF \
+        -DBUILD_SAMPLES=OFF \
+        .. && \
+    make -j$(nproc) install && \
+    cd .. && \
+    cd .. && \
     # Compile HandBrake.
+    echo "Compiling HandBrake..." && \
     cd HandBrake && \
     patch -p1 < A00-hb-video-preset.patch && \
     ./configure --prefix=/usr \
@@ -115,60 +222,27 @@ RUN \
                 --launch \
                 && \
     /tmp/run_cmd -i 600 -m "HandBrake still compiling..." make --directory=build install && \
-    if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then \
-        strip /usr/bin/ghb \
-              /usr/bin/HandBrakeCLI; \
-    fi && \
     cd .. && \
-    # Cleanup.
-    del-pkg build-dependencies && \
-    rm /usr/include/x264.h \
-       /usr/include/x264_config.h \
-       /usr/lib/pkgconfig/x264.pc \
-       && \
-    rm -r /usr/lib/pkgconfig \
-          /usr/include \
-           && \
-    rm -rf /tmp/* /tmp/.[!.]*
-
-# Compile Intel Media SDK.
-RUN \
-    add-pkg --virtual build-dependencies \
-        curl \
-        build-base \
-        cmake \
-        libva-dev \
-        patch \
-        && \
-    mkdir MediaSDK && \
-    curl -# -L ${INTEL_MEDIA_SDK_URL} | tar xz --strip 1 -C MediaSDK && \
-    curl -# -L -o MediaSDK/intel-media-sdk-debug-no-assert.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/intel-media-sdk-debug-no-assert.patch && \
-    cd MediaSDK && \
-    patch -p1 < intel-media-sdk-debug-no-assert.patch && \
-    mkdir build && \
-    cd build && \
-    if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then \
-        INTEL_MEDIA_SDK_BUILD_TYPE=RELEASE; \
-    else \
-        INTEL_MEDIA_SDK_BUILD_TYPE=DEBUG; \
-    fi && \
-    cmake -DCMAKE_BUILD_TYPE=$INTEL_MEDIA_SDK_BUILD_TYPE .. && \
-    make -j$(nproc) install && \
-    cd .. && \
-    cd .. && \
-    # Remove unwanted files.
-    rm -r /opt/intel/mediasdk/include \
-          /opt/intel/mediasdk/lib64/pkgconfig \
-          /opt/intel/mediasdk/lib64/*.a \
-          /opt/intel/mediasdk/plugins/plugins_eval.cfg \
-          /opt/intel/mediasdk/samples \
-          && \
     # Strip symbols.
     if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then \
-        strip -s /opt/intel/mediasdk/*/*.so; \
+        find /usr/lib -type f -name "libva*.so*" -exec strip -s {} ';'; \
+        find /opt/intel/mediasdk -type f -name "*.so*" -exec strip -s {} ';'; \
+        strip -s /usr/bin/ghb; \
+        strip -s /usr/bin/HandBrakeCLI; \
     fi && \
     # Cleanup.
     del-pkg build-dependencies && \
+    rm -r \
+        /usr/lib/libva*.la \
+        /opt/intel/mediasdk/include \
+        /opt/intel/mediasdk/lib64/pkgconfig \
+        /opt/intel/mediasdk/lib64/*.a \
+        /opt/intel/mediasdk/lib64/*.la \
+        # HandBrake already include a statically-linked version of libmfx.
+        /opt/intel/mediasdk/lib64/libmfx.* \
+        /usr/lib/pkgconfig \
+        /usr/include \
+        && \
     rm -rf /tmp/* /tmp/.[!.]*
 
 # Install dependencies.
@@ -181,8 +255,6 @@ RUN \
         libsamplerate \
         libass \
         jansson \
-        libva \
-        libva-intel-driver \
         # Media codecs:
         libtheora \
         lame \
