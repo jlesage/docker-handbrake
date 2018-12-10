@@ -358,6 +358,11 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.14.11</version>
+        <date>2018-12-10</date>
+        <change>Fixed issue where libraries required to use Intel QSV would not be found.</change>
+      </release>
+      <release>
         <version>1.14.10</version>
         <date>2018-12-10</date>
         <change>Fixed issues related to usage of QSV on recent processors:</change>
