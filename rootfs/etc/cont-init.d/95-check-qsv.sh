@@ -34,23 +34,23 @@ if [ "$(lspci -k | grep "^00:02.0 " | cut -d' ' -f5)" != "i915" ]; then
 fi
 
 # Save the associated group.
-if (s6-applyuidgid -u $USER_ID -g $GROUP_ID -G ${SUP_GROUP_IDS:-$GROUP_ID} test -r "$DRI_DEV") && \
-   (s6-applyuidgid -u $USER_ID -g $GROUP_ID -G ${SUP_GROUP_IDS:-$GROUP_ID} test -w "$DRI_DEV")
-then
-    log "Device $DRI_DEV can be accessed properly."
-else
-    DRI_GRP="$(stat -c "%g" "$DRI_DEV")"
-
-    if [ "$DRI_GRP" -ne 0 ]; then
-        log "Device $DRI_DEV group is $DRI_GRP."
-        if [ -f /var/run/s6/container_environment/SUP_GROUP_IDS ]; then
-            echo -n "," >> /var/run/s6/container_environment/SUP_GROUP_IDS
-        fi
-        echo -n "$DRI_GRP" >> /var/run/s6/container_environment/SUP_GROUP_IDS
-    else
-        log "Intel Quick Sync Video not supported: device $DRI_DEV owned by group 'root'."
-        exit 0
+DRI_GRP="$(stat -c "%g" "$DRI_DEV")"
+if [ "$DRI_GRP" -ne 0 ]; then
+    log "Device $DRI_DEV group is $DRI_GRP."
+    if [ -f /var/run/s6/container_environment/SUP_GROUP_IDS ]; then
+        echo -n "," >> /var/run/s6/container_environment/SUP_GROUP_IDS
     fi
+    echo -n "$DRI_GRP" >> /var/run/s6/container_environment/SUP_GROUP_IDS
+else
+    find /dev/dri/ -type c | while read DRI_DEV
+    do
+        if ! (s6-applyuidgid -u $USER_ID -g $GROUP_ID -G ${SUP_GROUP_IDS:-$GROUP_ID} test -r "$DRI_DEV") || \
+           ! (s6-applyuidgid -u $USER_ID -g $GROUP_ID -G ${SUP_GROUP_IDS:-$GROUP_ID} test -w "$DRI_DEV")
+        then
+            log "Intel Quick Sync Video not supported: device $DRI_DEV owned by group 'root'."
+            exit 0
+        fi
+    done
 fi
 
 # Save the livba driver to use.
