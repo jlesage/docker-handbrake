@@ -9,7 +9,7 @@ FROM jlesage/baseimage-gui:alpine-3.8-v3.5.1
 
 # Define software versions.
 # NOTE: x264 version 20171224 is the most recent one that doesn't crash.
-ARG HANDBRAKE_VERSION=1.1.2
+ARG HANDBRAKE_VERSION=1.2.0
 ARG X264_VERSION=20171224
 ARG LIBVA_VERSION=2.3.0
 ARG INTEL_VAAPI_DRIVER_VERSION=2.3.0
@@ -56,10 +56,12 @@ RUN \
         git \
         diffutils \
         bash \
+        nasm \
         # misc libraries
         jansson-dev \
         libxml2-dev \
         libpciaccess-dev \
+        xz-dev \
         # media libraries
         libsamplerate-dev \
         libass-dev \
@@ -68,6 +70,7 @@ RUN \
         lame-dev \
         opus-dev \
         libvorbis-dev \
+        speex-dev \
         # gtk
         gtk+3.0-dev \
         dbus-glib-dev \
@@ -113,7 +116,6 @@ RUN \
     chmod +x /tmp/run_cmd && \
     # Download patches.
     echo "Downloading patches..." && \
-    curl -# -L -o HandBrake/contrib/ffmpeg/A20-flac-encoder-crash.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A20-flac-encoder-crash.patch && \
     curl -# -L -o HandBrake/A00-hb-video-preset.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A00-hb-video-preset.patch && \
     curl -# -L -o MediaSDK/intel-media-sdk-debug-no-assert.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/intel-media-sdk-debug-no-assert.patch && \
     curl -# -L -o intel-media-driver/media-driver-c-assert-fix.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/media-driver-c-assert-fix.patch && \
@@ -252,11 +254,13 @@ RUN \
         libsamplerate \
         libass \
         jansson \
+        xz \
         # Media codecs:
         libtheora \
         lame \
         opus \
         libvorbis \
+        speex \
         # To read encrypted DVDs
         libdvdcss \
         # For main, big icons:
