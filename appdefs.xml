@@ -800,11 +800,11 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
       </environment_variable>
       <environment_variable>
         <name>AUTOMATED_CONVERSION_SOURCE_STABLE_TIME</name>
-        <description>Time during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied.</description>
+        <description>Time (in seconds) during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied.</description>
         <default>5</default>
         <unraid_template>
           <title>Automatic Video Converter: Source File Stable Time</title>
-          <description>Time during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied.</description>
+          <description>Time (in seconds) during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied.</description>
           <display>advanced</display>
           <required>false</required>
           <mask>false</mask>
