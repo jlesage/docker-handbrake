@@ -175,7 +175,6 @@ process_video() {
             ;;
     esac
     OUTPUT_DIR="$(echo "$OUTPUT_DIR" | sed 's|/\+|/|g' | sed 's|/\+$||')"
-    mkdir -p "$OUTPUT_DIR"
 
     # Get video titles.
     VIDEO_TITLES="$(get_video_titles "$video")"
@@ -253,6 +252,7 @@ process_video() {
         # Move the file to its final location if conversion terminated
         # successfully.
         if [ $hb_rc -eq 0 ]; then
+            mkdir -p "$OUTPUT_DIR"
             mv "$OUTPUT_FILE_TMP" "$OUTPUT_FILE"
         fi
         rm -rf "$OUTPUT_DIR_TMP"
