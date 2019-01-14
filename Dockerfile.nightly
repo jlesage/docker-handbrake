@@ -71,6 +71,7 @@ RUN \
         opus-dev \
         libvorbis-dev \
         speex-dev \
+        libvpx-dev \
         # gtk
         gtk+3.0-dev \
         dbus-glib-dev \
@@ -261,6 +262,7 @@ RUN \
         opus \
         libvorbis \
         speex \
+        libvpx \
         # To read encrypted DVDs
         libdvdcss \
         # For main, big icons:
