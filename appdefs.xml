@@ -358,6 +358,12 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.15.0</version>
+        <date>2019-01-14</date>
+        <change>Upgraded HandBrake to version 1.2.0.</change>
+        <change>The automatic video converter now creates the output folder just before moving the video.</change>
+      </release>
+      <release>
         <version>1.14.11</version>
         <date>2018-12-10</date>
         <change>Fixed issue where libraries required to use Intel QSV would not be found.</change>
