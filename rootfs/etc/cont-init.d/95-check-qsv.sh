@@ -33,25 +33,37 @@ if [ "$(lspci -k | grep "^00:02.0 " | cut -d' ' -f5)" != "i915" ]; then
     exit 0
 fi
 
-# Save the associated group.
-DRI_GRP="$(stat -c "%g" "$DRI_DEV")"
-if [ "$DRI_GRP" -ne 0 ]; then
-    log "Device $DRI_DEV group is $DRI_GRP."
-    if [ -f /var/run/s6/container_environment/SUP_GROUP_IDS ]; then
-        echo -n "," >> /var/run/s6/container_environment/SUP_GROUP_IDS
-    fi
-    echo -n "$DRI_GRP" >> /var/run/s6/container_environment/SUP_GROUP_IDS
-else
-    find /dev/dri/ -type c | while read DRI_DEV
-    do
+# Get group of devices under /dev/dri/.
+GRPS=$(mktemp)
+find /dev/dri/ -type c | while read DRI_DEV
+do
+    G="$(stat -c "%g" "$DRI_DEV")"
+    if [ "$G" -ne 0 ]; then
+        echo "$G " >> "$GRPS"
+    else
+        # Device is owned by root.  If the configured user doesn't have access
+        # to it, then QSV won't work (setting the supplementary group to 0
+        # doesn't work).
         if ! (s6-applyuidgid -u $USER_ID -g $GROUP_ID -G ${SUP_GROUP_IDS:-$GROUP_ID} test -r "$DRI_DEV") || \
            ! (s6-applyuidgid -u $USER_ID -g $GROUP_ID -G ${SUP_GROUP_IDS:-$GROUP_ID} test -w "$DRI_DEV")
         then
-            log "Intel Quick Sync Video not supported: device $DRI_DEV owned by group 'root'."
+            log "Intel Quick Sync Video not supported: device $DRI_DEV owned "
+                "by group 'root' and configured user doesn't have permissions. "
+                "to access it."
+            rm "$GRPS"
             exit 0
         fi
-    done
+    fi
+done
+
+# Save as comma separated list of supplementary group IDs.
+if [ "$(cat "$GRPS")" != "" ]; then
+    if [ -f /var/run/s6/container_environment/SUP_GROUP_IDS ]; then
+        echo -n "," >> /var/run/s6/container_environment/SUP_GROUP_IDS
+    fi
+    cat "$GRPS" | tr ' ' '\n' | grep -v '^$' | sort -nub | tr '\n' ',' | sed 's/.$//' >> /var/run/s6/container_environment/SUP_GROUP_IDS
 fi
+rm "$GRPS"
 
 # Save the livba driver to use.
 # By default, use the new Intel Media driver (iHD).  If the CPU is not
