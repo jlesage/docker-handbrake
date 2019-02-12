@@ -358,6 +358,11 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.15.1</version>
+        <date>2019-02-12</date>
+        <change>Fixed issue where Intel QSV would not be setup properly when its associated Linux devices where having different owners.</change>
+      </release>
+      <release>
         <version>1.15.0</version>
         <date>2019-01-14</date>
         <change>Upgraded HandBrake to version 1.2.0.</change>
