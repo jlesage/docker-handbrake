@@ -9,7 +9,7 @@ FROM jlesage/baseimage-gui:alpine-3.8-v3.5.1
 
 # Define software versions.
 # NOTE: x264 version 20171224 is the most recent one that doesn't crash.
-ARG HANDBRAKE_VERSION=1.2.0
+ARG HANDBRAKE_VERSION=1.2.2
 ARG X264_VERSION=20171224
 ARG LIBVA_VERSION=2.4.0
 ARG INTEL_VAAPI_DRIVER_VERSION=2.3.0
