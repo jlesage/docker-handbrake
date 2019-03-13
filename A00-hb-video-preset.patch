@@ -1,17 +1,50 @@
---- a/gtk/src/videohandler.c	2018-04-05 13:31:47.000000000 -0400
-+++ b/gtk/src/videohandler.c	2018-07-04 05:46:16.431868443 -0400
-@@ -103,7 +103,13 @@
+From 90c8d6031205f1e06642006e63ac021515ab2a5e Mon Sep 17 00:00:00 2001
+From: John Stebbins <jstebbins.hb@gmail.com>
+Date: Mon, 4 Mar 2019 08:19:22 -0800
+Subject: [PATCH] LinGui: fix video codec preset when switching codecs
+
+If the codec doesn't have a 'medium' preset, the GUI was left in an
+indeterminate state
+---
+ gtk/src/videohandler.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/gtk/src/videohandler.c b/gtk/src/videohandler.c
+index 2f680399f..2e5441a50 100644
+--- a/gtk/src/videohandler.c
++++ b/gtk/src/videohandler.c
+@@ -45,15 +45,23 @@ int ghb_set_video_preset(GhbValue *settings, int encoder, const char * preset)
+     int                  ii, result = 0;
+ 
+     videoPresets = hb_video_encoder_get_presets(encoder);
+-    for (ii = 0; preset && videoPresets && videoPresets[ii]; ii++)
++    for (ii = 0; videoPresets && videoPresets[ii]; ii++)
+     {
+-        if (!strcasecmp(preset, videoPresets[ii]))
++        if (preset != NULL && !strcasecmp(preset, videoPresets[ii]))
+         {
+             ghb_dict_set_int(settings, "VideoPresetSlider", ii);
+             result = 1;
+             break;
+         }
+     }
++    if (preset == NULL && videoPresets != NULL)
++    {
++        // Pick the center 'medium' preset
++        ii = ii / 2;
++        preset = videoPresets[ii];
++        ghb_dict_set_int(settings, "VideoPresetSlider", ii);
++        result = 1;
++    }
+     if (preset != NULL)
+     {
+         ghb_dict_set_string(settings, "VideoPreset", preset);
+@@ -102,7 +110,7 @@ vcodec_changed_cb(GtkWidget *widget, signal_user_data_t *ud)
      {
          gtk_range_set_range(GTK_RANGE(presetSlider), 0, count-1);
      }
 -    ghb_set_video_preset(ud->settings, encoder, "medium");
-+    if (!ghb_set_video_preset(ud->settings, encoder, "medium"))
-+    {
-+        if (video_presets && count)
-+        {
-+            ghb_set_video_preset(ud->settings, encoder, video_presets[count-1]);
-+        }
-+    }
++    ghb_set_video_preset(ud->settings, encoder, NULL);
      GhbValue *gval = ghb_dict_get_value(ud->settings, "VideoPresetSlider");
      ghb_ui_settings_update(ud, ud->settings, "VideoPresetSlider", gval);
- 
+ }
