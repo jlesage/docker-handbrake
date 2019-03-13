@@ -11,16 +11,16 @@ FROM jlesage/baseimage-gui:alpine-3.8-v3.5.1
 # NOTE: x264 version 20171224 is the most recent one that doesn't crash.
 ARG HANDBRAKE_VERSION=1.2.0
 ARG X264_VERSION=20171224
-ARG LIBVA_VERSION=2.3.0
+ARG LIBVA_VERSION=2.4.0
 ARG INTEL_VAAPI_DRIVER_VERSION=2.3.0
-ARG GMMLIB_VERSION=18.3.0
-ARG INTEL_MEDIA_DRIVER_VERSION=18.3.0
-ARG INTEL_MEDIA_SDK_VERSION=18.3.1
+ARG GMMLIB_VERSION=18.4.1
+ARG INTEL_MEDIA_DRIVER_VERSION=18.4.1
+ARG INTEL_MEDIA_SDK_VERSION=18.4.1
 
 # Define software download URLs.
 ARG HANDBRAKE_URL=https://download.handbrake.fr/releases/${HANDBRAKE_VERSION}/HandBrake-${HANDBRAKE_VERSION}-source.tar.bz2
 ARG X264_URL=https://download.videolan.org/pub/videolan/x264/snapshots/x264-snapshot-${X264_VERSION}-2245-stable.tar.bz2
-ARG LIBVA_URL=https://github.com/intel/libva/releases/download/2.3.0/libva-${LIBVA_VERSION}.tar.bz2
+ARG LIBVA_URL=https://github.com/intel/libva/releases/download/${LIBVA_VERSION}/libva-${LIBVA_VERSION}.tar.bz2
 ARG INTEL_VAAPI_DRIVER_URL=https://github.com/intel/intel-vaapi-driver/releases/download/${INTEL_VAAPI_DRIVER_VERSION}/intel-vaapi-driver-${INTEL_VAAPI_DRIVER_VERSION}.tar.bz2
 ARG GMMLIB_URL=https://github.com/intel/gmmlib/archive/intel-gmmlib-${GMMLIB_VERSION}.tar.gz
 ARG INTEL_MEDIA_DRIVER_URL=https://github.com/intel/media-driver/archive/intel-media-${INTEL_MEDIA_DRIVER_VERSION}.tar.gz
