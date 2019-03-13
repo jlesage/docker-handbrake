@@ -117,6 +117,7 @@ RUN \
     # Download patches.
     echo "Downloading patches..." && \
     curl -# -L -o HandBrake/A00-hb-video-preset.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A00-hb-video-preset.patch && \
+    curl -# -L -o HandBrake/A00-hb-qsv.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A00-hb-qsv.patch && \
     curl -# -L -o MediaSDK/intel-media-sdk-debug-no-assert.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/intel-media-sdk-debug-no-assert.patch && \
     curl -# -L -o intel-media-driver/media-driver-c-assert-fix.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/media-driver-c-assert-fix.patch && \
     # Compile x264.
@@ -192,7 +193,7 @@ RUN \
     fi && \
     cmake \
         -DCMAKE_BUILD_TYPE=$INTEL_MEDIA_SDK_BUILD_TYPE \
-        # HandBrake's libfmx is looking at /opt/intel/mediasdk/plugins for MFX plugins.
+        # HandBrake's libmfx is looking at /opt/intel/mediasdk/plugins for MFX plugins.
         -DMFX_PLUGINS_DIR=/opt/intel/mediasdk/plugins \
         -DMFX_PLUGINS_CONF_DIR=/opt/intel/mediasdk/plugins \
         -DENABLE_OPENCL=OFF \
@@ -211,6 +212,7 @@ RUN \
     echo "Compiling HandBrake..." && \
     cd HandBrake && \
     patch -p1 < A00-hb-video-preset.patch && \
+    patch -p1 < A00-hb-qsv.patch && \
     ./configure --prefix=/usr \
                 --debug=$HANDBRAKE_DEBUG_MODE \
                 --disable-gtk-update-checks \
