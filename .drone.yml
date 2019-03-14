@@ -16,7 +16,9 @@
 #   - microbadger_webook: Microbadger webhook.
 #
 
-name: default 
+---
+kind: pipeline
+name: default
 
 steps:
 - name: get_tools
@@ -33,7 +35,7 @@ steps:
   - name: docker
     path: /var/run/docker.sock
 
-- name: push_image 
+- name: push_image
   image: docker:18
   environment:
     DOCKERHUB_USERNAME:
@@ -46,8 +48,8 @@ steps:
   - docker tag $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA $DRONE_REPO_NAMESPACE/${DRONE_REPO_NAME#docker-}:$DRONE_TAG
   - docker tag $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA $DRONE_REPO_NAMESPACE/${DRONE_REPO_NAME#docker-}:$LATEST_TAG
   - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-  - docker push $DRONE_REPO_NAMESPACE/${DRONE_REPO_NAME#docker-}:$DRONE_TAG"
-  - docker push $DRONE_REPO_NAMESPACE/${DRONE_REPO_NAME#docker-}:$LATEST_TAG"
+  - docker push "$DRONE_REPO_NAMESPACE/${DRONE_REPO_NAME#docker-}:$DRONE_TAG"
+  - docker push "$DRONE_REPO_NAMESPACE/${DRONE_REPO_NAME#docker-}:$LATEST_TAG"
   volumes:
   - name: docker
     path: /var/run/docker.sock
@@ -69,8 +71,82 @@ steps:
   - node /app/index.js
   when:
     ref:
-    - refs/tags/v* 
+    - refs/tags/v*
 
+- name: cleanup
+  image: docker:18
+  commands:
+  - IMAGE_ID=$(docker images -q $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA)
+  - test "$IMAGE_ID" == "" || docker rmi -f $IMAGE_ID
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+
+volumes:
+- name: docker
+  host:
+    path: /var/run/docker.sock
+
+---
+kind: pipeline
+name: debug
+
+steps:
+- name: get_tools
+  image: alpine:3.9
+  commands:
+  - apk --no-cache add git
+  - git clone https://github.com/jlesage/docker-mgmt-tools
+
+- name: build
+  image: docker:18
+  commands:
+  - docker build --no-cache --pull --build-arg HANDBRAKE_DEBUG_MODE=max -t $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA .
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+
+- name: push_image
+  image: docker:18
+  environment:
+    DOCKERHUB_USERNAME:
+      from_secret: dockerhub_username
+    DOCKERHUB_PASSWORD:
+      from_secret: dockerhub_password
+  commands:
+  - apk --no-cache add bash
+  - docker tag $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA $DRONE_REPO_NAMESPACE/${DRONE_REPO_NAME#docker-}:$DRONE_TAG-debug
+  - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  - docker push "$DRONE_REPO_NAMESPACE/${DRONE_REPO_NAME#docker-}:$DRONE_TAG-debug"
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+  when:
+    ref:
+    - refs/tags/v*
+
+- name: cleanup
+  image: docker:18
+  commands:
+  - IMAGE_ID=$(docker images -q $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA)
+  - test "$IMAGE_ID" == "" || docker rmi -f $IMAGE_ID
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+
+volumes:
+- name: docker
+  host:
+    path: /var/run/docker.sock
+
+---
+kind: pipeline
+name: after
+
+clone:
+  disable: true
+
+steps:
 - name: microbadger
   image: alpine:3.9
   environment:
@@ -89,16 +165,14 @@ steps:
     ref:
     - refs/tags/v*
 
-- name: cleanup
-  image: docker:18
-  commands:
-  - IMAGE_ID=$(docker images -q $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA)
-  - test "$IMAGE_ID" == "" || docker rmi -f $IMAGE_ID
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
+depends_on:
+- default
+- debug
 
-volumes:
-- name: docker
-  host:
-    path: /var/run/docker.sock
+trigger:
+  event:
+  - tag
+
+  status:
+  - success
+  - failure
