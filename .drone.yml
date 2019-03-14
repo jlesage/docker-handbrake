@@ -1,0 +1,104 @@
+#
+# This is a generic Drone pipeline used to build and push Docker image.
+#
+# Assumptions:
+#   - User name of the Dockerhub repository is the same as the one of the
+#     Github repository.
+#   - Name of the Dockerhub repository is the same as the one of the Github
+#     repository, minus the 'docker-' prefix.  For example, if the name of
+#     Github repository is 'docker-myapp', the name of the Dockerhub repository
+#     is expected to be 'myapp'.
+#   - The Github repository has a README.md file.
+#
+# Here are the secrets that are used:
+#   - dockerhub_username: The username used to login to Dockerhub.
+#   - dockerhub_password: The password used to login to Dockerhub.
+#   - microbadger_webook: Microbadger webhook.
+#
+
+name: default 
+
+steps:
+- name: get_tools
+  image: alpine:3.9
+  commands:
+  - apk --no-cache add git
+  - git clone https://github.com/jlesage/docker-mgmt-tools
+
+- name: build
+  image: docker:18
+  commands:
+  - docker build --no-cache --pull -t $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA .
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+
+- name: push_image 
+  image: docker:18
+  environment:
+    DOCKERHUB_USERNAME:
+      from_secret: dockerhub_username
+    DOCKERHUB_PASSWORD:
+      from_secret: dockerhub_password
+  commands:
+  - apk --no-cache add bash
+  - LATEST_TAG="$(./docker-mgmt-tools/get_docker_latest_tag_from_git_tag $DRONE_TAG)"
+  - docker tag $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA $DRONE_REPO_NAMESPACE/${DRONE_REPO_NAME#docker-}:$DRONE_TAG
+  - docker tag $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA $DRONE_REPO_NAMESPACE/${DRONE_REPO_NAME#docker-}:$LATEST_TAG
+  - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  - docker push $DRONE_REPO_NAMESPACE/${DRONE_REPO_NAME#docker-}:$DRONE_TAG"
+  - docker push $DRONE_REPO_NAMESPACE/${DRONE_REPO_NAME#docker-}:$LATEST_TAG"
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+  when:
+    ref:
+    - refs/tags/v*
+
+- name: push_readme
+  image: sheogorath/readme-to-dockerhub
+  environment:
+    README_PATH: /drone/src/README.md
+    DOCKERHUB_USERNAME:
+      from_secret: dockerhub_username
+    DOCKERHUB_PASSWORD:
+      from_secret: dockerhub_password
+  commands:
+  - export DOCKERHUB_REPO_PREFIX="$DRONE_REPO_NAMESPACE"
+  - export DOCKERHUB_REPO_NAME="${DRONE_REPO_NAME#docker-}"
+  - node /app/index.js
+  when:
+    ref:
+    - refs/tags/v* 
+
+- name: microbadger
+  image: alpine:3.9
+  environment:
+    MICROBADGER_WEBHOOK:
+      from_secret: microbadger_webhook
+  commands:
+  - |
+    if [ -n "$MICROBADGER_WEBHOOK" ]; then
+        apk --no-cache add curl
+        echo "Invoking MicroBadger hook..."
+        curl -X POST --fail $MICROBADGER_WEBHOOK
+    else
+        echo "WARNING: MicroBadger webhook not defined!"
+    fi
+  when:
+    ref:
+    - refs/tags/v*
+
+- name: cleanup
+  image: docker:18
+  commands:
+  - IMAGE_ID=$(docker images -q $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA)
+  - test "$IMAGE_ID" == "" || docker rmi -f $IMAGE_ID
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+
+volumes:
+- name: docker
+  host:
+    path: /var/run/docker.sock
