@@ -26,6 +26,14 @@ steps:
   - apk --no-cache add git
   - git clone https://github.com/jlesage/docker-mgmt-tools
 
+- name: set_image_version
+  image: alpine:3.9
+  commands:
+  - sed -i 's/org.label-schema.version="unknown"/org.label-schema.version="'${DRONE_TAG:1}'"/' Dockerfile
+  when:
+    ref:
+    - refs/tags/v*
+
 - name: build
   image: docker:18
   commands:
@@ -96,6 +104,14 @@ steps:
   commands:
   - apk --no-cache add git
   - git clone https://github.com/jlesage/docker-mgmt-tools
+
+- name: set_image_version
+  image: alpine:3.9
+  commands:
+  - sed -i 's/org.label-schema.version="unknown"/org.label-schema.version="'${DRONE_TAG:1}-debug'"/' Dockerfile
+  when:
+    ref:
+    - refs/tags/v*
 
 - name: build
   image: docker:18
