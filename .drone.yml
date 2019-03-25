@@ -221,8 +221,10 @@ steps:
   - apk --no-cache add bash
   - DOCKER_IMAGE_NIGHTLY_VERSION="$(cat DOCKER_IMAGE_NIGHTLY_VERSION)"
   - docker tag $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA $DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}:$DOCKER_IMAGE_NIGHTLY_VERSION
+  - docker tag $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA $DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}:dev-latest
   - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
   - docker push "$DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}:$DOCKER_IMAGE_NIGHTLY_VERSION"
+  - docker push "$DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}:dev-latest"
   volumes:
   - name: docker
     path: /var/run/docker.sock
