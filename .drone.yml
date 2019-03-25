@@ -156,6 +156,94 @@ volumes:
 
 ---
 kind: pipeline
+name: nightly
+
+steps:
+- name: get_tools
+  image: alpine:3.9
+  commands:
+  - apk --no-cache add git
+  - git clone https://github.com/jlesage/docker-mgmt-tools
+
+- name: prepare
+  image: alpine:3.9
+  commands:
+  - apk --no-cache add git curl coreutils
+  - HANDBRAKE_LAST_COMMIT="$(git ls-remote https://github.com/HandBrake/HandBrake.git | grep -w HEAD | awk '{ print substr($1,0,10) }')"
+  - HANDBRAKE_LAST_COMMIT_DATE="$(date -d"$(curl -s https://api.github.com/repos/HandBrake/HandBrake/commits/$HANDBRAKE_LAST_COMMIT | grep -w date | tail -n1 | tr -d '"' | awk '{print $2}')" +%Y%m%d)"
+  - DOCKER_IMAGE_LAST_VERSION="$(git ls-remote --tags https://github.com/$DRONE_REPO_NAMESPACE/$DRONE_REPO_NAME | awk '{print $2}' | sed 's|refs/tags/||' | sort -t. -k 1,1n -k 2,2n -k 3,3n | tail -n1)"
+  - DOCKER_IMAGE_NIGHTLY_VERSION="$(echo "$DOCKER_IMAGE_LAST_VERSION-dev-$HANDBRAKE_LAST_COMMIT_DATE-$HANDBRAKE_LAST_COMMIT")"
+  - |
+    if curl -s -L https://index.docker.io/v1/repositories/$${DRONE_REPO_NAME#docker-}/$DOCKER_IMAGE_NAME/tags | grep -qE "\"$DOCKER_IMAGE_NIGHTLY_VERSION\""
+    then
+      touch SKIP_BUILD
+    fi
+  - 'echo "HANDBRAKE_LAST_COMMIT:        $HANDBRAKE_LAST_COMMIT"'
+  - 'echo "HANDBRAKE_LAST_COMMIT_DATE:   $HANDBRAKE_LAST_COMMIT_DATE"'
+  - 'echo "DOCKER_IMAGE_LAST_VERSION:    $DOCKER_IMAGE_LAST_VERSION"'
+  - 'echo "DOCKER_IMAGE_NIGHTLY_VERSION: $DOCKER_IMAGE_NIGHTLY_VERSION"'
+  - 'echo "SKIP_BUILD:                   $(test -f SKIP_BUILD && echo yes || echo no)"'
+  - echo "$HANDBRAKE_LAST_COMMIT" > HANDBRAKE_LAST_COMMIT
+  - echo "$HANDBRAKE_LAST_COMMIT_DATE" > HANDBRAKE_LAST_COMMIT_DATE
+  - echo "$DOCKER_IMAGE_LAST_VERSION" > DOCKER_IMAGE_LAST_VERSION
+  - echo "$DOCKER_IMAGE_NIGHTLY_VERSION" > DOCKER_IMAGE_NIGHTLY_VERSION
+
+- name: checkout
+  image: alpine:3.9
+  commands:
+  - apk --no-cache add git
+  - git checkout $(cat DOCKER_IMAGE_LAST_VERSION)
+
+- name: set_image_version
+  image: alpine:3.9
+  commands:
+  - DOCKER_IMAGE_NIGHTLY_VERSION="$(cat DOCKER_IMAGE_NIGHTLY_VERSION)"
+  - sed -i 's/org.label-schema.version="unknown"/org.label-schema.version="'$${DOCKER_IMAGE_NIGHTLY_VERSION:1}'"/' Dockerfile.nightly
+
+- name: build
+  image: docker:18
+  commands:
+  - test -f SKIP_BUILD && echo "Build not needed, skipping step." && exit 0
+  - docker build --no-cache --pull --build-arg HANDBRAKE_DEBUG_MODE=max -t $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA -f Dockerfile.nightly .
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+
+- name: push_image
+  image: docker:18
+  environment:
+    DOCKERHUB_USERNAME:
+      from_secret: dockerhub_username
+    DOCKERHUB_PASSWORD:
+      from_secret: dockerhub_password
+  commands:
+  - test -f SKIP_BUILD && echo "Build not needed, skipping step." && exit 0
+  - apk --no-cache add bash
+  - DOCKER_IMAGE_NIGHTLY_VERSION="$(cat DOCKER_IMAGE_NIGHTLY_VERSION)"
+  - docker tag $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA $DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}:$DOCKER_IMAGE_NIGHTLY_VERSION
+  - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  - docker push "$DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}:$DOCKER_IMAGE_NIGHTLY_VERSION"
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+
+- name: cleanup
+  image: docker:18
+  commands:
+  - test -f SKIP_BUILD && echo "Build not needed, skipping step." && exit 0
+  - IMAGE_ID=$(docker images -q $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA)
+  - test "$IMAGE_ID" == "" || docker rmi -f $IMAGE_ID
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
+
+volumes:
+- name: docker
+  host:
+    path: /var/run/docker.sock
+
+---
+kind: pipeline
 name: after
 
 clone:
