@@ -174,7 +174,7 @@ steps:
   - DOCKER_IMAGE_LAST_VERSION="$(git ls-remote --tags https://github.com/$DRONE_REPO_NAMESPACE/$DRONE_REPO_NAME | awk '{print $2}' | sed 's|refs/tags/||' | sort -t. -k 1,1n -k 2,2n -k 3,3n | tail -n1)"
   - DOCKER_IMAGE_NIGHTLY_VERSION="$(echo "$DOCKER_IMAGE_LAST_VERSION-dev-$HANDBRAKE_LAST_COMMIT_DATE-$HANDBRAKE_LAST_COMMIT")"
   - |
-    if curl -s -L https://index.docker.io/v1/repositories/$${DRONE_REPO_NAME#docker-}/$DOCKER_IMAGE_NAME/tags | grep -qE "\"$DOCKER_IMAGE_NIGHTLY_VERSION\""
+    if curl -s -L https://index.docker.io/v1/repositories/$DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}/tags | grep -qE "\"$DOCKER_IMAGE_NIGHTLY_VERSION\""
     then
       touch SKIP_BUILD
     fi
