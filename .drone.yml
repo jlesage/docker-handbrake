@@ -192,7 +192,7 @@ steps:
   image: alpine:3.9
   commands:
   - apk --no-cache add git
-  - git checkout $(cat DOCKER_IMAGE_LAST_VERSION)
+  - git checkout $(cat $DOCKER_IMAGE_LAST_VERSION)
 
 - name: set_image_version
   image: alpine:3.9
