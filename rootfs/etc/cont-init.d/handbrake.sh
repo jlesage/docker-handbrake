@@ -24,7 +24,7 @@ if [ ! -f /config/ghb/preferences.json ]; then
 fi
 
 # Copy example hooks if needed.
-for hook in pre_conversion.sh post_conversion.sh
+for hook in pre_conversion.sh post_conversion.sh post_watch_folder_processing.sh
 do
   [ ! -f /config/hooks/$hook ] || continue
   [ ! -f /config/hooks/$hook.example ] || continue

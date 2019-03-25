@@ -272,6 +272,8 @@ process_video() {
         [ $hb_rc -eq 0 ] || break
     done
 
+    NUM_PROCESSED_FILES="$(expr $NUM_PROCESSED_FILES + 1)"
+
     if [ $hb_rc -eq 0 ]; then
         log "Conversion ended successfully."
         echo "$video $hash" >> "$SUCCESSFUL_CONVERSIONS"
@@ -294,6 +296,8 @@ process_video() {
 
 process_watch_folder() {
     WF="$1"
+
+    NUM_PROCESSED_FILES=0
 
     [ -d "$WF" ] || return
     WATCHDIR_HASH_changed "$WF" || return
@@ -320,6 +324,14 @@ process_watch_folder() {
     done 3<"$FILELIST"
     rm "$FILELIST"
     log "Watch folder '$WF' processing terminated."
+
+    # Call watch folder done hook.
+    if [ -f /config/hooks/post_watch_folder_processing.sh ] && [ "$NUM_PROCESSED_FILES" -gt 0 ]; then
+        log "Executing post watch folder processing hook..."
+        /usr/bin/with-contenv sh /config/hooks/post_watch_folder_processing.sh "$DIR"
+        log "Post watch folder processing hook exited with $?"
+    fi
+
 }
 
 log "starting..."

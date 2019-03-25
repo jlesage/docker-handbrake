@@ -604,6 +604,7 @@ The following table describe available hooks:
 |--------------------|-------------|--------------|
 | `/config/hooks/pre_conversion.sh` | Hook executed before the beginning of a video conversion. | The first argument is the path of the converted video.  The second argument is the path to the source file.  Finally, the third argument is the name of the Handbrake preset that will be used to convert the video. |
 | `/config/hooks/post_conversion.sh` | Hook executed when the conversion of a video file is terminated. | The first parameter is the status of the conversion.  A value of `0` indicates that the conversion terminated successfuly.  Any other value represent a failure.  The second argument is the path to the converted video (the output).  The third argument is the path to the source file.  Finally, the fourth argument is the name of the Handbrake preset used to convert the video. |
+| `/config/post_watch_folder_processing.sh | Hook executed after all videos in the watch folder have been processed. | The path of the watch folder. |
 
 During the first start of the container, example hooks are installed in
 `/config/hooks/`.  Example scripts have the suffix `.example`.  For example,

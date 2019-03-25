@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+# This is an example of a post watch folder processing hook.  This script is
+# always invoked with /bin/sh (shebang ignored).
+#
+# The argument of the script is the path to the watch folder.
+#
+
+WATCH_FOLDER=$1
+
+echo "post-watch folder processing: Watch folder = $WATCH_FOLDER"
+
+# TODO: Do something useful.
