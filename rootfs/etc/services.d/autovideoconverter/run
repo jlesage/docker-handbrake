@@ -323,7 +323,12 @@ log "starting..."
 [ -f "$SUCCESSFUL_CONVERSIONS" ] || touch "$SUCCESSFUL_CONVERSIONS"
 
 while true; do
-    for DIR in /watch /watch2 /watch3 /watch4 /watch5; do
+    for i in $(seq 1 ${AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS:-5}); do
+        DIR="/watch$i"
+        if [ "$i" -eq 1 ]; then
+            DIR="/watch"
+        fi
+
         # Set default settings.
         AC_PRESET="${AUTOMATED_CONVERSION_PRESET:-Very Fast 1080p30}"
         AC_FORMAT="${AUTOMATED_CONVERSION_FORMAT:-mp4}"

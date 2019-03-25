@@ -845,6 +845,17 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
         </unraid_template>
       </environment_variable>
       <environment_variable>
+        <name>AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS</name>
+        <description>Maximum number of watch folders handled by the automatic video converter.</description>
+        <default>5</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Number of Watch Folders</title>
+          <display>advanced</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
         <name>HANDBRAKE_DEBUG</name>
         <description>Setting this to `1` enables HandBrake debug logging for both the GUI and the automatic video converter.  For the latter, the increased verbosity is reflected in `/config/log/hb/conversion.log` (container path).  For the GUI, log messages are sent to `/config/log/hb/handbrake.debug.log` (container path).  **NOTE**: When enabled, a lot of information is generated and the log file will grow quickly.  Make sure to enable this temporarily and only when needed.</description>
         <default/>
