@@ -120,6 +120,7 @@ of this parameter has the format `<VARIABLE_NAME>=<VALUE>`.
 |`AUTOMATED_CONVERSION_PRESET`| HandBrake preset used by the automatic video converter.  See the [Automatic Video Conversion](#automatic-video-conversion) section for more details. | `Very Fast 1080p30` |
 |`AUTOMATED_CONVERSION_FORMAT`| Video container format used by the automatic video converter for output files.  This is typically the video filename extension.  See the [Automatic Video Conversion](#automatic-video-conversion) section for more details. | `mp4` |
 |`AUTOMATED_CONVERSION_KEEP_SOURCE`| When set to `0`, a video that has been successfully converted is removed from the watch folder. | `1` |
+|`AUTOMATED_CONVERSION_OUTPUT_DIR`| Root directory where converted videos should be written. | `/output` |
 |`AUTOMATED_CONVERSION_OUTPUT_SUBDIR`| Subdirectory of the output folder into which converted videos should be written.  By default, this variable is not set, meaning that videos are saved directly into `/output/`.  If `Home/Movies` is set, converted videos will be written to `/output/Home/Movies`.  Use the special value `SAME_AS_SRC` to use the same subfolder as the source.  For example, if the video source file is `/watch/Movies/mymovie.mkv`, the converted video will be written to `/output/Movies/`. | (unset) |
 |`AUTOMATED_CONVERSION_SOURCE_STABLE_TIME`| Time (in seconds) during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied. | `5` |
 |`AUTOMATED_CONVERSION_SOURCE_MIN_DURATION`| Minimum title duration (in seconds).  Shorter titles will be ignored.  This applies only to video disc sources (ISO file, `VIDEO_TS` folder or `BDMV` folder). | `10` |
@@ -551,6 +552,7 @@ additional watch folder:
   - `AUTOMATED_CONVERSION_FORMAT`
   - `AUTOMATED_CONVERSION_SOURCE_STABLE_TIME`
   - `AUTOMATED_CONVERSION_SOURCE_MIN_DURATION`
+  - `AUTOMATED_CONVERSION_OUTPUT_DIR`
   - `AUTOMATED_CONVERSION_OUTPUT_SUBDIR`
   - `AUTOMATED_CONVERSION_KEEP_SOURCE`
 
@@ -614,8 +616,8 @@ hooks.
 ### Temporary Conversion Directory
 
 A video being converted is written in a hidden, temporary directory under the
-root of the output directory (`/output`).  Once a conversion successfully
-terminates, the video file is moved to its final location.
+root of the output directory (`/output` by default).  Once a conversion
+successfully terminates, the video file is moved to its final location.
 
 This feature can be useful for scenarios where the output folder is monitored
 by another application: with proper configuration, one can make sure this

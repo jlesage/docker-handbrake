@@ -122,6 +122,7 @@ additional watch folder:
   - `AUTOMATED_CONVERSION_FORMAT`
   - `AUTOMATED_CONVERSION_SOURCE_STABLE_TIME`
   - `AUTOMATED_CONVERSION_SOURCE_MIN_DURATION`
+  - `AUTOMATED_CONVERSION_OUTPUT_DIR`
   - `AUTOMATED_CONVERSION_OUTPUT_SUBDIR`
   - `AUTOMATED_CONVERSION_KEEP_SOURCE`
         </content>
@@ -191,8 +192,8 @@ hooks.
         <title level="3">Temporary Conversion Directory</title>
         <content>
 A video being converted is written in a hidden, temporary directory under the
-root of the output directory (`/output`).  Once a conversion successfully
-terminates, the video file is moved to its final location.
+root of the output directory (`/output` by default).  Once a conversion
+successfully terminates, the video file is moved to its final location.
 
 This feature can be useful for scenarios where the output folder is monitored
 by another application: with proper configuration, one can make sure this
@@ -793,6 +794,18 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
         <unraid_template>
           <title>Automatic Video Converter: Keep Source Files</title>
           <description>Set to 0 to remove successfully converted videos from the watch folder, 1 to keep them.</description>
+          <display>always</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
+        <name>AUTOMATED_CONVERSION_OUTPUT_DIR</name>
+        <description>Root directory where converted videos should be written.</description>
+        <default>/output</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Output directory</title>
+          <description>Root directory where converted videos should be written.</description>
           <display>always</display>
           <required>false</required>
           <mask>false</mask>
