@@ -360,6 +360,18 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.16.0</version>
+        <date>2019-03-25</date>
+        <change>Upgraded HandBrake to version 1.2.2.</change>
+        <change>Upgraded libva to version 2.4.0.</change>
+        <change>Upgraded Intel Media SDK to version 18.4.1.</change>
+        <change>Upgraded Intel Media Driver to version 18.4.1.</change>
+        <change>Use baseimage based on Alpine Linux 3.9.</change>
+        <change>The number of watch folders is now configurable.</change>
+        <change>The root output directory used by the automatic video converter is now configurable.</change>
+        <change>Added hook invoked after all files in a watch folder are processed.</change>
+      </release>
+      <release>
         <version>1.15.1</version>
         <date>2019-02-12</date>
         <change>Fixed issue where Intel QSV would not be setup properly when its associated Linux devices where having different owners.</change>
