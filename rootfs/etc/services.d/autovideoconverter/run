@@ -296,6 +296,11 @@ process_video() {
             log_hb_encode_progress "$YAD_NP_FD"
         hb_rc=$pipestatus_1
 
+        # Make sure the output file has been generated.
+        if [ $hb_rc -eq 0 ] && [ ! -f "$OUTPUT_FILE_TMP" ]; then
+            hb_rc=1
+        fi
+
         if [ "$YAD_NP" != "UNSET" ]; then
             # Make sure to close the progress window.
             echo 100 >&$YAD_NP_FD
