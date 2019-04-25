@@ -272,6 +272,7 @@ RUN \
         # For optical drive listing:
         lsscsi \
         # For watchfolder
+        yad \
         findutils \
         expect
 

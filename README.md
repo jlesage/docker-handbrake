@@ -127,6 +127,7 @@ of this parameter has the format `<VARIABLE_NAME>=<VALUE>`.
 |`AUTOMATED_CONVERSION_CHECK_INTERVAL`| Interval (in seconds) at which the automatic video converter checks for new files. | `5` |
 |`AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS`| Maximum number of watch folders handled by the automatic video converter. | `5` |
 |`HANDBRAKE_DEBUG`| Setting this to `1` enables HandBrake debug logging for both the GUI and the automatic video converter.  For the latter, the increased verbosity is reflected in `/config/log/hb/conversion.log` (container path).  For the GUI, log messages are sent to `/config/log/hb/handbrake.debug.log` (container path).  **NOTE**: When enabled, a lot of information is generated and the log file will grow quickly.  Make sure to enable this temporarily and only when needed. | (unset) |
+|`AUTOMATED_CONVERSION_NO_GUI_PROGRESS`| When set to `1`, progress of videos converted by the automatic video converter is not shown in the HandBrake GUI. | `0` |
 
 ### Data Volumes
 
@@ -635,7 +636,6 @@ subdirectory.  The application can then be configured to monitor this
 subdirectory.  For example, if `AUTOMATED_CONVERSION_OUTPUT_SUBDIR` is set to
 `TV Shows` and `/output` is mapped to `$HOME/appvolumes/HandBrake` on the host,
 `$HOME/appvolumes/HandBrake/TV Shows` should be monitored by the application.
-application.
 
 ## Intel Quick Sync Video
 
