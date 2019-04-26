@@ -166,7 +166,7 @@ steps:
   commands:
   - apk --no-cache add git curl coreutils
   - HANDBRAKE_LAST_COMMIT="$(git ls-remote https://github.com/HandBrake/HandBrake.git | grep -w HEAD | awk '{ print substr($1,0,10) }')"
-  - HANDBRAKE_LAST_COMMIT_DATE="$(date -d"$(curl -s https://api.github.com/repos/HandBrake/HandBrake/commits/$HANDBRAKE_LAST_COMMIT | grep -w date | tail -n1 | tr -d '"' | awk '{print $2}')" +%Y%m%d)"
+  - HANDBRAKE_LAST_COMMIT_DATE="$(date -d"$(curl -s https://api.github.com/repos/HandBrake/HandBrake/commits/$HANDBRAKE_LAST_COMMIT | grep '"date:"' | tail -n1 | tr -d '"' | awk '{print $2}')" +%Y%m%d)"
   - DOCKER_IMAGE_LAST_VERSION="$(git ls-remote --tags https://github.com/$DRONE_REPO_NAMESPACE/$DRONE_REPO_NAME | awk '{print $2}' | sed 's|refs/tags/||' | sort -t. -k 1,1n -k 2,2n -k 3,3n | tail -n1)"
   - DOCKER_IMAGE_NIGHTLY_VERSION="$(echo "$DOCKER_IMAGE_LAST_VERSION-dev-$HANDBRAKE_LAST_COMMIT_DATE-$HANDBRAKE_LAST_COMMIT")"
   - |
