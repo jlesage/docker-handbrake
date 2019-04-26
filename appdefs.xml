@@ -359,6 +359,17 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.17.0</version>
+        <date>2019-04-26</date>
+        <change>Progress of conversions performed by the automatic video converter can be seen in the HandBrake GUI.</change>
+        <change>Fixed an issue where a video conversion failure would not be detected.</change>
+        <change>Now using baseimage v3.5.2, which brings the following changes:</change>
+        <change level="2">Updated installed packages to get latest security fixes.</change>
+        <change level="2">Fixed issue where the container could have a zombie process.</change>
+        <change level="2">Fixed issue where the password would not be submitted when pressing the enter key in the password modal.</change>
+        <change level="2">Use relative path for favicon ressources to be more friendly with reverse proxy senarios.</change>
+      </release>
+      <release>
         <version>1.16.0</version>
         <date>2019-03-25</date>
         <change>Upgraded HandBrake to version 1.2.2.</change>
