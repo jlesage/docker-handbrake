@@ -65,17 +65,13 @@ steps:
     - refs/tags/v*
 
 - name: push_readme
-  image: sheogorath/readme-to-dockerhub
-  environment:
-    README_PATH: /drone/src/README.md
-    DOCKERHUB_USERNAME:
+  image: jlesage/drone-push-readme
+  settings:
+    repo: ${DRONE_REPO_NAMESPACE}/${DRONE_REPO_NAME##docker-}
+    username:
       from_secret: dockerhub_username
-    DOCKERHUB_PASSWORD:
+    password:
       from_secret: dockerhub_password
-  commands:
-  - export DOCKERHUB_REPO_PREFIX="$DRONE_REPO_NAMESPACE"
-  - export DOCKERHUB_REPO_NAME="$${DRONE_REPO_NAME#docker-}"
-  - node /app/index.js
   when:
     ref:
     - refs/tags/v*
