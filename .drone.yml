@@ -259,19 +259,10 @@ clone:
 
 steps:
 - name: microbadger
-  image: alpine:3.9
-  environment:
-    MICROBADGER_WEBHOOK:
+  image: plugins/webhook
+  settings:
+    urls:
       from_secret: microbadger_webhook
-  commands:
-  - |
-    if [ -n "$MICROBADGER_WEBHOOK" ]; then
-        apk --no-cache add curl
-        echo "Invoking MicroBadger hook..."
-        curl -X POST --fail $MICROBADGER_WEBHOOK
-    else
-        echo "WARNING: MicroBadger webhook not defined!"
-    fi
   when:
     ref:
     - refs/tags/v*
