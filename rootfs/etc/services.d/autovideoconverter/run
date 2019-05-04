@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv sh
+#!/usr/bin/with-contenv bash
 
 set -u # Treat unset variables as an error.
 
@@ -36,56 +36,37 @@ clean_exit() {
     rm -rf "$WATCHDIR_HASH"
 }
 
-# http://cfajohnson.com/shell/cus-faq-2.html#Q11
-run() {
-    j=1
-    while eval "\${pipestatus_$j+:} false"; do
-        unset pipestatus_$j
-        j=$(($j+1))
-    done
-    j=1 com= k=1 l=
-    for a; do
-        if [ "x$a" = 'x|' ]; then
-            com="$com { $l "'3>&-
-                          echo "pipestatus_'$j'=$?" >&3
-                      } 4>&- |'
-            j=$(($j+1)) l=
-        else
-            l="$l \"\$$k\""
-        fi
-        k=$(($k+1))
-    done
-    com="$com $l"' 3>&- >&4 4>&-
-        echo "pipestatus_'$j'=$?"'
-    exec 4>&1
-    eval "$(exec 3>&1; eval "$com")"
-    exec 4>&-
-    j=1
-    while eval "\${pipestatus_$j+:} false"; do
-        eval "[ \$pipestatus_$j -eq 0 ]" || return 1
-        j=$(($j+1))
-    done
-    return 0
-}
-
 log() {
     echo "[$(basename "$0")] $*"
 }
 
 log_hb_encode_progress() {
-    LINE_COUNT=0
     while read OUTPUT; do
-        L="$(echo "$OUTPUT" | cut -d',' -f2- | sed 's/^ *//')"
-        if [ "$(expr $LINE_COUNT % 6)" = "0" ]; then
-            log "Encoding: $L"
-        fi
-        LINE_COUNT="$(expr $LINE_COUNT + 1)"
+        echo "Encoding $video: $OUTPUT"
+    done | awk 'NR % 12 == 0'
+}
 
-        if [ "$1" != "UNSET" ]; then
-            echo "$L" | cut -d ' ' -f1 >&6
-            echo "# $L" >&6
-        fi
-    done
+log_hb_encode_progress_yad() {
+    (
+        while read OUTPUT; do
+            echo "$OUTPUT" | cut -d ' ' -f1 2>/dev/null
+            echo "# $OUTPUT" 2>/dev/null
+        done
+
+        # Make sure to close the progress window.
+        echo "100" 2>/dev/null
+    ) | yad \
+            --fixed \
+            --width=384 \
+            --posx=$(expr $DISPLAY_WIDTH / 2 - 384 / 2) \
+            --posy=5 \
+            --title "Automatic Video Converter" \
+            --window-icon /opt/novnc/images/icons/master_icon.png \
+            --borders 10 \
+            --text "Encoding $video..." \
+            --no-buttons \
+            --auto-close \
+            --progress
 }
 
 WATCHDIR_HASH_calculate() {
@@ -248,63 +229,22 @@ process_video() {
         # Set the temporary output filename.
         OUTPUT_FILE_TMP="$OUTPUT_DIR_TMP/$basename.$AC_FORMAT"
 
-        # Create a named pipe for the progress window.
-        if [ "${AUTOMATED_CONVERSION_NO_GUI_PROGRESS:-0}" -eq 0 ]; then
-            YAD_NP="$(mktemp)"
-            rm "$YAD_NP" && mkfifo "$YAD_NP"
-            if [ "$?" -ne 0 ]; then
-                log "WARNING: Failed to create named pipe for UI progress."
-                rm "$YAD_NP"
-                YAD_NP="UNSET"
-            else
-                # Open a read/write file descriptor so we can write to the named
-                # pipe without blocking.
-                exec 6<> "$YAD_NP"
-            fi
-        else
-            YAD_NP="UNSET"
-        fi
-
-        # Open the progress window in background.
-        if [ "$YAD_NP" != "UNSET" ]; then
-            yad --fixed \
-                --width=384 \
-                --posx=$(expr $DISPLAY_WIDTH / 2 - 384 / 2) \
-                --posy=5 \
-                --title "Automatic Video Converter" \
-                --window-icon /opt/novnc/images/icons/master_icon.png \
-                --borders 10 \
-                --text "Encoding $video..." \
-                --no-buttons \
-                --auto-close \
-                --progress \
-                < "$YAD_NP" &
-        fi
-
         # Invoke HandBrake.
         echo "------- CONVERSION OUTPUT $(date) -------" >> \
             /config/log/hb/conversion.log
-        run $HANDBRAKE_CLI -i "$video" \
+        $HANDBRAKE_CLI -i "$video" \
                        -o "$OUTPUT_FILE_TMP" \
                        --title "$TITLE" \
                        --preset "$AC_PRESET" 2>> \
-            /config/log/hb/conversion.log \| \
-            /usr/bin/unbuffer -p grep "^Encoding" \| \
-            log_hb_encode_progress "$YAD_NP"
-        hb_rc=$pipestatus_1
+            /config/log/hb/conversion.log | \
+            /usr/bin/unbuffer -p grep "^Encoding" | \
+            stdbuf -oL cut -d',' -f2- | \
+            tee >(log_hb_encode_progress) >(log_hb_encode_progress_yad) > /dev/null
+        hb_rc=$?
 
         # Make sure the output file has been generated.
         if [ $hb_rc -eq 0 ] && [ ! -f "$OUTPUT_FILE_TMP" ]; then
             hb_rc=1
-        fi
-
-        if [ "$YAD_NP" != "UNSET" ]; then
-            # Make sure to close the progress window.
-            echo 100 >&6
-
-            # Close the file descriptor and remove the named pipe.
-            exec 6<&-
-            rm "$YAD_NP"
         fi
 
         # Move the file to its final location if conversion terminated
