@@ -359,6 +359,13 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.17.1</version>
+        <date>2019-05-04</date>
+        <change>Fixed an issue where the progress output of the automatic video converter would hang.</change>
+        <change>Enhanced the progress output of the automatic video converter by showing the path of the video being converted.</change>
+        <change>Enhanced the progress output of the automatic video converter by adjusting the frequency of messages.</change>
+      </release>
+      <release>
         <version>1.17.0</version>
         <date>2019-04-26</date>
         <change>Progress of conversions performed by the automatic video converter can be seen in the HandBrake GUI.</change>
