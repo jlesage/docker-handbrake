@@ -196,11 +196,6 @@ process_video() {
 
         # Now set the final output filename by adding the extension.
         OUTPUT_FILE="$OUTPUT_DIR/$basename.$AC_FORMAT"
-        if [ -f "$OUTPUT_FILE" ]; then
-            hb_rc=1
-            log "ERROR: Destination file '$OUTPUT_FILE' already exists."
-            break
-        fi
 
         # Call pre conversion hook.
         if [ -f /config/hooks/pre_conversion.sh ]; then
@@ -214,6 +209,13 @@ process_video() {
         if [ ! -f "$video" ] && [ ! -d "$video" ]; then
             log "Skipping '$video': no longer exists."
             continue
+        fi
+
+        # Check whether destination already exists
+        if [ -f "$OUTPUT_FILE" ]; then
+            hb_rc=1
+            log "ERROR: Destination file '$OUTPUT_FILE' already exists."
+            break
         fi
 
         # Set the temporary output directory: this is where the video will be
