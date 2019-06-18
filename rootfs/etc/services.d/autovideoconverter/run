@@ -106,6 +106,7 @@ get_video_titles() {
                    -t0 \
                    --min-duration $AC_SOURCE_MIN_DURATION 2>&1 |
     grep "^+ title " | sed 's/^+ title \([0-9]\+\):$/\1/'
+    return ${PIPESTATUS[0]}
 }
 
 process_video() {
@@ -165,6 +166,9 @@ process_video() {
 
     # Get video titles.
     VIDEO_TITLES="$(get_video_titles "$video")"
+    VIDEO_TITLES_RETVAL=$?
+    hb_rc=0
+
     VIDEO_TITLES="${VIDEO_TITLES:-UNSET}"
     if [ "$VIDEO_TITLES" != "UNSET" ]; then
         NUM_VIDEO_TITLES="$(echo "$VIDEO_TITLES" | wc -l)"
@@ -172,10 +176,19 @@ process_video() {
         NUM_VIDEO_TITLES="0"
     fi
 
-    log "Starting conversion of '$video' ($hash) using preset '$AC_PRESET'..."
-    log "$NUM_VIDEO_TITLES title(s) to process."
-    hb_rc=0
+    if [[ ${VIDEO_TITLES_RETVAL} -gt 0 ]]; then
+        log "File '${video}' (${hash}) was not a video, copying (unchanged) to output..."
+        cp -p "${video}" "${OUTPUT_DIR}/$(basename "${video}")" # "-p" maintains permissions, times etc...
+    elif [[ ${NUM_VIDEO_TITLES} -eq 0 ]]; then
+        log "ERROR: Could not identify titles in '${video}' (${hash})..."
+        hb_rc=1
+    else
+        log "Starting conversion of '${video}' (${hash}) using preset '${AC_PRESET}'..."
+        log "${NUM_VIDEO_TITLES} title(s) to process."
+    fi
+
     CUR_VIDEO_TITLE=0
+
     for TITLE in $VIDEO_TITLES; do
         [ "$TITLE" != "UNSET" ] || continue
 
