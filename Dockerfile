@@ -4,6 +4,8 @@
 # https://github.com/jlesage/docker-handbrake
 #
 
+ARG DOCKER_IMAGE_VERSION=unknown
+
 # Pull base image.
 FROM jlesage/baseimage-gui:alpine-3.9-v3.5.2
 
@@ -310,6 +312,6 @@ VOLUME ["/watch"]
 LABEL \
       org.label-schema.name="handbrake" \
       org.label-schema.description="Docker container for HandBrake" \
-      org.label-schema.version="unknown" \
+      org.label-schema.version="$DOCKER_IMAGE_VERSION" \
       org.label-schema.vcs-url="https://github.com/jlesage/docker-handbrake" \
       org.label-schema.schema-version="1.0"
