@@ -1,70 +1,51 @@
 #
-# This is a generic Drone pipeline used to build and push Docker image.
-#
-# Assumptions:
-#   - User name of the Dockerhub repository is the same as the one of the
-#     Github repository.
-#   - Name of the Dockerhub repository is the same as the one of the Github
-#     repository, minus the 'docker-' prefix.  For example, if the name of
-#     Github repository is 'docker-myapp', the name of the Dockerhub repository
-#     is expected to be 'myapp'.
-#   - The Github repository has a README.md file.
-#
-# Here are the secrets that are used:
-#   - dockerhub_username: The username used to login to Dockerhub.
-#   - dockerhub_password: The password used to login to Dockerhub.
-#   - microbadger_webook: Microbadger webhook.
+# Drone pipeline to build Docker image.
 #
 
 kind: pipeline
+type: docker
 name: default
 
 steps:
-- name: get_tools
-  image: alpine:3.9
-  commands:
-  - apk --no-cache add git
-  - git clone https://github.com/jlesage/docker-mgmt-tools
 
-- name: set_image_version
-  image: alpine:3.9
+- name: build-only
+  image: plugins/docker
+  settings:
+    repo: ${DRONE_REPO_NAMESPACE}/${DRONE_REPO_NAME##docker-}
+    build_args:
+    - DOCKER_IMAGE_VERSION=drone-ci
+    dry_run: true
+  when:
+    ref:
+      exclude:
+      - refs/tags/v*
+
+- name: set-docker-tags
+  image: alpine
   commands:
-  - sed -i 's/org.label-schema.version="unknown"/org.label-schema.version="'$${DRONE_TAG:1}'"/' Dockerfile
+  # Always tag the Docker image with the Git tag (i.e. vX.Y.Z).
+  - printf "${DRONE_TAG}" >> .tags
+  # Tag the Docker image with with 'latest' only if not a prerelease.
+  - printf "${DRONE_TAG}" | grep -q '-' || printf ",latest" >> .tags
   when:
     ref:
     - refs/tags/v*
 
-- name: build
-  image: docker:18
-  commands:
-  - docker build --no-cache --pull -t $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA .
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-
-- name: push_image
-  image: docker:18
-  environment:
-    DOCKERHUB_USERNAME:
+- name: build-and-push
+  image: plugins/docker
+  settings:
+    repo: ${DRONE_REPO_NAMESPACE}/${DRONE_REPO_NAME##docker-}
+    username:
       from_secret: dockerhub_username
-    DOCKERHUB_PASSWORD:
+    password:
       from_secret: dockerhub_password
-  commands:
-  - apk --no-cache add bash
-  - LATEST_TAG="$(./docker-mgmt-tools/get_docker_latest_tag_from_git_tag $DRONE_TAG)"
-  - docker tag $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA $DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}:$DRONE_TAG
-  - docker tag $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA $DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}:$LATEST_TAG
-  - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-  - docker push "$DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}:$DRONE_TAG"
-  - docker push "$DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}:$LATEST_TAG"
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
+    build_args:
+    - DOCKER_IMAGE_VERSION=${DRONE_TAG:1}
   when:
     ref:
     - refs/tags/v*
 
-- name: push_readme
+- name: push-dockerhub-readme
   image: jlesage/drone-push-readme
   settings:
     repo: ${DRONE_REPO_NAMESPACE}/${DRONE_REPO_NAME##docker-}
@@ -72,205 +53,165 @@ steps:
       from_secret: dockerhub_username
     password:
       from_secret: dockerhub_password
+    readme: DOCKERHUB.md
   when:
     ref:
     - refs/tags/v*
 
-- name: cleanup
-  image: docker:18
-  commands:
-  - IMAGE_ID=$(docker images -q $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA)
-  - test "$IMAGE_ID" == "" || docker rmi -f $IMAGE_ID
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-
-volumes:
-- name: docker
-  host:
-    path: /var/run/docker.sock
-
----
-kind: pipeline
-name: debug
-
-steps:
-- name: get_tools
-  image: alpine:3.9
-  commands:
-  - apk --no-cache add git
-  - git clone https://github.com/jlesage/docker-mgmt-tools
-
-- name: set_image_version
-  image: alpine:3.9
-  commands:
-  - sed -i 's/org.label-schema.version="unknown"/org.label-schema.version="'$${DRONE_TAG:1}-debug'"/' Dockerfile
-  when:
-    ref:
-    - refs/tags/v*
-
-- name: build
-  image: docker:18
-  commands:
-  - docker build --no-cache --pull --build-arg HANDBRAKE_DEBUG_MODE=max -t $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA .
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-
-- name: push_image
-  image: docker:18
-  environment:
-    DOCKERHUB_USERNAME:
-      from_secret: dockerhub_username
-    DOCKERHUB_PASSWORD:
-      from_secret: dockerhub_password
-  commands:
-  - apk --no-cache add bash
-  - docker tag $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA $DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}:$DRONE_TAG-debug
-  - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-  - docker push "$DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}:$DRONE_TAG-debug"
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-  when:
-    ref:
-    - refs/tags/v*
-
-- name: cleanup
-  image: docker:18
-  commands:
-  - IMAGE_ID=$(docker images -q $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA)
-  - test "$IMAGE_ID" == "" || docker rmi -f $IMAGE_ID
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-
-volumes:
-- name: docker
-  host:
-    path: /var/run/docker.sock
-
----
-kind: pipeline
-name: nightly
-
-steps:
-- name: get_tools
-  image: alpine:3.9
-  commands:
-  - apk --no-cache add git
-  - git clone https://github.com/jlesage/docker-mgmt-tools
-
-- name: prepare
-  image: alpine:3.9
-  commands:
-  - apk --no-cache add git curl coreutils
-  - HANDBRAKE_LAST_COMMIT="$(git ls-remote https://github.com/HandBrake/HandBrake.git | grep -w HEAD | awk '{ print substr($1,0,10) }')"
-  - HANDBRAKE_LAST_COMMIT_DATE="$(date -d"$(curl -s https://api.github.com/repos/HandBrake/HandBrake/commits/$HANDBRAKE_LAST_COMMIT | grep '"date":' | tail -n1 | tr -d '"' | awk '{print $2}')" +%Y%m%d)"
-  - DOCKER_IMAGE_LAST_VERSION="$(git ls-remote --tags https://github.com/$DRONE_REPO_NAMESPACE/$DRONE_REPO_NAME | awk '{print $2}' | sed 's|refs/tags/||' | sort -t. -k 1,1n -k 2,2n -k 3,3n | tail -n1)"
-  - DOCKER_IMAGE_NIGHTLY_VERSION="$(echo "$DOCKER_IMAGE_LAST_VERSION-dev-$HANDBRAKE_LAST_COMMIT_DATE-$HANDBRAKE_LAST_COMMIT")"
-  - |
-    if curl -s -L https://index.docker.io/v1/repositories/$DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}/tags | grep -qE "\"$DOCKER_IMAGE_NIGHTLY_VERSION\""
-    then
-      touch SKIP_BUILD
-    fi
-  - 'echo "HANDBRAKE_LAST_COMMIT:        $HANDBRAKE_LAST_COMMIT"'
-  - 'echo "HANDBRAKE_LAST_COMMIT_DATE:   $HANDBRAKE_LAST_COMMIT_DATE"'
-  - 'echo "DOCKER_IMAGE_LAST_VERSION:    $DOCKER_IMAGE_LAST_VERSION"'
-  - 'echo "DOCKER_IMAGE_NIGHTLY_VERSION: $DOCKER_IMAGE_NIGHTLY_VERSION"'
-  - 'echo "SKIP_BUILD:                   $(test -f SKIP_BUILD && echo yes || echo no)"'
-  - echo "$HANDBRAKE_LAST_COMMIT" > HANDBRAKE_LAST_COMMIT
-  - echo "$HANDBRAKE_LAST_COMMIT_DATE" > HANDBRAKE_LAST_COMMIT_DATE
-  - echo "$DOCKER_IMAGE_LAST_VERSION" > DOCKER_IMAGE_LAST_VERSION
-  - echo "$DOCKER_IMAGE_NIGHTLY_VERSION" > DOCKER_IMAGE_NIGHTLY_VERSION
-
-- name: checkout
-  image: alpine:3.9
-  commands:
-  - apk --no-cache add git
-  - git checkout $(cat $DOCKER_IMAGE_LAST_VERSION)
-
-- name: set_image_version
-  image: alpine:3.9
-  commands:
-  - DOCKER_IMAGE_NIGHTLY_VERSION="$(cat DOCKER_IMAGE_NIGHTLY_VERSION)"
-  - sed -i 's/org.label-schema.version="unknown"/org.label-schema.version="'$${DOCKER_IMAGE_NIGHTLY_VERSION:1}'"/' Dockerfile.nightly
-
-- name: build
-  image: docker:18
-  commands:
-  - test -f SKIP_BUILD && echo "Build not needed, skipping step." && exit 0
-  - docker build --no-cache --pull --build-arg HANDBRAKE_DEBUG_MODE=max -t $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA -f Dockerfile.nightly .
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-
-- name: push_image
-  image: docker:18
-  environment:
-    DOCKERHUB_USERNAME:
-      from_secret: dockerhub_username
-    DOCKERHUB_PASSWORD:
-      from_secret: dockerhub_password
-  commands:
-  - test -f SKIP_BUILD && echo "Build not needed, skipping step." && exit 0
-  - apk --no-cache add bash
-  - DOCKER_IMAGE_NIGHTLY_VERSION="$(cat DOCKER_IMAGE_NIGHTLY_VERSION)"
-  - docker tag $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA $DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}:$DOCKER_IMAGE_NIGHTLY_VERSION
-  - docker tag $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA $DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}:dev-latest
-  - echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-  - docker push "$DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}:$DOCKER_IMAGE_NIGHTLY_VERSION"
-  - docker push "$DRONE_REPO_NAMESPACE/$${DRONE_REPO_NAME#docker-}:dev-latest"
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-
-- name: cleanup
-  image: docker:18
-  commands:
-  - test -f SKIP_BUILD && echo "Build not needed, skipping step." && exit 0
-  - IMAGE_ID=$(docker images -q $DRONE_BUILD_NUMBER-$DRONE_COMMIT_SHA)
-  - test "$IMAGE_ID" == "" || docker rmi -f $IMAGE_ID
-  volumes:
-  - name: docker
-    path: /var/run/docker.sock
-
-volumes:
-- name: docker
-  host:
-    path: /var/run/docker.sock
-
-trigger:
-  branch:
-  - master
-  event:
-  - push
-
----
-kind: pipeline
-name: after
-
-clone:
-  disable: true
-
-steps:
 - name: microbadger
   image: plugins/webhook
   settings:
     urls:
       from_secret: microbadger_webhook
+  failure: ignore
   when:
     ref:
     - refs/tags/v*
 
-depends_on:
-- default
-- debug
+- name: notification
+  image: plugins/pushover
+  settings:
+    message: "{{ repo.owner }}/{{ repo.name }}#{{ truncate build.commit 8 }} ({{ build.branch }}) by {{ build.author }} - {{ build.message }}"
+    token:
+      from_secret: pushover_token
+    user:
+      from_secret: pushover_user
+  failure: ignore
+  when:
+    event:
+      exclude:
+      - pull_request
+    status:
+    - success
+    - failure
+
+---
+kind: pipeline
+type: docker
+name: debug
+
+steps:
+
+- name: build-only
+  image: plugins/docker
+  settings:
+    repo: ${DRONE_REPO_NAMESPACE}/${DRONE_REPO_NAME##docker-}
+    build_args:
+    - HANDBRAKE_DEBUG_MODE=max
+    - DOCKER_IMAGE_VERSION=drone-ci-debug
+    dry_run: true
+  when:
+    ref:
+      exclude:
+      - refs/tags/v*
+
+- name: set-docker-tags
+  image: alpine
+  commands:
+  # Always tag the Docker image with the Git tag (i.e. vX.Y.Z).
+  - printf "${DRONE_TAG}-debug" >> .tags
+  when:
+    ref:
+    - refs/tags/v*
+
+- name: build-and-push
+  image: plugins/docker
+  settings:
+    repo: ${DRONE_REPO_NAMESPACE}/${DRONE_REPO_NAME##docker-}
+    username:
+      from_secret: dockerhub_username
+    password:
+      from_secret: dockerhub_password
+    build_args:
+    - HANDBRAKE_DEBUG_MODE=max
+    - DOCKER_IMAGE_VERSION=${DRONE_TAG:1}
+  when:
+    ref:
+    - refs/tags/v*
+
+- name: microbadger
+  image: plugins/webhook
+  settings:
+    urls:
+      from_secret: microbadger_webhook
+  failure: ignore
+  when:
+    ref:
+    - refs/tags/v*
+
+- name: notification
+  image: plugins/pushover
+  settings:
+    message: "{{ repo.owner }}/{{ repo.name }}#{{ truncate build.commit 8 }} ({{ build.branch }}) by {{ build.author }} - {{ build.message }}"
+    token:
+      from_secret: pushover_token
+    user:
+      from_secret: pushover_user
+  failure: ignore
+  when:
+    event:
+      exclude:
+      - pull_request
+    status:
+    - success
+    - failure
+
+# The HandBrake nightly build is start by pushing a git tag in the following
+# format:
+#   v<IMG_VERSION>-dev-<YYYYMMDD><HASH>
+# Where:
+#  - IMG_VERSION is the latest Docker image version.
+#  - YYYYMMDD is the date of the latest HanBrake commit.
+#  - HASH is the hash of the latest HandBrake commit.
+---
+kind: pipeline
+type: docker
+name: nighly
+
+steps:
+
+- name: set-docker-tags
+  image: alpine
+  commands:
+  # Always tag the Docker image with the Git tag (i.e. vX.Y.Z).
+  - printf "${DRONE_TAG}" >> .tags
+
+- name: build-and-push
+  image: plugins/docker
+  settings:
+    repo: ${DRONE_REPO_NAMESPACE}/${DRONE_REPO_NAME##docker-}
+    username:
+      from_secret: dockerhub_username
+    password:
+      from_secret: dockerhub_password
+    build_args:
+    - HANDBRAKE_DEBUG_MODE=max
+    - HANDBRAKE_URL=https://github.com/HandBrake/HandBrake.git
+    - HANDBRAKE_VERSION=${DRONE_TAG##*-}
+    - DOCKER_IMAGE_VERSION=${DRONE_TAG:1}
+
+- name: microbadger
+  image: plugins/webhook
+  settings:
+    urls:
+      from_secret: microbadger_webhook
+  failure: ignore
+
+- name: notification
+  image: plugins/pushover
+  settings:
+    message: "{{ repo.owner }}/{{ repo.name }}#{{ truncate build.commit 8 }} ({{ build.branch }}) by {{ build.author }} - {{ build.message }}"
+    token:
+      from_secret: pushover_token
+    user:
+      from_secret: pushover_user
+  failure: ignore
+  when:
+    status:
+    - success
+    - failure
 
 trigger:
-  event:
-  - tag
+  ref:
+  - refs/tags/nightly-v*
 
-  status:
-  - success
-  - failure
