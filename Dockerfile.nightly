@@ -4,10 +4,11 @@
 # https://github.com/jlesage/docker-handbrake
 #
 
-ARG DOCKER_IMAGE_VERSION=unknown
-
 # Pull base image.
 FROM jlesage/baseimage-gui:alpine-3.9-v3.5.2
+
+# Docker image version is provided via build arg.
+ARG DOCKER_IMAGE_VERSION=unknown
 
 # Define software versions.
 # NOTE: x264 version 20171224 is the most recent one that doesn't crash.
