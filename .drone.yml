@@ -166,7 +166,7 @@ steps:
 ---
 kind: pipeline
 type: docker
-name: nighly
+name: nightly
 
 steps:
 
