@@ -5,14 +5,14 @@
 #
 
 # Pull base image.
-FROM jlesage/baseimage-gui:alpine-3.9-v3.5.2
+FROM jlesage/baseimage-gui:alpine-3.10-v3.5.3
 
 # Docker image version is provided via build arg.
 ARG DOCKER_IMAGE_VERSION=unknown
 
 # Define software versions.
 # NOTE: x264 version 20171224 is the most recent one that doesn't crash.
-ARG HANDBRAKE_VERSION=1.2.2
+ARG HANDBRAKE_VERSION=1.3.0
 ARG X264_VERSION=20171224
 ARG LIBVA_VERSION=2.4.1
 ARG INTEL_VAAPI_DRIVER_VERSION=2.3.0
@@ -60,11 +60,13 @@ RUN \
         diffutils \
         bash \
         nasm \
+        meson \
         # misc libraries
         jansson-dev \
         libxml2-dev \
         libpciaccess-dev \
         xz-dev \
+        numactl-dev \
         # media libraries
         libsamplerate-dev \
         libass-dev \
@@ -74,6 +76,7 @@ RUN \
         opus-dev \
         libvorbis-dev \
         speex-dev \
+        libvpx-dev \
         # gtk
         gtk+3.0-dev \
         dbus-glib-dev \
@@ -119,8 +122,6 @@ RUN \
     chmod +x /tmp/run_cmd && \
     # Download patches.
     echo "Downloading patches..." && \
-    curl -# -L -o HandBrake/A00-hb-video-preset.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A00-hb-video-preset.patch && \
-    curl -# -L -o HandBrake/A00-hb-qsv.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/A00-hb-qsv.patch && \
     curl -# -L -o MediaSDK/intel-media-sdk-debug-no-assert.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/intel-media-sdk-debug-no-assert.patch && \
     curl -# -L -o intel-media-driver/media-driver-c-assert-fix.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/media-driver-c-assert-fix.patch && \
     # Compile x264.
@@ -214,8 +215,6 @@ RUN \
     # Compile HandBrake.
     echo "Compiling HandBrake..." && \
     cd HandBrake && \
-    patch -p1 < A00-hb-video-preset.patch && \
-    patch -p1 < A00-hb-qsv.patch && \
     ./configure --prefix=/usr \
                 --debug=$HANDBRAKE_DEBUG_MODE \
                 --disable-gtk-update-checks \
@@ -260,12 +259,14 @@ RUN \
         libass \
         jansson \
         xz \
+        numactl \
         # Media codecs:
         libtheora \
         lame \
         opus \
         libvorbis \
         speex \
+        libvpx \
         # To read encrypted DVDs
         libdvdcss \
         # For main, big icons:
