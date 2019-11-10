@@ -214,5 +214,5 @@ steps:
 
 trigger:
   ref:
-  - refs/tags/nightly-v*
+  - refs/tags/v*-dev-*
 
