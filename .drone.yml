@@ -184,6 +184,7 @@ steps:
       from_secret: dockerhub_username
     password:
       from_secret: dockerhub_password
+    dockerfile: Dockerfile.nightly
     build_args:
     - HANDBRAKE_DEBUG_MODE=max
     - HANDBRAKE_URL=https://github.com/HandBrake/HandBrake.git
