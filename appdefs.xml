@@ -125,6 +125,7 @@ additional watch folder:
   - `AUTOMATED_CONVERSION_OUTPUT_DIR`
   - `AUTOMATED_CONVERSION_OUTPUT_SUBDIR`
   - `AUTOMATED_CONVERSION_KEEP_SOURCE`
+  - `AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION`
         </content>
       </section>
       <section>
@@ -824,6 +825,18 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
         <unraid_template>
           <title>Automatic Video Converter: Keep Source Files</title>
           <description>Set to 0 to remove successfully converted videos from the watch folder, 1 to keep them.</description>
+          <display>always</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
+        <name>AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION</name>
+        <description>When set to `ignore`, a non-video file found in the watch folder is ignored.  If set to `copy`, a non-video file is copied as-is to the output folder.</description>
+        <default>ignore</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Non-Video File Action</title>
+          <description>Set to [b][i]ignore[/i][/b] to ignore non-video files from the watch folder, or set to [b][i]copy[/i][/b] to copy them as-is to the output folder.</description>
           <display>always</display>
           <required>false</required>
           <mask>false</mask>

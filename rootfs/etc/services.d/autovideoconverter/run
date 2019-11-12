@@ -176,9 +176,11 @@ process_video() {
         NUM_VIDEO_TITLES="0"
     fi
 
-    if [[ ${VIDEO_TITLES_RETVAL} -gt 0 ]]; then
+    if [ "$VIDEO_TITLES_RETVAL" -gt 0 ] && [ "$AC_NON_VIDEO_FILE_ACTION" = "copy" ]; then
         log "File '${video}' (${hash}) was not a video, copying (unchanged) to output..."
         cp -p "${video}" "${OUTPUT_DIR}/$(basename "${video}")" # "-p" maintains permissions, times etc...
+    elif [ "$VIDEO_TITLES_RETVAL" -gt 0 ]; then
+        log "File '$video' ($hash) was not a video, ignoring..."
     elif [[ ${NUM_VIDEO_TITLES} -eq 0 ]]; then
         log "ERROR: Could not identify titles in '${video}' (${hash})..."
         hb_rc=1
@@ -362,10 +364,11 @@ while true; do
         AC_OUTPUT_DIR="${AUTOMATED_CONVERSION_OUTPUT_DIR:-/output}"
         AC_OUTPUT_SUBDIR="${AUTOMATED_CONVERSION_OUTPUT_SUBDIR:-UNSET}"
         AC_KEEP_SOURCE="${AUTOMATED_CONVERSION_KEEP_SOURCE:-1}"
+        AC_NON_VIDEO_FILE_ACTION="${AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION:-ignore}"
 
         # Apply per-watch folder settings.
         if [ -n "${DIR#*/watch}" ]; then
-            for VAR in PRESET FORMAT SOURCE_STABLE_TIME SOURCE_MIN_DURATION OUTPUT_DIR OUTPUT_SUBDIR KEEP_SOURCE
+            for VAR in PRESET FORMAT SOURCE_STABLE_TIME SOURCE_MIN_DURATION OUTPUT_DIR OUTPUT_SUBDIR KEEP_SOURCE NON_VIDEO_FILE_ACTION
             do
                 eval "AC_$VAR=\"\${AUTOMATED_CONVERSION_${VAR}_${DIR#*/watch}:-\$AC_$VAR}\""
             done
