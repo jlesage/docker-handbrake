@@ -949,6 +949,17 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
           <mask>false</mask>
         </unraid_template>
       </environment_variable>
+      <environment_variable>
+        <name>AUTOMATED_CONVERSION_HANDBRAKE_CUSTOM_ARGS</name>
+        <description>Custom arguments to pass to HandBrake when performing a conversion.</description>
+        <default/>
+        <unraid_template>
+          <title>Automatic Video Converter: Custom HandBrake Arguments</title>
+          <display>advanced</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
     </environment_variables>
     <!-- Volumes -->
     <volumes>

@@ -258,7 +258,8 @@ process_video() {
         $HANDBRAKE_CLI -i "$video" \
                        -o "$OUTPUT_FILE_TMP" \
                        --title "$TITLE" \
-                       --preset "$AC_PRESET" 2>> \
+                       --preset "$AC_PRESET" \
+                       $AC_HANDBRAKE_CUSTOM_ARGS 2>> \
             /config/log/hb/conversion.log | \
             /usr/bin/unbuffer -p grep "^Encoding" | \
             stdbuf -oL cut -d',' -f2- | \
@@ -372,10 +373,11 @@ while true; do
         AC_KEEP_SOURCE="${AUTOMATED_CONVERSION_KEEP_SOURCE:-1}"
         AC_NON_VIDEO_FILE_ACTION="${AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION:-ignore}"
         AC_NON_VIDEO_FILE_EXTENSIONS="${AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS:-jpg jpeg bmp png gif txt nfo}"
+        AC_HANDBRAKE_CUSTOM_ARGS="${AUTOMATED_CONVERSION_HANDBRAKE_CUSTOM_ARGS:-}"
 
         # Apply per-watch folder settings.
         if [ -n "${DIR#*/watch}" ]; then
-            for VAR in PRESET FORMAT SOURCE_STABLE_TIME SOURCE_MIN_DURATION OUTPUT_DIR OUTPUT_SUBDIR KEEP_SOURCE NON_VIDEO_FILE_ACTION NON_VIDEO_FILE_EXTENSIONS
+            for VAR in PRESET FORMAT SOURCE_STABLE_TIME SOURCE_MIN_DURATION OUTPUT_DIR OUTPUT_SUBDIR KEEP_SOURCE NON_VIDEO_FILE_ACTION NON_VIDEO_FILE_EXTENSIONS HANDBRAKE_CUSTOM_ARGS
             do
                 eval "AC_$VAR=\"\${AUTOMATED_CONVERSION_${VAR}_${DIR#*/watch}:-\$AC_$VAR}\""
             done
