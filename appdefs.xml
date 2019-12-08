@@ -360,6 +360,12 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.19.0</version>
+        <date>2019-12-08</date>
+        <change>Added the ability to set a list of file extensions to be considered as non-video files.  This fixes an issue where the automatic video converter would successfully convert non-video files, like images.</change>
+        <change>Added the ability to provide custom arguments to HandBrake when it is invoked by the automatic video converter.</change>
+      </release>
+      <release>
         <version>1.18.0</version>
         <date>2019-11-11</date>
         <change>Upgraded HandBrake to version 1.3.0.</change>
