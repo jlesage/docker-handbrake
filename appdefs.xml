@@ -853,6 +853,17 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
         </unraid_template>
       </environment_variable>
       <environment_variable>
+        <name>AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS</name>
+        <description>Space-separated list of file extensions to be considered as not being videos.  Most non-video files are properly rejected by HandBrake.  However, some files, like images, are convertible by HandBrake even if they are not video files.</description>
+        <default>jpg jpeg bmp png gif txt nfo</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Non-Video File Extensions</title>
+          <display>advanced</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
         <name>AUTOMATED_CONVERSION_OUTPUT_DIR</name>
         <description>Root directory where converted videos should be written.</description>
         <default>/output</default>
