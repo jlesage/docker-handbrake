@@ -12,13 +12,13 @@ ARG DOCKER_IMAGE_VERSION=unknown
 
 # Define software versions.
 # NOTE: x264 version 20171224 is the most recent one that doesn't crash.
-ARG HANDBRAKE_VERSION=1.3.0
+ARG HANDBRAKE_VERSION=1.3.1
 ARG X264_VERSION=20171224
-ARG LIBVA_VERSION=2.4.1
-ARG INTEL_VAAPI_DRIVER_VERSION=2.3.0
-ARG GMMLIB_VERSION=18.4.1
-ARG INTEL_MEDIA_DRIVER_VERSION=18.4.1
-ARG INTEL_MEDIA_SDK_VERSION=18.4.1
+ARG LIBVA_VERSION=2.6.1
+ARG INTEL_VAAPI_DRIVER_VERSION=2.4.0
+ARG GMMLIB_VERSION=19.4.1
+ARG INTEL_MEDIA_DRIVER_VERSION=19.4.0
+ARG INTEL_MEDIA_SDK_VERSION=19.4.0
 
 # Define software download URLs.
 ARG HANDBRAKE_URL=https://download.handbrake.fr/releases/${HANDBRAKE_VERSION}/HandBrake-${HANDBRAKE_VERSION}-source.tar.bz2
@@ -239,7 +239,6 @@ RUN \
         /usr/lib/libva*.la \
         /opt/intel/mediasdk/include \
         /opt/intel/mediasdk/lib64/pkgconfig \
-        /opt/intel/mediasdk/lib64/*.a \
         /opt/intel/mediasdk/lib64/*.la \
         # HandBrake already include a statically-linked version of libmfx.
         /opt/intel/mediasdk/lib64/libmfx.* \
