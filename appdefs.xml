@@ -975,6 +975,18 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
           <mask>false</mask>
         </unraid_template>
       </environment_variable>
+      <environment_variable>
+        <name>AUTOMATED_CONVERSION_INSTALL_PKGS</name>
+        <description>Space-separated list of Alpine Linux packages to install.  This is useful when the automatic video converter's hooks require tools not available in the container image.  See https://pkgs.alpinelinux.org/packages?name=&amp;branch=v3.9&amp;arch=x86_64 for the list of available Alpine Linux packages.</description>
+        <default/>
+        <unraid_template>
+          <title>Automatic Video Converter: Install Packages</title>
+        <description>Space-separated list of Alpine Linux packages to install.  This is useful when the automatic video converter's hooks require requires tools not available in the container image.  See [i]https://pkgs.alpinelinux.org[/i] for the list of available Alpine Linux packages.</description>
+          <display>advanced</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
     </environment_variables>
     <!-- Volumes -->
     <volumes>
