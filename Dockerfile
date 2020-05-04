@@ -12,7 +12,7 @@ ARG DOCKER_IMAGE_VERSION=unknown
 
 # Define software versions.
 # NOTE: x264 version 20171224 is the most recent one that doesn't crash.
-ARG HANDBRAKE_VERSION=1.3.1
+ARG HANDBRAKE_VERSION=1.3.2
 ARG X264_VERSION=20171224
 ARG LIBVA_VERSION=2.6.1
 ARG INTEL_VAAPI_DRIVER_VERSION=2.4.0
@@ -21,7 +21,7 @@ ARG INTEL_MEDIA_DRIVER_VERSION=19.4.0r
 ARG INTEL_MEDIA_SDK_VERSION=19.4.0
 
 # Define software download URLs.
-ARG HANDBRAKE_URL=https://download.handbrake.fr/releases/${HANDBRAKE_VERSION}/HandBrake-${HANDBRAKE_VERSION}-source.tar.bz2
+ARG HANDBRAKE_URL=https://github.com/HandBrake/HandBrake/releases/download/${HANDBRAKE_VERSION}/HandBrake-${HANDBRAKE_VERSION}-source.tar.bz2
 ARG X264_URL=https://download.videolan.org/pub/videolan/x264/snapshots/x264-snapshot-${X264_VERSION}-2245-stable.tar.bz2
 ARG LIBVA_URL=https://github.com/intel/libva/releases/download/${LIBVA_VERSION}/libva-${LIBVA_VERSION}.tar.bz2
 ARG INTEL_VAAPI_DRIVER_URL=https://github.com/intel/intel-vaapi-driver/releases/download/${INTEL_VAAPI_DRIVER_VERSION}/intel-vaapi-driver-${INTEL_VAAPI_DRIVER_VERSION}.tar.bz2
