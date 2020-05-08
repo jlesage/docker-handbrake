@@ -300,7 +300,7 @@ COPY rootfs/ /
 
 # Set environment variables.
 ENV APP_NAME="HandBrake" \
-    AUTOMATED_CONVERSION_PRESET="Very Fast 1080p30" \
+    AUTOMATED_CONVERSION_PRESET="General/Very Fast 1080p30" \
     AUTOMATED_CONVERSION_FORMAT="mp4"
 
 # Define mountable directories.

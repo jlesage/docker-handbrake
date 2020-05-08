@@ -76,7 +76,7 @@ preset.  Both the format and the preset are specified via environment variables:
 
 | Variable       | Default |
 |----------------|---------|
-|`AUTOMATED_CONVERSION_PRESET` | "Very Fast 1080p30" |
+|`AUTOMATED_CONVERSION_PRESET` | "General/Very Fast 1080p30" |
 |`AUTOMATED_CONVERSION_FORMAT` | "mp4" |
 
 See the [Environment Variables](#environment-variables) section for details
@@ -363,6 +363,7 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
         <version>1.22.0</version>
         <date>2020-05-04</date>
         <change>Upgraded HandBrake to version 1.3.2.</change>
+        <change level="2">NOTE: Presets are now identified with their group. This means that any preset configured for the automatic video converter needs to be adjusted.</change>
         <change>Upgraded libva to version 2.7.1.</change>
         <change>Upgraded Intel Media Driver to version 20.1.1.</change>
         <change>Upgraded Intel Media SDK to version 20.1.1.</change>
@@ -835,10 +836,10 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
       <environment_variable>
         <name>AUTOMATED_CONVERSION_PRESET</name>
         <description>HandBrake preset used by the automatic video converter.  See the [Automatic Video Conversion](#automatic-video-conversion) section for more details.</description>
-        <default>Very Fast 1080p30</default>
+        <default>General/Very Fast 1080p30</default>
         <unraid_template>
           <title>Automatic Video Converter: Preset</title>
-          <description>Preset used by the automatic video converter.  Name of all available presets can be seen via the HandBrake GUI.</description>
+          <description>Preset used by the automatic video converter.  Name of all available presets can be seen via the HandBrake GUI.  Note that group of the preset must be included.</description>
           <display>always</display>
           <required>false</required>
           <mask>false</mask>
