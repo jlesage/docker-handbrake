@@ -82,14 +82,17 @@ preset.  Both the format and the preset are specified via environment variables:
 See the [Environment Variables](#environment-variables) section for details
 about setting environment variables.
 
-**NOTE**: Converted videos are stored to the `/output` folder of the container.
+**NOTE**: A preset is identified by its category and its name.
 
 **NOTE**: All default presets, along with personalized/custom ones, can be seen
 with the HandBrake GUI.
 
+**NOTE**: Converted videos are stored, by default, to the `/output` folder of
+the container.
+
 **NOTE**: The status and progression of conversions performed by the automatic
-video converter can only be seen in the container's log.  It is not something
-visible from the GUI.  Container's log can be obtained by executing the command
+video converter can be seen from both the GUI and the container's log.
+Container's log can be obtained by executing the command
 `docker logs handbrake`, where `handbrake` is the name of the container.  Also,
 full details about the conversion are stored in `/config/log/hb/conversion.log`
 (container path).
