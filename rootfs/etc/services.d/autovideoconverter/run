@@ -49,12 +49,11 @@ log_hb_encode_progress() {
 log_hb_encode_progress_yad() {
     (
         while read OUTPUT; do
-            echo "$OUTPUT" | cut -d ' ' -f1 2>/dev/null
+            # This control the progress bar.
+            echo "$OUTPUT" | cut -d',' -f2- | cut -d' ' -f2 2>/dev/null
+            # This put the text inside the progress bar.
             echo "# $OUTPUT" 2>/dev/null
         done
-
-        # Make sure to close the progress window.
-        echo "100" 2>/dev/null
     ) | yad \
             --fixed \
             --width=384 \
@@ -65,7 +64,6 @@ log_hb_encode_progress_yad() {
             --borders 10 \
             --text "Encoding $video..." \
             --no-buttons \
-            --auto-close \
             --progress
 }
 
@@ -262,9 +260,12 @@ process_video() {
                        $AC_HANDBRAKE_CUSTOM_ARGS 2>> \
             /config/log/hb/conversion.log | \
             /usr/bin/unbuffer -p grep "^Encoding" | \
-            stdbuf -oL cut -d',' -f2- | \
+            stdbuf -oL cut -d' ' -f2- | \
             tee >(log_hb_encode_progress) >(log_hb_encode_progress_yad) > /dev/null
         hb_rc=$?
+
+        # Close YAD window.
+        killall -SIGUSR1 yad 2> /dev/null
 
         # Make sure the output file has been generated.
         if [ $hb_rc -eq 0 ] && [ ! -f "$OUTPUT_FILE_TMP" ]; then
