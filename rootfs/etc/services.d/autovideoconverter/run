@@ -307,6 +307,12 @@ process_video() {
         fi
     else
         log "Conversion failed."
+        log "For more details about the failure, see /config/log/hb/conversion.log."
+        if ! echo "$AC_PRESET" | grep -q "/"; then
+            log "NOTE: The configured preset doesn't seem to include its category.  A preset must"
+            log "      must now be identified using the following format: '<CATEGORY>/<PRESET NAME>'."
+            log "      This may be the cause of the current failure."
+        fi
         echo "$video $hash" >> "$FAILED_CONVERSIONS"
     fi
 }
