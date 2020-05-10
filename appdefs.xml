@@ -363,6 +363,12 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.22.1</version>
+        <date>2020-05-09</date>
+        <change>Fixed the default preset used by the automatic video converter.</change>
+        <change>Fixed an issue where progress of a multi-pass encoding done by the automatic video converter would not be displayed correctly in the UI.</change>
+      </release>
+      <release>
         <version>1.22.0</version>
         <date>2020-05-04</date>
         <change>Upgraded HandBrake to version 1.3.2.</change>
