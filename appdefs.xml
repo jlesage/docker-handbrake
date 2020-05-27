@@ -363,6 +363,11 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.22.2</version>
+        <date>2020-05-26</date>
+        <change>Fixed issue where Intel QSV H.265 encoding would fail.</change>
+      </release>
+      <release>
         <version>1.22.1</version>
         <date>2020-05-09</date>
         <change>Fixed the default preset used by the automatic video converter.</change>
