@@ -12,7 +12,7 @@ ARG DOCKER_IMAGE_VERSION=unknown
 
 # Define software versions.
 # NOTE: x264 version 20171224 is the most recent one that doesn't crash.
-ARG HANDBRAKE_VERSION=1.3.2
+ARG HANDBRAKE_VERSION=1.3.3
 ARG X264_VERSION=20171224
 ARG LIBVA_VERSION=2.7.1
 ARG INTEL_VAAPI_DRIVER_VERSION=2.4.1
@@ -124,7 +124,6 @@ RUN \
     echo "Downloading patches..." && \
     curl -# -L -o MediaSDK/intel-media-sdk-debug-no-assert.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/intel-media-sdk-debug-no-assert.patch && \
     curl -# -L -o intel-media-driver/media-driver-c-assert-fix.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/media-driver-c-assert-fix.patch && \
-    curl -# -L -o HandBrake/hb-hevc-qsv.patch https://github.com/HandBrake/HandBrake/commit/c5f995f59a6fa34fbfa577d2072aae9acf953844.patch && \
     # Compile x264.
     echo "Compiling x264..." && \
     cd x264 && \
@@ -216,7 +215,6 @@ RUN \
     # Compile HandBrake.
     echo "Compiling HandBrake..." && \
     cd HandBrake && \
-    patch -p1 < hb-hevc-qsv.patch && \
     ./configure --prefix=/usr \
                 --debug=$HANDBRAKE_DEBUG_MODE \
                 --disable-gtk-update-checks \
