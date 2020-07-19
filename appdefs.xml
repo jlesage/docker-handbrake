@@ -367,7 +367,7 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
         <date>2020-06-22</date>
         <change>Upgraded HandBrake to version 1.3.3.</change>
         <change>Upgraded Intel VAAPI driver to version 2.4.1.</change>
-        <change>Now using Alpine 11 baseimage.</change>
+        <change>Now using Alpine 3.11 baseimage.</change>
       </release>
       <release>
         <version>1.22.2</version>
