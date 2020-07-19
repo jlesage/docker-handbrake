@@ -3,7 +3,7 @@
 
 This is a Docker container for [HandBrake](https://handbrake.fr/).
 
-The GUI of the application is accessed through a modern web browser (no installation or configuration needed on client side) or via any VNC client.
+The GUI of the application is accessed through a modern web browser (no installation or configuration needed on the client side) or via any VNC client.
 
 A fully automated mode is also available: drop files into a watch folder and let HandBrake process them without any user interaction.
 
