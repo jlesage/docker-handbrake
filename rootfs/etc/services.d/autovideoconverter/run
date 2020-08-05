@@ -181,7 +181,8 @@ process_video() {
     fi
 
     if [ "$VIDEO_TITLES_RETVAL" -gt 0 ] && [ "$AC_NON_VIDEO_FILE_ACTION" = "copy" ]; then
-        log "File '${video}' (${hash}) was not a video, copying (unchanged) to output..."
+        log "File '$video' ($hash) is not a video, copying (unchanged) to output..."
+        mkdir -p "$OUTPUT_DIR"
         cp -p "${video}" "${OUTPUT_DIR}/$(basename "${video}")" # "-p" maintains permissions, times etc...
     elif [ "$VIDEO_TITLES_RETVAL" -gt 0 ]; then
         log "File '$video' ($hash) is not a video, ignoring..."
