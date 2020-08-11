@@ -320,7 +320,7 @@ process_video() {
 }
 
 process_watch_folder() {
-    local filter
+    local filter='-true'
     WF="$1"
 
     NUM_PROCESSED_FILES=0
@@ -339,13 +339,13 @@ process_watch_folder() {
     log "Processing watch folder '$WF'..."
     FILELIST="$(mktemp)"
 
-    if [ ! -z "${AUTOMATED_CONVERSION_INPUT_FORMAT}" ]; then
+    if [ ! -z "${AUTOMATED_CONVERSION_INPUT_FORMAT:-}" ]; then
         declare -a _types_=(${AUTOMATED_CONVERSION_INPUT_FORMAT})
         filter="${_types_[@]/#/ -o -name *.}"
         filter="${filter# -o }"
     fi
 
-    find "$WF" -follow -type f -not -path '*/\.*' \( $filter \) -printf "%T@ %p\n" | \
+    find "$WF" -follow -type f -not -path '*/\.*' \( ${filter} \) -printf "%T@ %p\n" | \
         sort -n | \
         cut -d' ' -f2- | \
         sed 's|/VIDEO_TS/.*$|/VIDEO_TS|g' | \
