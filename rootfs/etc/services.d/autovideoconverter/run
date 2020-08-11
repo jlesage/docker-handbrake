@@ -320,6 +320,7 @@ process_video() {
 }
 
 process_watch_folder() {
+    local filter
     WF="$1"
 
     NUM_PROCESSED_FILES=0
@@ -337,12 +338,19 @@ process_watch_folder() {
     WATCHDIR_HASH_update "$WF"
     log "Processing watch folder '$WF'..."
     FILELIST="$(mktemp)"
-    find "$WF" -follow -type f -not -path '*/\.*' -printf "%T@ %p\n" | \
+
+    if [ ! -z "${AUTOMATED_CONVERSION_INPUT_FORMAT}" ]; then
+        filter="${_types_[@]/#/ -o -name *.}"
+        filter="${filter# -o }"
+    fi
+
+    find "$WF" -follow -type f -not -path '*/\.*' \( $filter \) -printf "%T@ %p\n" | \
         sort -n | \
         cut -d' ' -f2- | \
         sed 's|/VIDEO_TS/.*$|/VIDEO_TS|g' | \
         sed 's|/BDMV/.*$|/BDMV|g' | \
         uniq > "$FILELIST"
+
     while read -u 3 FILE
     do
         process_video "$FILE" "$WF"
