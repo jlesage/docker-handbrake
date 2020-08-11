@@ -340,6 +340,7 @@ process_watch_folder() {
     FILELIST="$(mktemp)"
 
     if [ ! -z "${AUTOMATED_CONVERSION_INPUT_FORMAT}" ]; then
+        local -n _types_ = (${AUTOMATED_CONVERSION_INPUT_FORMAT})
         filter="${_types_[@]/#/ -o -name *.}"
         filter="${filter# -o }"
     fi
