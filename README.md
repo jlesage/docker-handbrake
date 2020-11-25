@@ -465,7 +465,7 @@ server {
 ```
 ## Shell Access
 
-To get shell access to a the running container, execute the following command:
+To get shell access to the running container, execute the following command:
 
 ```
 docker exec -ti CONTAINER sh
