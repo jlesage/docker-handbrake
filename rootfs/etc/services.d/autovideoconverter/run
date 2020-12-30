@@ -232,10 +232,12 @@ process_video() {
         fi
 
         # Check whether destination already exists
-        if [ -f "$OUTPUT_FILE" ]; then
+        if [ -f "$OUTPUT_FILE" ] && [ "$AC_OVERWRITE_OUTPUT" == "0" ]; then
             hb_rc=1
             log "ERROR: Destination file '$OUTPUT_FILE' already exists."
             break
+        elif [ -f "$OUTPUT_FILE" ] && [ "$AC_OVERWRITE_OUTPUT" == "1" ]; then
+            log "WARNING: Overwriting '$OUTPUT_FILE'"
         fi
 
         # Set the temporary output directory: this is where the video will be
@@ -277,7 +279,7 @@ process_video() {
         # successfully.
         if [ $hb_rc -eq 0 ]; then
             mkdir -p "$OUTPUT_DIR"
-            mv "$OUTPUT_FILE_TMP" "$OUTPUT_FILE"
+            mv -f "$OUTPUT_FILE_TMP" "$OUTPUT_FILE"
         fi
         rm -rf "$OUTPUT_DIR_TMP"
 
@@ -382,10 +384,11 @@ while true; do
         AC_NON_VIDEO_FILE_ACTION="${AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION:-ignore}"
         AC_NON_VIDEO_FILE_EXTENSIONS="${AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS:-jpg jpeg bmp png gif txt nfo}"
         AC_HANDBRAKE_CUSTOM_ARGS="${AUTOMATED_CONVERSION_HANDBRAKE_CUSTOM_ARGS:-}"
+        AC_OVERWRITE_OUTPUT="${AUTOMATED_CONVERSION_OVERWRITE_OUTPUT:-0}"
 
         # Apply per-watch folder settings.
         if [ -n "${DIR#*/watch}" ]; then
-            for VAR in PRESET FORMAT SOURCE_STABLE_TIME SOURCE_MIN_DURATION OUTPUT_DIR OUTPUT_SUBDIR KEEP_SOURCE NON_VIDEO_FILE_ACTION NON_VIDEO_FILE_EXTENSIONS HANDBRAKE_CUSTOM_ARGS
+            for VAR in PRESET FORMAT SOURCE_STABLE_TIME SOURCE_MIN_DURATION OUTPUT_DIR OUTPUT_SUBDIR KEEP_SOURCE NON_VIDEO_FILE_ACTION NON_VIDEO_FILE_EXTENSIONS HANDBRAKE_CUSTOM_ARGS OVERWRITE_OUTPUT
             do
                 eval "AC_$VAR=\"\${AUTOMATED_CONVERSION_${VAR}_${DIR#*/watch}:-\$AC_$VAR}\""
             done
