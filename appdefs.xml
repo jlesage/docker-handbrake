@@ -127,6 +127,7 @@ additional watch folder:
   - `AUTOMATED_CONVERSION_SOURCE_MIN_DURATION`
   - `AUTOMATED_CONVERSION_OUTPUT_DIR`
   - `AUTOMATED_CONVERSION_OUTPUT_SUBDIR`
+  - `AUTOMATED_CONVERSION_OVERWRITE_OUTPUT`
   - `AUTOMATED_CONVERSION_KEEP_SOURCE`
   - `AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION`
         </content>
@@ -947,6 +948,18 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
         </unraid_template>
       </environment_variable>
       <environment_variable>
+        <name>AUTOMATED_CONVERSION_OVERWRITE_OUTPUT</name>
+        <description>Setting this to `1` allows the final destination file to be overwritten if it already exists.</description>
+        <default>0</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Overrite Destination</title>
+          <description>Setting this to 1 allows the final destination file to be overwritten if it already exists.</description>
+          <display>advanced</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
         <name>AUTOMATED_CONVERSION_SOURCE_STABLE_TIME</name>
         <description>Time (in seconds) during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied.</description>
         <default>5</default>
@@ -1027,6 +1040,18 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
         <unraid_template>
           <title>Automatic Video Converter: Install Packages</title>
         <description>Space-separated list of Alpine Linux packages to install.  This is useful when the automatic video converter's hooks require requires tools not available in the container image.  See [i]https://pkgs.alpinelinux.org[/i] for the list of available Alpine Linux packages.</description>
+          <display>advanced</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
+        <name>AUTOMATED_CONVERSION_OVERWRITE_OUTPUT</name>
+        <description>Setting this to `1` allows the final destination file to be overwritten if it already exists.</description>
+        <default>0</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Overrite Destination</title>
+          <description>Setting this to 1 allows the final destination file to be overwritten if it already exists.</description>
           <display>advanced</display>
           <required>false</required>
           <mask>false</mask>
