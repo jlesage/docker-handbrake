@@ -129,7 +129,9 @@ additional watch folder:
   - `AUTOMATED_CONVERSION_OUTPUT_SUBDIR`
   - `AUTOMATED_CONVERSION_OVERWRITE_OUTPUT`
   - `AUTOMATED_CONVERSION_KEEP_SOURCE`
+  - `AUTOMATED_CONVERSION_VIDEO_FILE_EXTENSIONS`
   - `AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION`
+  - `AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS`
         </content>
       </section>
       <section>
@@ -897,6 +899,18 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
           <title>Automatic Video Converter: Keep Source Files</title>
           <description>Set to 0 to remove successfully converted videos from the watch folder, 1 to keep them.</description>
           <display>always</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
+        <name>AUTOMATED_CONVERSION_VIDEO_FILE_EXTENSIONS</name>
+        <description>Space-separated list of file extensions to be considered as video files.  By default, this list is empty, meaning that the automatic video converter will let HandBrake automatically detects if a file, no matter its extension, is a video or not (note that extensions defined by the `AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS` environment variable are always considered as non-video files).  Normally, this variable doesn't need to be set.  Usage of this variable is useful when only specific video files need to converted.</description>
+        <default/>
+        <unraid_template>
+          <title>Automatic Video Converter: Video File Extensions</title>
+          <description>Space-separated list of file extensions to be considered as video files.  By default, this list is empty, meaning that the automatic video converter will let HandBrake automatically detects if a file, no matter its extension, is a video or not (note that extensions defined by the [i]Non-Video File Extensions[/i] list are always considered as non-video files).  Normally, this variable doesn't need to be set.  Usage of this variable is useful when only specific video files need to converted.</description>
+          <display>advanced</display>
           <required>false</required>
           <mask>false</mask>
         </unraid_template>

@@ -163,7 +163,11 @@ process_video() {
     OUTPUT_DIR="$(echo "$OUTPUT_DIR" | sed 's|/\+|/|g' | sed 's|/\+$||')"
 
     # Get video titles.
-    if echo "$AC_NON_VIDEO_FILE_EXTENSIONS" | grep -iwq "${video##*.}"; then
+    if [ -n "$AC_VIDEO_FILE_EXTENSIONS" ] && ! echo "$AC_VIDEO_FILE_EXTENSIONS" | grep -iwq "${video##*.}"; then
+        log "File '${video}' (${hash}) has an extension not part of the inclusion list."
+        VIDEO_TITLES=UNSET
+        VIDEO_TITLES_RETVAL=1
+    elif echo "$AC_NON_VIDEO_FILE_EXTENSIONS" | grep -iwq "${video##*.}"; then
         log "File '${video}' (${hash}) has an extension part of the exclusion list."
         VIDEO_TITLES=UNSET
         VIDEO_TITLES_RETVAL=1
@@ -381,6 +385,7 @@ while true; do
         AC_OUTPUT_DIR="${AUTOMATED_CONVERSION_OUTPUT_DIR:-/output}"
         AC_OUTPUT_SUBDIR="${AUTOMATED_CONVERSION_OUTPUT_SUBDIR:-UNSET}"
         AC_KEEP_SOURCE="${AUTOMATED_CONVERSION_KEEP_SOURCE:-1}"
+        AC_VIDEO_FILE_EXTENSIONS="${AUTOMATED_CONVERSION_VIDEO_FILE_EXTENSIONS:-}"
         AC_NON_VIDEO_FILE_ACTION="${AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION:-ignore}"
         AC_NON_VIDEO_FILE_EXTENSIONS="${AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS:-jpg jpeg bmp png gif txt nfo}"
         AC_HANDBRAKE_CUSTOM_ARGS="${AUTOMATED_CONVERSION_HANDBRAKE_CUSTOM_ARGS:-}"
@@ -388,7 +393,7 @@ while true; do
 
         # Apply per-watch folder settings.
         if [ -n "${DIR#*/watch}" ]; then
-            for VAR in PRESET FORMAT SOURCE_STABLE_TIME SOURCE_MIN_DURATION OUTPUT_DIR OUTPUT_SUBDIR KEEP_SOURCE NON_VIDEO_FILE_ACTION NON_VIDEO_FILE_EXTENSIONS HANDBRAKE_CUSTOM_ARGS OVERWRITE_OUTPUT
+            for VAR in PRESET FORMAT SOURCE_STABLE_TIME SOURCE_MIN_DURATION OUTPUT_DIR OUTPUT_SUBDIR KEEP_SOURCE VIDEO_FILE_EXTENSIONS NON_VIDEO_FILE_ACTION NON_VIDEO_FILE_EXTENSIONS HANDBRAKE_CUSTOM_ARGS OVERWRITE_OUTPUT
             do
                 eval "AC_$VAR=\"\${AUTOMATED_CONVERSION_${VAR}_${DIR#*/watch}:-\$AC_$VAR}\""
             done

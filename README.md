@@ -120,6 +120,7 @@ of this parameter has the format `<VARIABLE_NAME>=<VALUE>`.
 |`AUTOMATED_CONVERSION_PRESET`| HandBrake preset used by the automatic video converter.  Identification of a preset must follow the format `<CATEGORY>/<PRESET NAME>`.  See the [Automatic Video Conversion](#automatic-video-conversion) section for more details. | `General/Very Fast 1080p30` |
 |`AUTOMATED_CONVERSION_FORMAT`| Video container format used by the automatic video converter for output files.  This is typically the video filename extension.  See the [Automatic Video Conversion](#automatic-video-conversion) section for more details. | `mp4` |
 |`AUTOMATED_CONVERSION_KEEP_SOURCE`| When set to `0`, a video that has been successfully converted is removed from the watch folder. | `1` |
+|`AUTOMATED_CONVERSION_VIDEO_FILE_EXTENSIONS`| Space-separated list of file extensions to be considered as video files.  By default, this list is empty, meaning that the automatic video converter will let HandBrake automatically detects if a file, no matter its extension, is a video or not (note that extensions defined by the `AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS` environment variable are always considered as non-video files).  Normally, this variable doesn't need to be set.  Usage of this variable is useful when only specific video files need to converted. | (unset) |
 |`AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION`| When set to `ignore`, a non-video file found in the watch folder is ignored.  If set to `copy`, a non-video file is copied as-is to the output folder. | `ignore` |
 |`AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS`| Space-separated list of file extensions to be considered as not being videos.  Most non-video files are properly rejected by HandBrake.  However, some files, like images, are convertible by HandBrake even if they are not video files. | `jpg jpeg bmp png gif txt nfo` |
 |`AUTOMATED_CONVERSION_OUTPUT_DIR`| Root directory where converted videos should be written. | `/output` |
@@ -567,7 +568,9 @@ additional watch folder:
   - `AUTOMATED_CONVERSION_OUTPUT_SUBDIR`
   - `AUTOMATED_CONVERSION_OVERWRITE_OUTPUT`
   - `AUTOMATED_CONVERSION_KEEP_SOURCE`
+  - `AUTOMATED_CONVERSION_VIDEO_FILE_EXTENSIONS`
   - `AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION`
+  - `AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS`
 
 ### Video Discs
 
