@@ -67,6 +67,7 @@ RUN \
         libpciaccess-dev \
         xz-dev \
         numactl-dev \
+        libjpeg-turbo-dev \
         # media libraries
         libsamplerate-dev \
         libass-dev \
