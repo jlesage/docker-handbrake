@@ -366,6 +366,17 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.23.0</version>
+        <date>2021-01-01</date>
+        <change>Added the ability to overwrite the output file if it exists.</change>
+        <change>Added the ability to define the file extensions to be considered as video files.</change>
+        <change>Updated libva to version 2.10.0.</change>
+        <change>Updated gmmlib to version 20.4.1.</change>
+        <change>Updated Intel Media Driver to version 20.4.5.</change>
+        <change>Updated Intel Media SDK to version 20.5.1.</change>
+        <change>Now using baseimage based on Alpine 3.12.</change>
+      </release>
+      <release>
         <version>1.22.4</version>
         <date>2020-08-05</date>
         <change>Upgraded libva to version 2.8.0.</change>
