@@ -19,6 +19,7 @@ ARG INTEL_VAAPI_DRIVER_VERSION=2.4.1
 ARG GMMLIB_VERSION=20.4.1
 ARG INTEL_MEDIA_DRIVER_VERSION=20.4.5
 ARG INTEL_MEDIA_SDK_VERSION=20.5.1
+ARG YAD_VERSION=7.3
 
 # Define software download URLs.
 ARG HANDBRAKE_URL=https://github.com/HandBrake/HandBrake/releases/download/${HANDBRAKE_VERSION}/HandBrake-${HANDBRAKE_VERSION}-source.tar.bz2
@@ -28,6 +29,7 @@ ARG INTEL_VAAPI_DRIVER_URL=https://github.com/intel/intel-vaapi-driver/releases/
 ARG GMMLIB_URL=https://github.com/intel/gmmlib/archive/intel-gmmlib-${GMMLIB_VERSION}.tar.gz
 ARG INTEL_MEDIA_DRIVER_URL=https://github.com/intel/media-driver/archive/intel-media-${INTEL_MEDIA_DRIVER_VERSION}.tar.gz
 ARG INTEL_MEDIA_SDK_URL=https://github.com/Intel-Media-SDK/MediaSDK/archive/intel-mediasdk-${INTEL_MEDIA_SDK_VERSION}.tar.gz
+ARG YAD_URL=https://github.com/v1cont/yad/archive/v${YAD_VERSION}.tar.gz
 
 # Other build arguments.
 
@@ -252,6 +254,41 @@ RUN \
         && \
     rm -rf /tmp/* /tmp/.[!.]*
 
+# Install YAD.
+# NOTE: YAD is compiled manually because the version on the Alpine repository
+#       pulls too much dependencies.
+RUN \
+    # Install packages needed by the build.
+    add-pkg --virtual build-dependencies \
+        build-base \
+        autoconf \
+        automake \
+        intltool \
+        curl \
+        gtk+3.0-dev \
+        && \
+    # Set same default compilation flags as abuild.
+    export CFLAGS="-Os -fomit-frame-pointer" && \
+    export CXXFLAGS="$CFLAGS" && \
+    export CPPFLAGS="$CFLAGS" && \
+    export LDFLAGS="-Wl,--as-needed" && \
+    # Download.
+    mkdir yad && \
+    echo "Downloading YAD package..." && \
+    curl -# -L ${YAD_URL} | tar xz --strip 1  -C yad && \
+    # Compile.
+    cd yad && \
+    autoreconf -ivf && intltoolize && \
+    ./configure \
+        --prefix=/usr \
+        && \
+    make && make install && \
+    strip /usr/bin/yad && \
+    cd .. && \
+    # Cleanup.
+    del-pkg build-dependencies && \
+    rm -rf /tmp/* /tmp/.[!.]*
+
 # Install dependencies.
 RUN \
     add-pkg \
@@ -282,7 +319,6 @@ RUN \
         # For watchfolder
         bash \
         coreutils \
-        yad \
         findutils \
         expect
 
