@@ -84,6 +84,11 @@ RUN \
         libnotify-dev \
         libgudev-dev \
         && \
+    # Set same default compilation flags as abuild.
+    export CFLAGS="-Os -fomit-frame-pointer" && \
+    export CXXFLAGS="$CFLAGS" && \
+    export CPPFLAGS="$CFLAGS" && \
+    export LDFLAGS="-Wl,--as-needed" && \
     # Download x264 sources.
     echo "Downloading x264 sources..." && \
     mkdir x264 && \
