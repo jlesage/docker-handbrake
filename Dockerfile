@@ -282,6 +282,9 @@ RUN \
     autoreconf -ivf && intltoolize && \
     ./configure \
         --prefix=/usr \
+        --disable-icon-browser \
+        --disable-html \
+        --disable-pfd \
         && \
     make && make install && \
     strip /usr/bin/yad && \
