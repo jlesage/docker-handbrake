@@ -249,7 +249,8 @@ RUN \
         /opt/intel/mediasdk/lib64/*.la \
         # HandBrake already include a statically-linked version of libmfx.
         /opt/intel/mediasdk/lib64/libmfx.* \
-        /usr/lib/pkgconfig \
+        /usr/lib/pkgconfig/libva*.pc \
+        /usr/lib/pkgconfig/x264.pc \
         /usr/include \
         && \
     rm -rf /tmp/* /tmp/.[!.]*
