@@ -30,11 +30,17 @@ fi
 
 WATCHDIR_HASH="$(mktemp -d)"
 
-trap "exit" TERM QUIT INT
-trap "clean_exit" EXIT
+OUTPUT_DIR_TMP=""
+
 clean_exit() {
     rm -rf "$WATCHDIR_HASH"
+    killall HandBrakeCLI 2>/dev/null
+    killall yad 2>/dev/null
+    if [ -n "${OUTPUT_DIR_TMP:-}" ]; then
+        rm -rf "$OUTPUT_DIR_TMP"
+    fi
 }
+trap "clean_exit" EXIT
 
 log() {
     echo "[$(basename "$0")] $*"
@@ -286,6 +292,7 @@ process_video() {
             mv -f "$OUTPUT_FILE_TMP" "$OUTPUT_FILE"
         fi
         rm -rf "$OUTPUT_DIR_TMP"
+        OUTPUT_DIR_TMP=""
 
         # Call post conversion hook.
         if [ -f /config/hooks/post_conversion.sh ]; then
