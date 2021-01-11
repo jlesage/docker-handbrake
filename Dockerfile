@@ -352,6 +352,10 @@ VOLUME ["/storage"]
 VOLUME ["/output"]
 VOLUME ["/watch"]
 
+# Expose ports
+EXPOSE 5800
+EXPOSE 5900
+
 # Metadata.
 LABEL \
       org.label-schema.name="handbrake" \
