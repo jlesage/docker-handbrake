@@ -362,6 +362,11 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.23.1</version>
+        <date>2021-02-06</date>
+        <change>Fixed an issue where the automatic video converter would not process Blu-ray video disc folder.</change>
+      </release>
+      <release>
         <version>1.23.0</version>
         <date>2021-01-01</date>
         <change>Added the ability to overwrite the output file if it exists.</change>
