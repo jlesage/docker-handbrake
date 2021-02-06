@@ -214,13 +214,6 @@ process_video() {
 
         # Get the output file basename: start with the one of the input file.
         basename="$(basename "$video" | sed 's/\.[^.]*$//')"
-        # Special case when video is a DVD/Blu-ray folder: use the parent's
-        # directory.
-        if [ "$basename" = "VIDEO_TS" ] || [ "$basename" = "BDMV" ]; then
-            if [ "$(dirname "$video")" != "$wf" ]; then
-                basename="$(basename "$(dirname "$video")")"
-            fi
-        fi
         # If multiple titles, add the '.title-XX' suffix.
         [ "$NUM_VIDEO_TITLES" -eq 1 ] || basename="$basename.title-$TITLE"
 
@@ -348,19 +341,51 @@ process_watch_folder() {
     # This is to make sure we catch, on the next round, changes occuring
     # during the processing.
     WATCHDIR_HASH_update "$WF"
+
     log "Processing watch folder '$WF'..."
-    FILELIST="$(mktemp)"
+    FILELIST1="$(mktemp)"
+    FILELIST2="$(mktemp)"
+
+    # First, get the list of files in the watch folder, filtering all files
+    # files under VIDEO_TS or BDMV and keeping only their parent directory.
     find "$WF" -follow -type f -not -path '*/\.*' -printf "%T@ %p\n" | \
         sort -n | \
         cut -d' ' -f2- | \
-        sed 's|/VIDEO_TS/.*$|/VIDEO_TS|g' | \
-        sed 's|/BDMV/.*$|/BDMV|g' | \
-        uniq > "$FILELIST"
+        sed 's|/\([^/]*\)/VIDEO_TS/.*$|/\1|g' | \
+        sed 's|/\([^/]*\)/BDMV/.*$|/\1|g' | \
+        uniq > "$FILELIST1"
+    cp "$FILELIST1" "$FILELIST2"
+
+    # Then, remove all files under directories part of the list.  The
+    # directories from the list are video discs and their individual files
+    # should not be processed.
     while read -u 3 FILE
     do
+        if [ -d "$FILE" ]; then
+            sed -i "s|$FILE/.*|$FILE|g" "$FILELIST2"
+        fi
+    done 3<"$FILELIST1"
+    cat "$FILELIST2" | uniq > "$FILELIST1"
+
+    # Warn user if video disc folder structure is found at the root of the watch
+    # folder.
+    for DIR in "$WF/VIDEO_TS" "$WF/BDMV"
+    do
+        if [ -d "$DIR" ]; then
+            log "Skipping '$DIR': video disc folder structure should not be placed at the root of the watch folder."
+        fi
+    done
+
+    # Process videos files.
+    while read -u 3 FILE
+    do
+        if [ "$FILE" = "$WF" ]; then
+            continue
+        fi
         process_video "$FILE" "$WF"
-    done 3<"$FILELIST"
-    rm "$FILELIST"
+    done 3<"$FILELIST1"
+    rm "$FILELIST1"
+    rm "$FILELIST2"
     log "Watch folder '$WF' processing terminated."
 
     # Call watch folder done hook.

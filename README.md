@@ -587,13 +587,17 @@ additional watch folder:
 
 ### Video Discs
 
-The automatic video converter supports video discs, in the folllowing format:
+The automatic video converter supports video discs, in the following format:
   - ISO image file.
-  - `VIDEO_TS` folder (DVD disc).
-  - `BDMV` folder (Blu-ray disc).
+  - DVD video disc folder containing the `VIDEO_TS` folder.
+  - Blu-ray video disc folder containing the `BDMV` folder.
 
 Note that folder names are case sensitive.  For example, `video_ts`, `Video_Ts`
 or `Bdmv` won't be treated as discs, but as normal directories.
+
+When the source is a disc folder, the name of the converted video file will
+match to one of its folder.  For example, `/watch/MyMovie/VIDEO_TS` will produce
+a video file with name `MyMovie.mp4`.
 
 Video discs can have multiple titles (the main movie, previews, extras, etc).
 In a such case, each title is converted to its own file.  These files have the
@@ -607,14 +611,6 @@ default, only titles longer than 10 seconds are processed.  This duration can be
 adjusted via the `AUTOMATED_CONVERSION_SOURCE_MIN_DURATION` environment
 variable.  See the [Environment Variables](#environment-variables) section for
 details about setting environment variables.
-
-When the source is a disc folder, the name of the converted video file will
-match its parent folder's name, if any.  For example:
-
-| Watch folder path       | Converted video filename |
-|-------------------------|--------------------------|
-| /watch/VIDEO_TS         | VIDEO_TS.mp4             |
-| /watch/MyMovie/VIDEO_TS | MyMovie.mp4              |
 
 ### Hooks
 
