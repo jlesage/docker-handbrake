@@ -391,7 +391,7 @@ process_watch_folder() {
     # Call watch folder done hook.
     if [ -f /config/hooks/post_watch_folder_processing.sh ] && [ "$NUM_PROCESSED_FILES" -gt 0 ]; then
         log "Executing post watch folder processing hook..."
-        /usr/bin/with-contenv sh /config/hooks/post_watch_folder_processing.sh "$DIR"
+        /usr/bin/with-contenv sh /config/hooks/post_watch_folder_processing.sh "$WF"
         log "Post watch folder processing hook exited with $?"
     fi
 
