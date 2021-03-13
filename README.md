@@ -1,5 +1,5 @@
 # Docker container for HandBrake
-[![Docker Image Size](https://img.shields.io/microbadger/image-size/jlesage/handbrake)](http://microbadger.com/#/images/jlesage/handbrake) [![Build Status](https://drone.le-sage.com/api/badges/jlesage/docker-handbrake/status.svg)](https://drone.le-sage.com/jlesage/docker-handbrake) [![GitHub Release](https://img.shields.io/github/release/jlesage/docker-handbrake.svg)](https://github.com/jlesage/docker-handbrake/releases/latest) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/JocelynLeSage/0usd)
+[![Docker Image Size](https://img.shields.io/docker/image-size/jlesage/handbrake/latest)](https://hub.docker.com/r/jlesage/handbrake/tags) [![Build Status](https://drone.le-sage.com/api/badges/jlesage/docker-handbrake/status.svg)](https://drone.le-sage.com/jlesage/docker-handbrake) [![GitHub Release](https://img.shields.io/github/release/jlesage/docker-handbrake.svg)](https://github.com/jlesage/docker-handbrake/releases/latest) [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/JocelynLeSage/0usd)
 
 This is a Docker container for [HandBrake](https://handbrake.fr/).
 
