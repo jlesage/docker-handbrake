@@ -198,7 +198,6 @@ version: '3'
 services:
   handbrake:
     image: jlesage/handbrake
-    build: .
     ports:
       - "5800:5800"
     volumes:
