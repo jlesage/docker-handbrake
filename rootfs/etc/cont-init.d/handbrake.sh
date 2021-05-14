@@ -96,21 +96,23 @@ log "core dump file size: $(ulimit -a | grep "core file size" | awk '{print $NF}
 find /config -mindepth 1 -exec chown $USER_ID:$GROUP_ID {} \;
 
 # Take ownership of the output directory.
-for i in $(seq 1 ${AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS:-5}); do
-    eval "DIR=\"\${AUTOMATED_CONVERSION_OUTPUT_DIR_$i:-/output}\""
+if [ "${TAKE_OUTPUTS_OWNERSHIP:-1}" -eq 1 ]; then
+    for i in $(seq 1 ${AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS:-5}); do
+        eval "DIR=\"\${AUTOMATED_CONVERSION_OUTPUT_DIR_$i:-/output}\""
 
-    if [ ! -d "$DIR" ]; then
-        log "ERROR: Output folder '$DIR' doesn't exist."
-        exit 1
-    elif ! chown $USER_ID:$GROUP_ID "$DIR"; then
-        # Failed to take ownership of /output.  This could happen when,
-        # for example, the folder is mapped to a network share.
-        # Continue if we have write permission, else fail.
-        if s6-setuidgid $USER_ID:$GROUP_ID [ ! -w "$DIR" ]; then
-            log "ERROR: Failed to take ownership and no write permission on '$DIR'."
+        if [ ! -d "$DIR" ]; then
+            log "ERROR: Output folder '$DIR' doesn't exist."
             exit 1
+        elif ! chown $USER_ID:$GROUP_ID "$DIR"; then
+            # Failed to take ownership of /output.  This could happen when,
+            # for example, the folder is mapped to a network share.
+            # Continue if we have write permission, else fail.
+            if s6-setuidgid $USER_ID:$GROUP_ID [ ! -w "$DIR" ]; then
+                log "ERROR: Failed to take ownership and no write permission on '$DIR'."
+                exit 1
+            fi
         fi
-    fi
-done
+    done
+fi
 
 # vim: set ft=sh :
