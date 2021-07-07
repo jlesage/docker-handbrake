@@ -1076,6 +1076,18 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
           <mask>false</mask>
         </unraid_template>
       </environment_variable>
+      <environment_variable>
+        <name>TAKE_OUTPUTS_OWNERSHIP</name>
+        <description>When set to `1`, owner and group of all `/output` folders (including all their files and subfolders) are automatically set during container startup to `USER_ID` and `GROUP_ID` respectively.</description>
+        <default>1</default>
+        <unraid_template>
+          <title>Take Outputs Ownership</title>
+          <description>When set to `1`, owner and group of all /output folders (including all their files and subfolders) are automatically set during container startup to USER_ID and GROUP_ID respectively.</description>
+          <display>always</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
     </environment_variables>
     <!-- Volumes -->
     <volumes>
