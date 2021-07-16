@@ -17,14 +17,6 @@ from Jinja2 templates.
     <unraid>
       <support_url>https://forums.unraid.net/topic/57420-support-handbrake/</support_url>
       <category>MediaApp:Video</category>
-      <extra_description>
-[span style='color: red;'][b]NOTE:[/b][/span] For the container to have
-access to your optical drive(s), you need to allow access to the proper
-device (usually [b][i]/dev/sr0[/i][/b]) by adding the parameter
-[b][i]--device DEV[/i][/b] in the [i]Extra Parameters[/i] field (shown when
-[i]Advanced View[/i] is enabled). For example, if your optical drive is at
-[b][i]/dev/sr0[/i][/b], you need to add [b][i]--device /dev/sr0[/i][/b].
-      </extra_description>
     </unraid>
     <container>
       <overview>A fully automated mode is also available: drop files into a watch folder and let {{ defs.app.friendly_name }} process them without any user interaction.</overview>
