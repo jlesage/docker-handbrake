@@ -12,13 +12,13 @@ ARG DOCKER_IMAGE_VERSION=unknown
 
 # Define software versions.
 # NOTE: x264 version 20171224 is the most recent one that doesn't crash.
-ARG HANDBRAKE_VERSION=1.3.3
+ARG HANDBRAKE_VERSION=1.4.0
 ARG X264_VERSION=20171224
-ARG LIBVA_VERSION=2.10.0
+ARG LIBVA_VERSION=2.12.0
 ARG INTEL_VAAPI_DRIVER_VERSION=2.4.1
-ARG GMMLIB_VERSION=20.4.1
-ARG INTEL_MEDIA_DRIVER_VERSION=20.4.5
-ARG INTEL_MEDIA_SDK_VERSION=20.5.1
+ARG GMMLIB_VERSION=21.2.1
+ARG INTEL_MEDIA_DRIVER_VERSION=21.2.3
+ARG INTEL_MEDIA_SDK_VERSION=21.2.3
 ARG YAD_VERSION=7.3
 
 # Define software download URLs.
@@ -69,6 +69,7 @@ RUN \
         libpciaccess-dev \
         xz-dev \
         numactl-dev \
+        libjpeg-turbo-dev \
         # media libraries
         libsamplerate-dev \
         libass-dev \
