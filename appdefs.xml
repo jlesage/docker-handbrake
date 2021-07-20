@@ -354,6 +354,17 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.24.0</version>
+        <date>2021-07-19</date>
+        <change>Updated Handbrake to version 1.4.0.</change>
+        <change>Updated libva to version 2.12.0.</change>
+        <change>Updated gmmlib to version 21.2.1.</change>
+        <change>Updated Intel Media Driver to version 21.2.3.</change>
+        <change>Updated Intel Media SDK to version 21.2.3.</change>
+        <change>Now using baseimage version 3.5.7, which brings the following changes:</change>
+        <change level="2">Updated installed packages to get latest security fixes.</change>
+      </release>
+      <release>
         <version>1.23.2</version>
         <date>2021-03-13</date>
         <change>Fixed issue where the wrong parameter was passed to the post watch folder processing hook.</change>
