@@ -106,7 +106,11 @@ for i in $(seq 1 ${AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS:-5}); do
         # Failed to take ownership of /output.  This could happen when,
         # for example, the folder is mapped to a network share.
         # Continue if we have write permission, else fail.
-        if s6-setuidgid $USER_ID:$GROUP_ID [ ! -w "$DIR" ]; then
+        TMPFILE="$(s6-setuidgid $USER_ID:$GROUP_ID mktemp "$DIR"/.test_XXXXXX 2>/dev/null)"
+        if [ $? -eq 0 ]; then
+            # Success, we were able to write file.
+            rm "$TMPFILE"
+        else
             log "ERROR: Failed to take ownership and no write permission on '$DIR'."
             exit 1
         fi
