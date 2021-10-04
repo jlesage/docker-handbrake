@@ -354,6 +354,13 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.24.2</version>
+        <date>2021-10-04</date>
+        <change>Updated HandBrake to version 1.4.2.</change>
+        <change>Updated Intel Media SDK to version 21.3.5.</change>
+        <change>Updated gmmlib to version 21.3.1.</change>
+      </release>
+      <release>
         <version>1.24.1</version>
         <date>2021-08-21</date>
         <change>Updated Handbrake to version 1.4.1.</change>
