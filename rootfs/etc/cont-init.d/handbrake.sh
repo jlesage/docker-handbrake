@@ -109,7 +109,7 @@ for i in $(seq 1 ${AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS:-5}); do
         TMPFILE="$(s6-setuidgid $USER_ID:$GROUP_ID mktemp "$DIR"/.test_XXXXXX 2>/dev/null)"
         if [ $? -eq 0 ]; then
             # Success, we were able to write file.
-            rm "$TMPFILE"
+            s6-setuidgid $USER_ID:$GROUP_ID rm "$TMPFILE"
         else
             log "ERROR: Failed to take ownership and no write permission on '$DIR'."
             exit 1
