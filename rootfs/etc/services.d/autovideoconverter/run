@@ -106,10 +106,17 @@ get_video_hash() {
 
 get_video_titles() {
     video="$1"
-    $HANDBRAKE_CLI -i "$video" \
-                   -t0 \
-                   --min-duration $AC_SOURCE_MIN_DURATION 2>&1 |
-    grep "^+ title " | sed 's/^+ title \([0-9]\+\):$/\1/'
+    if [ "$AC_MAIN_FEATURE" == "0" ];then
+        $HANDBRAKE_CLI -i "$video" \
+                       -t0 \
+                       --main-feature 2>&1 |
+        grep "^+ title " | sed 's/^+ title \([0-9]\+\):$/\1/'
+    else
+        $HANDBRAKE_CLI -i "$video" \
+                       -t0 \
+                       --min-duration $AC_SOURCE_MIN_DURATION 2>&1 |
+        grep "^+ title " | sed 's/^+ title \([0-9]\+\):$/\1/'
+    fi
     return ${PIPESTATUS[0]}
 }
 
@@ -414,6 +421,7 @@ while true; do
         AC_FORMAT="${AUTOMATED_CONVERSION_FORMAT:-mp4}"
         AC_SOURCE_STABLE_TIME="${AUTOMATED_CONVERSION_SOURCE_STABLE_TIME:-5}"
         AC_SOURCE_MIN_DURATION="${AUTOMATED_CONVERSION_SOURCE_MIN_DURATION:-10}"
+        AC_MAIN_FEATURE="${AUTOMATED_CONVERSION_MAIN_FEATURE:-0}"
         AC_OUTPUT_DIR="${AUTOMATED_CONVERSION_OUTPUT_DIR:-/output}"
         AC_OUTPUT_SUBDIR="${AUTOMATED_CONVERSION_OUTPUT_SUBDIR:-UNSET}"
         AC_KEEP_SOURCE="${AUTOMATED_CONVERSION_KEEP_SOURCE:-1}"
