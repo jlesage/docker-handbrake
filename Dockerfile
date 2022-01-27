@@ -311,6 +311,8 @@ RUN \
         libvorbis \
         speex \
         libvpx \
+        # For QSV detection
+        pciutils \
         # To read encrypted DVDs
         libdvdcss \
         # For main, big icons:

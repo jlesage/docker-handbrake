@@ -28,7 +28,7 @@ if [ ! -e "$DRI_DEV" ]; then
     exit 0
 fi
 
-if [ "$(lspci -k | grep "^00:02.0 " | cut -d' ' -f5)" != "i915" ]; then
+if ! lspci -s "00:02.0" -k | grep -q -w i915; then
     log "Intel Quick Sync Video not supported: video adapter not using i915 driver."
     exit 0
 fi
