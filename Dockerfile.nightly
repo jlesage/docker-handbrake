@@ -194,7 +194,7 @@ RUN \
     mkdir build && \
     cd build && \
     cmake \
-        -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE \
+        -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_LIBDIR=lib64 \
         .. && \
     make -j$(nproc) && \
