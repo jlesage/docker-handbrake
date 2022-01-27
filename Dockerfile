@@ -12,13 +12,13 @@ ARG DOCKER_IMAGE_VERSION=unknown
 
 # Define software versions.
 # NOTE: x264 version 20171224 is the most recent one that doesn't crash.
-ARG HANDBRAKE_VERSION=1.4.2
+ARG HANDBRAKE_VERSION=1.5.1
 ARG X264_VERSION=20171224
-ARG LIBVA_VERSION=2.12.0
+ARG LIBVA_VERSION=2.13.0
 ARG INTEL_VAAPI_DRIVER_VERSION=2.4.1
-ARG GMMLIB_VERSION=21.3.1
-ARG INTEL_MEDIA_DRIVER_VERSION=21.2.3
-ARG INTEL_MEDIA_SDK_VERSION=21.3.5
+ARG GMMLIB_VERSION=21.3.3
+ARG INTEL_MEDIA_DRIVER_VERSION=21.3.5
+ARG INTEL_ONEVPL_GPU_RUNTIME_VERSION=22.1.0
 ARG YAD_VERSION=7.3
 
 # Define software download URLs.
@@ -28,7 +28,7 @@ ARG LIBVA_URL=https://github.com/intel/libva/releases/download/${LIBVA_VERSION}/
 ARG INTEL_VAAPI_DRIVER_URL=https://github.com/intel/intel-vaapi-driver/releases/download/${INTEL_VAAPI_DRIVER_VERSION}/intel-vaapi-driver-${INTEL_VAAPI_DRIVER_VERSION}.tar.bz2
 ARG GMMLIB_URL=https://github.com/intel/gmmlib/archive/intel-gmmlib-${GMMLIB_VERSION}.tar.gz
 ARG INTEL_MEDIA_DRIVER_URL=https://github.com/intel/media-driver/archive/intel-media-${INTEL_MEDIA_DRIVER_VERSION}.tar.gz
-ARG INTEL_MEDIA_SDK_URL=https://github.com/Intel-Media-SDK/MediaSDK/archive/intel-mediasdk-${INTEL_MEDIA_SDK_VERSION}.tar.gz
+ARG INTEL_ONEVPL_GPU_RUNTIME_URL=https://github.com/oneapi-src/oneVPL-intel-gpu/archive/refs/tags/intel-onevpl-${INTEL_ONEVPL_GPU_RUNTIME_VERSION}.tar.gz
 ARG YAD_URL=https://github.com/v1cont/yad/releases/download/v${YAD_VERSION}/yad-${YAD_VERSION}.tar.xz
 
 # Other build arguments.
@@ -91,6 +91,11 @@ RUN \
     export CXXFLAGS="$CFLAGS" && \
     export CPPFLAGS="$CFLAGS" && \
     export LDFLAGS="-Wl,--as-needed" && \
+    if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then \
+        CMAKE_BUILD_TYPE=Release; \
+    else \
+        CMAKE_BUILD_TYPE=Debug; \
+    fi && \
     # Download x264 sources.
     echo "Downloading x264 sources..." && \
     mkdir x264 && \
@@ -111,10 +116,10 @@ RUN \
     echo "Downloading Intel Media driver sources..." && \
     mkdir intel-media-driver && \
     curl -# -L ${INTEL_MEDIA_DRIVER_URL} | tar xz --strip 1 -C intel-media-driver && \
-    # Download Intel Media SDK sources.
-    echo "Downloading Intel Media SDK sources..." && \
-    mkdir MediaSDK && \
-    curl -# -L ${INTEL_MEDIA_SDK_URL} | tar xz --strip 1 -C MediaSDK && \
+    # Download Intel OneVPL GPU Runtime sources.
+    echo "" && \
+    mkdir oneVPL-intel-gpu && \
+    curl -# -L ${INTEL_ONEVPL_GPU_RUNTIME_URL} | tar xz --strip 1 -C oneVPL-intel-gpu && \
     # Download HandBrake sources.
     echo "Downloading HandBrake sources..." && \
     if echo "${HANDBRAKE_URL}" | grep -q '\.git$'; then \
@@ -124,10 +129,6 @@ RUN \
         mkdir HandBrake && \
         curl -# -L ${HANDBRAKE_URL} | tar xj --strip 1 -C HandBrake; \
     fi && \
-    # Download patches.
-    echo "Downloading patches..." && \
-    curl -# -L -o MediaSDK/intel-media-sdk-debug-no-assert.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/intel-media-sdk-debug-no-assert.patch && \
-    curl -# -L -o intel-media-driver/media-driver-c-assert-fix.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/media-driver-c-assert-fix.patch && \
     # Compile x264.
     echo "Compiling x264..." && \
     cd x264 && \
@@ -174,7 +175,6 @@ RUN \
     echo "Compiling Intel Media driver..." && \
     add-pkg libexecinfo-dev && \
     cd intel-media-driver && \
-    patch -p1 < media-driver-c-assert-fix.patch && \
     mkdir build && cd build && \
     cmake \
         -Wno-dev \
@@ -188,32 +188,17 @@ RUN \
     make install && \
     cd .. && \
     cd .. && \
-    # Compile Intel Media SDK.
-    echo "Compiling Intel Media SDK..." && \
-    cd MediaSDK && \
-    patch -p1 < intel-media-sdk-debug-no-assert.patch && \
+    # Compile Intel oneVPL GPU Runtime.
+    echo "Compiling Intel oneVPL GPU Runtime..." && \
+    cd oneVPL-intel-gpu && \
     mkdir build && \
     cd build && \
-    if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then \
-        INTEL_MEDIA_SDK_BUILD_TYPE=RELEASE; \
-    else \
-        INTEL_MEDIA_SDK_BUILD_TYPE=DEBUG; \
-    fi && \
     cmake \
-        -DCMAKE_BUILD_TYPE=$INTEL_MEDIA_SDK_BUILD_TYPE \
-        # HandBrake's libmfx is looking at /opt/intel/mediasdk/plugins for MFX plugins.
-        -DMFX_PLUGINS_DIR=/opt/intel/mediasdk/plugins \
-        -DMFX_PLUGINS_CONF_DIR=/opt/intel/mediasdk/plugins \
-        -DENABLE_OPENCL=OFF \
-        -DENABLE_X11_DRI3=OFF \
-        -DENABLE_WAYLAND=OFF \
-        -DBUILD_DISPATCHER=ON \
-        -DENABLE_ITT=OFF \
-        -DENABLE_TEXTLOG=OFF \
-        -DENABLE_STAT=OFF \
-        -DBUILD_SAMPLES=OFF \
+        -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE \
+        -DCMAKE_INSTALL_LIBDIR=lib64 \
         .. && \
-    make -j$(nproc) install && \
+    make -j$(nproc) && \
+    make install && \
     cd .. && \
     cd .. && \
     # Compile HandBrake.
@@ -242,10 +227,10 @@ RUN \
     rm -r \
         /usr/lib/libva*.la \
         /opt/intel/mediasdk/include \
+        /opt/intel/mediasdk/lib/pkgconfig \
         /opt/intel/mediasdk/lib64/pkgconfig \
         /opt/intel/mediasdk/lib64/*.la \
-        # HandBrake already include a statically-linked version of libmfx.
-        /opt/intel/mediasdk/lib64/libmfx.* \
+        /opt/intel/mediasdk/lib/libigfxcmrt.so* \
         /usr/lib/pkgconfig/libva*.pc \
         /usr/lib/pkgconfig/x264.pc \
         /usr/include \
