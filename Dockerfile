@@ -124,10 +124,6 @@ RUN \
         mkdir HandBrake && \
         curl -# -L ${HANDBRAKE_URL} | tar xj --strip 1 -C HandBrake; \
     fi && \
-    # Download helper.
-    echo "Downloading helpers..." && \
-    curl -# -L -o /tmp/run_cmd https://raw.githubusercontent.com/jlesage/docker-mgmt-tools/master/run_cmd && \
-    chmod +x /tmp/run_cmd && \
     # Download patches.
     echo "Downloading patches..." && \
     curl -# -L -o MediaSDK/intel-media-sdk-debug-no-assert.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/intel-media-sdk-debug-no-assert.patch && \
@@ -232,7 +228,7 @@ RUN \
                 --launch-jobs=$(nproc) \
                 --launch \
                 && \
-    /tmp/run_cmd -i 600 -m "HandBrake still compiling..." make --directory=build install && \
+    make --directory=build install && \
     cd .. && \
     # Strip symbols.
     if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then \
