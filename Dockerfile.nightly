@@ -159,7 +159,7 @@ RUN \
         --disable-wayland \
         --disable-static \
         --enable-shared \
-        --with-drivers-path=/opt/intel/mediasdk/lib64 \
+        --with-drivers-path=/opt/intel/mediasdk/lib \
         && \
     make -j$(nproc) && \
     make install && \
@@ -180,7 +180,7 @@ RUN \
         -Wno-dev \
         -DBUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/opt/intel/mediasdk \
-        -DLIBVA_DRIVERS_PATH=/opt/intel/mediasdk/lib64 \
+        -DLIBVA_DRIVERS_PATH=/opt/intel/mediasdk/lib \
         -DINSTALL_DRIVER_SYSCONF=OFF \
         -DMEDIA_RUN_TEST_SUITE=OFF \
         ../ && \
@@ -195,7 +195,7 @@ RUN \
     cd build && \
     cmake \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_INSTALL_LIBDIR=lib64 \
+        -DCMAKE_INSTALL_LIBDIR=lib \
         .. && \
     make -j$(nproc) && \
     make install && \
@@ -222,14 +222,14 @@ RUN \
         strip -s /usr/bin/ghb; \
         strip -s /usr/bin/HandBrakeCLI; \
     fi && \
+    # HandBrake is looking for libmfx-gen.so under /opt/intel/mediasdk/lib64.
+    ln -s lib /opt/intel/mediasdk/lib64 && \
     # Cleanup.
     del-pkg build-dependencies && \
     rm -r \
         /usr/lib/libva*.la \
         /opt/intel/mediasdk/include \
         /opt/intel/mediasdk/lib/pkgconfig \
-        /opt/intel/mediasdk/lib64/pkgconfig \
-        /opt/intel/mediasdk/lib64/*.la \
         /opt/intel/mediasdk/lib/libigfxcmrt.so* \
         /usr/lib/pkgconfig/libva*.pc \
         /usr/lib/pkgconfig/x264.pc \
