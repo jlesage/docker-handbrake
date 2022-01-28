@@ -1,0 +1,14 @@
+--- a/builder/FindGlobals.cmake
++++ b/builder/FindGlobals.cmake
+@@ -100,9 +100,9 @@
+   # CACHE + FORCE should be used only here to make sure that this parameters applied globally
+   # End user is responsible to adjust configuration parameters further if needed. Here
+   # we se only minimal parameters which are really required for the proper configuration build.
+-  set(CMAKE_C_FLAGS_DEBUG     "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG"   CACHE STRING "" FORCE)
++  set(CMAKE_C_FLAGS_DEBUG     "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG -DNDEBUG"   CACHE STRING "" FORCE)
+   set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}"          CACHE STRING "" FORCE)
+-  set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG" CACHE STRING "" FORCE)
++  set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG -DNDEBUG" CACHE STRING "" FORCE)
+   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}"        CACHE STRING "" FORCE)
+
+   if ( Darwin )
