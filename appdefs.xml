@@ -1030,6 +1030,18 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
         </unraid_template>
       </environment_variable>
       <environment_variable>
+        <name>AUTOMATED_CONVERSION_MAIN_TITLE_DETECTION</name>
+        <description>Setting this to `1` enables HandBrake main feature title detection to try to guess and select the main title.</description>
+        <default>0</default>
+        <unraid_template>
+          <title>Automatic Video Converter: Main Title Detection</title>
+          <description>Setting this to [b][i]1[/i][/b] enables HandBrake main feature title detection to try to guess and select the main title.</description>
+          <display>advanced</display>
+          <required>false</required>
+          <mask>false</mask>
+        </unraid_template>
+      </environment_variable>
+      <environment_variable>
         <name>AUTOMATED_CONVERSION_CHECK_INTERVAL</name>
         <description>Interval (in seconds) at which the automatic video converter checks for new files.</description>
         <default>5</default>
