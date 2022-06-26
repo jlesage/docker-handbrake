@@ -136,9 +136,6 @@ RUN \
         mkdir HandBrake && \
         curl -# -L ${HANDBRAKE_URL} | tar xj --strip 1 -C HandBrake; \
     fi && \
-    # Download patches.
-    echo "Downloading patches..." && \
-    curl -# -L -o MediaSDK/intel-media-sdk-debug-no-assert.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/intel-media-sdk-debug-no-assert.patch && \
     # Compile x264.
     echo "Compiling x264..." && \
     cd x264 && \
@@ -204,7 +201,7 @@ RUN \
     # Compile Intel Media SDK.
     echo "Compiling Intel Media SDK..." && \
     cd MediaSDK && \
-    patch -p1 < intel-media-sdk-debug-no-assert.patch && \
+    curl -# -L https://raw.githubusercontent.com/jlesage/docker-handbrake/master/intel-media-sdk-debug-no-assert.patch | patch -p1 && \
     mkdir build && \
     cd build && \
     if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then \
