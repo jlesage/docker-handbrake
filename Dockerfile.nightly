@@ -11,20 +11,21 @@ FROM jlesage/baseimage-gui:alpine-3.14-v3.5.8
 ARG DOCKER_IMAGE_VERSION=unknown
 
 # Define software versions.
-# NOTE: x264 version 20171224 is the most recent one that doesn't crash.
+# NOTE: x264 doesn't do releases.  We track branch "stable":
+#   https://code.videolan.org/videolan/x264/-/tree/stable.
 ARG HANDBRAKE_VERSION=1.5.1
-ARG X264_VERSION=20171224
+ARG X264_VERSION=5db6aa6cab1b146e07b60cc1736a01f21da01154
 ARG LIBVA_VERSION=2.14.0
 ARG INTEL_VAAPI_DRIVER_VERSION=2.4.1
-ARG GMMLIB_VERSION=22.0.2
-ARG INTEL_MEDIA_DRIVER_VERSION=22.1.1
-ARG INTEL_MEDIA_SDK_VERSION=22.1.0
-ARG INTEL_ONEVPL_GPU_RUNTIME_VERSION=22.1.0
+ARG GMMLIB_VERSION=22.1.4
+ARG INTEL_MEDIA_DRIVER_VERSION=22.3.1
+ARG INTEL_MEDIA_SDK_VERSION=22.3.0
+ARG INTEL_ONEVPL_GPU_RUNTIME_VERSION=22.3.2
 ARG YAD_VERSION=7.3
 
 # Define software download URLs.
 ARG HANDBRAKE_URL=https://github.com/HandBrake/HandBrake/releases/download/${HANDBRAKE_VERSION}/HandBrake-${HANDBRAKE_VERSION}-source.tar.bz2
-ARG X264_URL=https://download.videolan.org/pub/videolan/x264/snapshots/x264-snapshot-${X264_VERSION}-2245-stable.tar.bz2
+ARG X264_URL=https://code.videolan.org/videolan/x264/-/archive/${X264_VERSION}/x264-${X264_VERSION}.tar.gz
 ARG LIBVA_URL=https://github.com/intel/libva/releases/download/${LIBVA_VERSION}/libva-${LIBVA_VERSION}.tar.bz2
 ARG INTEL_VAAPI_DRIVER_URL=https://github.com/intel/intel-vaapi-driver/releases/download/${INTEL_VAAPI_DRIVER_VERSION}/intel-vaapi-driver-${INTEL_VAAPI_DRIVER_VERSION}.tar.bz2
 ARG GMMLIB_URL=https://github.com/intel/gmmlib/archive/intel-gmmlib-${GMMLIB_VERSION}.tar.gz
@@ -101,7 +102,7 @@ RUN \
     # Download x264 sources.
     echo "Downloading x264 sources..." && \
     mkdir x264 && \
-    curl -# -L ${X264_URL} | tar xj --strip 1 -C x264 && \
+    curl -# -L ${X264_URL} | tar xz --strip 1 -C x264 && \
     # Download libva sources.
     echo "Downloading libva sources..." && \
     mkdir libva && \
@@ -135,9 +136,6 @@ RUN \
         mkdir HandBrake && \
         curl -# -L ${HANDBRAKE_URL} | tar xj --strip 1 -C HandBrake; \
     fi && \
-    # Download patches.
-    echo "Downloading patches..." && \
-    curl -# -L -o MediaSDK/intel-media-sdk-debug-no-assert.patch https://raw.githubusercontent.com/jlesage/docker-handbrake/master/intel-media-sdk-debug-no-assert.patch && \
     # Compile x264.
     echo "Compiling x264..." && \
     cd x264 && \
@@ -146,11 +144,13 @@ RUN \
     else \
         X264_CMAKE_OPTS=--enable-debug; \
     fi && \
-    ./configure \
+    CFLAGS="${CFLAGS/-Os/}" ./configure \
         --prefix=/usr \
         --enable-shared \
+        --disable-static \
         --enable-pic \
         --disable-cli \
+        --extra-cflags=-fno-aggressive-loop-optimizations \
         $X264_CMAKE_OPTS \
         && \
     make -j$(nproc) install && \
@@ -192,6 +192,7 @@ RUN \
         -DLIBVA_DRIVERS_PATH=/opt/intel/mediasdk/lib \
         -DINSTALL_DRIVER_SYSCONF=OFF \
         -DMEDIA_RUN_TEST_SUITE=OFF \
+        -DSKIP_GMM_CHECK=ON \
         ../ && \
     make -j$(nproc) && \
     make install && \
@@ -200,7 +201,7 @@ RUN \
     # Compile Intel Media SDK.
     echo "Compiling Intel Media SDK..." && \
     cd MediaSDK && \
-    patch -p1 < intel-media-sdk-debug-no-assert.patch && \
+    curl -# -L https://raw.githubusercontent.com/jlesage/docker-handbrake/master/intel-media-sdk-debug-no-assert.patch | patch -p1 && \
     mkdir build && \
     cd build && \
     if [ "${HANDBRAKE_DEBUG_MODE}" = "none" ]; then \
