@@ -354,6 +354,19 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
     <!-- Changelog of the application. -->
     <history>
       <release>
+        <version>1.25.0</version>
+        <date>2022-06-27</date>
+        <change>Updated HandBrake to version 1.5.1.</change>
+        <change>Updated libva to version 2.14.0.</change>
+        <change>Updated gmmlib to version 22.1.4.</change>
+        <change>Updated Intel Media Driver to version 22.3.1.</change>
+        <change>Updated Intel Media SDK to version 22.3.0.</change>
+        <change>Updated x264 library to get support for the H.264 10bit encoder.</change>
+        <change>Added the `AUTOMATED_CONVERSION_MAIN_TITLE_DETECTION` environment variable that enables main feature title detection of HandBrake.</change>
+        <change>Now using baseimage version 3.5.8, based on Alpine Linux 3.14, which brings the following changes:</change>
+        <change level="2">Updated installed packages to get latest security fixes.</change>
+      </release>
+      <release>
         <version>1.24.2</version>
         <date>2021-10-04</date>
         <change>Updated HandBrake to version 1.4.2.</change>
