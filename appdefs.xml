@@ -362,7 +362,7 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
         <change>Updated Intel Media Driver to version 22.3.1.</change>
         <change>Updated Intel Media SDK to version 22.3.0.</change>
         <change>Updated x264 library to get support for the H.264 10bit encoder.</change>
-        <change>Added the `AUTOMATED_CONVERSION_MAIN_TITLE_DETECTION` environment variable that enables main feature title detection of HandBrake.</change>
+        <change>Added the `AUTOMATED_CONVERSION_SOURCE_MAIN_TITLE_DETECTION` environment variable that enables main feature title detection of HandBrake.</change>
         <change>Now using baseimage version 3.5.8, based on Alpine Linux 3.14, which brings the following changes:</change>
         <change level="2">Updated installed packages to get latest security fixes.</change>
       </release>
@@ -1043,7 +1043,7 @@ On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
         </unraid_template>
       </environment_variable>
       <environment_variable>
-        <name>AUTOMATED_CONVERSION_MAIN_TITLE_DETECTION</name>
+        <name>AUTOMATED_CONVERSION_SOURCE_MAIN_TITLE_DETECTION</name>
         <description>Setting this to `1` enables HandBrake main feature title detection to try to guess and select the main title.</description>
         <default>0</default>
         <unraid_template>
