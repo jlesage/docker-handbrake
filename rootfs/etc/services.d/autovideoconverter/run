@@ -187,6 +187,9 @@ process_video() {
     else
         VIDEO_TITLES="$(get_video_titles "$video")"
         VIDEO_TITLES_RETVAL=$?
+        if [ "$VIDEO_TITLES_RETVAL" -ne 0 ]; then
+            VIDEO_TITLES=UNSET
+        fi
     fi
     hb_rc=0
 
