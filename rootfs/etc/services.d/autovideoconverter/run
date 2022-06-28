@@ -107,14 +107,8 @@ get_video_hash() {
 get_video_titles() {
     video="$1"
 
-    MAIN_FEATURE_OPT=""
-    if [ "$AC_MAIN_FEATURE" != "0" ]; then
-        MAIN_FEATURE_OPT="--main-feature"
-    fi
-
     $HANDBRAKE_CLI -i "$video" \
                    -t0 \
-                   $MAIN_FEATURE_OPT \
                    --min-duration $AC_SOURCE_MIN_DURATION 2>&1 |
     grep "^+ title " | sed 's/^+ title \([0-9]\+\):$/\1/'
     return ${PIPESTATUS[0]}
@@ -210,6 +204,11 @@ process_video() {
         log "ERROR: Could not identify titles in '${video}' (${hash})..."
         hb_rc=1
     else
+        # If main title detection is enabled, force the number of titles to 1.
+        if [ "$AC_SOURCE_MAIN_TITLE_DETECTION" != "0" ]; then
+            NUM_VIDEO_TITLES="1"
+        fi
+
         log "Starting conversion of '${video}' (${hash}) using preset '${AC_PRESET}'..."
         log "${NUM_VIDEO_TITLES} title(s) to process."
     fi
@@ -266,12 +265,19 @@ process_video() {
         # Set the temporary output filename.
         OUTPUT_FILE_TMP="$OUTPUT_DIR_TMP/$basename.$AC_FORMAT"
 
+        TITLE_ARG=""
+        if [ "$AC_SOURCE_MAIN_TITLE_DETECTION" == "0" ]; then
+            TITLE_ARG="--title $TITLE"
+        else
+            TITLE_ARG="--main-feature"
+        fi
+
         # Invoke HandBrake.
         echo "------- CONVERSION OUTPUT $(date) -------" >> \
             /config/log/hb/conversion.log
         $HANDBRAKE_CLI -i "$video" \
                        -o "$OUTPUT_FILE_TMP" \
-                       --title "$TITLE" \
+                       $TITLE_ARG \
                        --preset "$AC_PRESET" \
                        $AC_HANDBRAKE_CUSTOM_ARGS 2>> \
             /config/log/hb/conversion.log | \
