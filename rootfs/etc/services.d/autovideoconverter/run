@@ -75,7 +75,7 @@ log_hb_encode_progress_yad() {
 
 WATCHDIR_HASH_calculate() {
     WATCHDIR="$1"
-    find "$WATCHDIR" -follow -type f -not -path '*/\.*' -printf '%T@:%s:%p\n' | md5sum | cut -d' ' -f1
+    find "$WATCHDIR" -follow -type f -not -path '*/\.*' -printf '%T@:%s:%p:%m\n' | md5sum | cut -d' ' -f1
 }
 
 WATCHDIR_HASH_isset() {
