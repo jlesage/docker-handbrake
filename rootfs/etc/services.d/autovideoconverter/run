@@ -125,12 +125,6 @@ process_video() {
         return
     fi
 
-    # Skip video if it is not readable.
-    if [ ! -r "$video" ]; then
-        log "Skipping '$video': not readable, check permissions."
-        return
-    fi
-
     # Get hash of the video from its properties.
     hash="$(get_video_hash "$video")"
 
@@ -151,6 +145,12 @@ process_video() {
     sleep $AC_SOURCE_STABLE_TIME
     if [ "$hash" != "$(get_video_hash "$video")" ]; then
         log "Skipping '$video': currently being copied."
+        return
+    fi
+
+    # Skip video if it is not readable.
+    if [ ! -r "$video" ]; then
+        log "Skipping '$video': not readable, check permissions."
         return
     fi
 
