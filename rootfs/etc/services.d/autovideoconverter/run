@@ -1,23 +1,6 @@
-#!/usr/bin/with-contenv bash
+#!/bin/bash
 
 set -u # Treat unset variables as an error.
-
-# Make sure we appear with a proper name under `ps`.
-if [ ! -L "$0" ]; then
-    SV_NAME="$(basename "$(pwd)")"
-    ln -sf run "$SV_NAME"
-    exec ./"$SV_NAME" "$@"
-fi
-
-# Make sure we don't run as root.
-if [ "$(id -u)" -eq 0 ] && [ "$USER_ID" -ne 0 ]; then
-    exec $APP_NICE_CMD s6-applyuidgid -u $USER_ID -g $GROUP_ID -G ${SUP_GROUP_IDS:-$GROUP_ID} "$0" "$@"
-fi
-
-# Set umask.
-if [ "${UMASK:-UNSET}" != "UNSET" ]; then
-    umask "$UMASK"
-fi
 
 FAILED_CONVERSIONS="/config/failed_conversions"
 SUCCESSFUL_CONVERSIONS="/config/successful_conversions"
@@ -43,7 +26,7 @@ clean_exit() {
 trap "clean_exit" EXIT
 
 log() {
-    echo "[$(basename "$0")] $*"
+    echo "$*"
 }
 
 log_hb_encode_progress() {
@@ -60,7 +43,7 @@ log_hb_encode_progress_yad() {
             # This put the text inside the progress bar.
             echo "# $OUTPUT" 2>/dev/null
         done
-    ) | yad \
+    ) | /opt/base/bin/yad \
             --fixed \
             --width=384 \
             --posx=$(expr $DISPLAY_WIDTH / 2 - 384 / 2) \
@@ -70,7 +53,8 @@ log_hb_encode_progress_yad() {
             --borders 10 \
             --text "Encoding $video..." \
             --no-buttons \
-            --progress
+            --progress \
+            2>/dev/null
 }
 
 WATCHDIR_HASH_calculate() {
@@ -232,7 +216,7 @@ process_video() {
         # Call pre conversion hook.
         if [ -f /config/hooks/pre_conversion.sh ]; then
             log "Executing pre-conversion hook..."
-            /usr/bin/with-contenv sh /config/hooks/pre_conversion.sh "$OUTPUT_FILE" "$video" "$AC_PRESET"
+            /bin/sh /config/hooks/pre_conversion.sh "$OUTPUT_FILE" "$video" "$AC_PRESET"
             log "Pre-conversion hook exited with $?"
         fi
 
@@ -306,7 +290,7 @@ process_video() {
         # Call post conversion hook.
         if [ -f /config/hooks/post_conversion.sh ]; then
             log "Executing post-conversion hook..."
-            /usr/bin/with-contenv sh /config/hooks/post_conversion.sh $hb_rc "$OUTPUT_FILE" "$video" "$AC_PRESET"
+            /bin/sh /config/hooks/post_conversion.sh $hb_rc "$OUTPUT_FILE" "$video" "$AC_PRESET"
             log "Post-conversion hook exited with $?"
         fi
 
@@ -407,13 +391,11 @@ process_watch_folder() {
     # Call watch folder done hook.
     if [ -f /config/hooks/post_watch_folder_processing.sh ] && [ "$NUM_PROCESSED_FILES" -gt 0 ]; then
         log "Executing post watch folder processing hook..."
-        /usr/bin/with-contenv sh /config/hooks/post_watch_folder_processing.sh "$WF"
+        /bin/sh /config/hooks/post_watch_folder_processing.sh "$WF"
         log "Post watch folder processing hook exited with $?"
     fi
 
 }
-
-log "starting..."
 
 [ -f "$FAILED_CONVERSIONS" ] || touch "$FAILED_CONVERSIONS"
 [ -f "$SUCCESSFUL_CONVERSIONS" ] || touch "$SUCCESSFUL_CONVERSIONS"
@@ -455,4 +437,4 @@ while true; do
     sleep "${AUTOMATED_CONVERSION_CHECK_INTERVAL:-5}"
 done
 
-# vim: set ft=sh :
+# vim:ft=sh:ts=4:sw=4:et:sts=4

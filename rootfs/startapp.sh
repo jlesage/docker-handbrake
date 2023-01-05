@@ -1,4 +1,4 @@
-#!/usr/bin/with-contenv sh
+#!/bin/sh
 COMMON_ARGS="--config /config"
 
 cd /storage

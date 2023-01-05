@@ -1,0 +1,95 @@
+--- a/make/configure.py	2022-12-11 10:57:06.787237866 -0500
++++ b/make/configure.py	2022-12-11 10:57:35.153607258 -0500
+@@ -1680,7 +1680,7 @@
+ 
+     ## re-run tools with cross-compilation needs
+     if cross:
+-        for tool in ( Tools.ar, Tools.gcc, Tools.ranlib, Tools.strip ):
++        for tool in ( Tools.ar, Tools.ranlib, Tools.strip ):
+             tool.__init__( tool.var, tool.option, '%s-%s' % (cross,tool.name), **tool.kwargs )
+             tool.run()
+ 
+--- a/contrib/libdav1d/module.defs	2022-12-11 11:36:19.717065419 -0500
++++ b/contrib/libdav1d/module.defs	2022-12-11 11:37:13.449448699 -0500
+@@ -37,6 +37,10 @@
+     LIBDAV1D.CONFIGURE.extra += --cross-file=$(call fn.ABSOLUTE,$(LIBDAV1D.EXTRACT.dir/))$(HOST.machine)-w64-mingw32.meson
+ endif
+ 
++ifeq (1,$(HOST.cross))
++    LIBDAV1D.CONFIGURE.extra += --cross-file=/tmp/handbrake/contrib/cross-config.meson
++endif
++
+ LIBDAV1D.BUILD.make       = $(NINJA.exe)
+ LIBDAV1D.BUILD.extra      = -v
+ 
+--- a/contrib/ffmpeg/module.defs	2022-12-11 12:20:04.458408092 -0500
++++ b/contrib/ffmpeg/module.defs	2022-12-11 13:23:06.567257688 -0500
+@@ -88,6 +88,13 @@
+     --enable-muxer=psp \
+     --enable-muxer=ipod
+ 
++ifeq (1,$(HOST.cross))
++    FFMPEG.CONFIGURE.extra += \
++        --enable-cross-compile \
++        --pkg-config=$(shell xx-info)-pkg-config \
++        --arch=$(HOST.arch)
++endif
++
+ ifeq (darwin,$(HOST.system))
+     FFMPEG.CONFIGURE.extra += --disable-audiotoolbox --disable-coreimage
+ 
+--- a/contrib/x265_8bit/module.defs	2022-12-11 14:47:12.661354528 -0500
++++ b/contrib/x265_8bit/module.defs	2022-12-11 14:50:45.117909888 -0500
+@@ -40,7 +40,7 @@
+     X265_8.CONFIGURE.extra += -DCMAKE_CXX_FLAGS=-flax-vector-conversions
+ endif
+ 
+-X265_8.CONFIGURE.args.host  = -DCMAKE_HOST_SYSTEM="$(X265_8.CONFIGURE.host)"
++X265_8.CONFIGURE.args.host  = -DCMAKE_SYSTEM="$(X265_8.CONFIGURE.host)"
+ ifeq (1,$(HOST.cross))
+     ifeq (mingw,$(HOST.system))
+         X265_8.CONFIGURE.extra += -DWIN32=ON
+--- a/contrib/x265/module.defs	2022-12-20 11:22:38.811766296 -0500
++++ b/contrib/x265/module.defs	2022-12-20 11:23:58.528126775 -0500
+@@ -40,7 +40,7 @@
+ 	$(X265.BUILD.dir)/10bit/libx265_main10.a \
+ 	$(X265.BUILD.dir)/12bit/libx265_main12.a
+ 
+-ifeq (1-mingw,$(HOST.cross)-$(HOST.system))
++ifeq (1,$(HOST.cross))
+     X265.O.ext = .obj
+ else
+     X265.O.ext = .o
+--- a/libhb/module.defs	2022-12-20 12:24:16.998534733 -0500
++++ b/libhb/module.defs	2022-12-20 12:24:59.808744271 -0500
+@@ -63,7 +63,7 @@
+         LIBHB.libxml2 := $(patsubst -I%,%,$(LIBHB.libxml2))
+         LIBHB.GCC.I += $(LIBHB.libxml2)
+     else
+-        LIBHB.GCC.I += /usr/include/libxml2
++        LIBHB.GCC.I += $(shell xx-info sysroot)usr/include/libxml2
+     endif
+ endif
+ 
+--- a/gtk/module.defs	2022-12-20 13:24:04.292339625 -0500
++++ b/gtk/module.defs	2022-12-20 13:24:30.542950711 -0500
+@@ -18,7 +18,7 @@
+ 
+ ###############################################################################
+ 
+-ifeq (1-mingw,$(HOST.cross)-$(HOST.system))
++ifeq (1,$(HOST.cross)))
+ GTK.CONFIGURE.extra += --host=$(HOST.spec)
+ ifeq ($(HAS.dlfcn),1)
+ 	GTK.CONFIGURE.extra += --enable-dl
+--- a/gtk/module.rules	2022-12-20 14:31:04.399112898 -0500
++++ b/gtk/module.rules	2022-12-20 15:04:12.463047834 -0500
+@@ -16,7 +16,7 @@
+ 	set -e; cd $(GTK.src/); NOCONFIGURE=1 autoreconf -fiv
+ 	set -e; cd $(GTK.build/); $(call fn.ABSOLUTE,$(GTK.src/))configure \
+ 		$(GTK.CONFIGURE.extra) \
+-		PKG_CONFIG_PATH=$(BUILD/)contrib/lib/pkgconfig:$(PKG_CONFIG_PATH) \
++		PKG_CONFIG_PATH=$(BUILD/)contrib/lib/pkgconfig:/$(shell xx-info)/usr/share/pkgconfig:$(PKG_CONFIG_PATH) \
+ 		CC="$(GCC.gcc)" \
+ 		CXX="$(GCC.gxx)" \
+ 		CFLAGS="$(call fn.ARGS,GTK.GCC,.g .O *D *W ?extra)" \

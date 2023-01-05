@@ -1,0 +1,45 @@
+#!/bin/sh
+
+set -e # Exit immediately if a command exits with a non-zero status.
+set -u # Treat unset variables as an error.
+
+GRPS=$(mktemp)
+
+# Get supplementary group(s) associated to optical drive(s).
+if true; then
+    DRIVES_INFO="$(mktemp)"
+    lsscsi -g -k | grep -w "cd/dvd" | tr -s ' ' > "$DRIVES_INFO"
+
+    while read -r DRV; do
+        DRV_DEV="$(echo "$DRV" | rev | sed -e 's/^[ \t]*//' | cut -d' ' -f2 | rev)"
+        if [ -e "$DRV_DEV" ]; then
+            # Save the associated group.
+            G="$(stat -c "%g" "$DRV_DEV")"
+            echo "$G" >> "$GRPS"
+        fi
+    done < "$DRIVES_INFO"
+    rm "$DRIVES_INFO"
+fi
+
+# Get supplementary group(s) associated to QSV device.
+if [ -d /dev/dri/ ]; then
+    # Get group of devices under /dev/dri/.
+    find /dev/dri/ -type c | while read DRI_DEV
+    do
+        G="$(stat -c "%g" "$DRI_DEV")"
+        if [ "$G" -ne 0 ]; then
+            echo "$G" >> "$GRPS"
+        fi
+    done
+fi
+
+# Print supplementary group IDs.
+if [ "$(cat "$GRPS")" != "" ]; then
+    cat "$GRPS" | grep -v '^$' | grep -v '^0$' | sort -nub | tr '\n' ','
+    rm "$GRPS"
+else
+    rm "$GRPS"
+    exit 100
+fi
+
+# vim:ft=sh:ts=4:sw=4:et:sts=4
