@@ -128,10 +128,27 @@ jobs:
           cache-from: type=gha,scope=${{ env.DOCKER_IMAGE_NAME }}
           cache-to: type=gha,mode=max,scope=${{ env.DOCKER_IMAGE_NAME }}
 
+      - name: Build and push (debug version)
+        uses: docker/build-push-action@v3
+        with:
+          push: ${{ steps.prep.outputs.is_release == 'yes' }}
+          platforms: ${{ env.PLATFORMS }}
+          tags: ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.prep.outputs.version }}-debug
+          build-args: |
+            DOCKER_IMAGE_VERSION=${{ steps.prep.outputs.label_version }}-debug
+            HANDBRAKE_DEBUG_MODE=max
+          cache-from: type=gha,scope=${{ env.DOCKER_IMAGE_NAME }}
+          cache-to: type=gha,mode=max,scope=${{ env.DOCKER_IMAGE_NAME }}
+
       - name: Inspect
         if: ${{ steps.prep.outputs.is_release == 'yes' }}
         run: |
           docker buildx imagetools inspect ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.prep.outputs.version }}
+
+      - name: Inspect (debug version)
+        if: ${{ steps.prep.outputs.is_release == 'yes' }}
+        run: |
+          docker buildx imagetools inspect ${{ env.DOCKER_IMAGE_NAME }}:${{ steps.prep.outputs.version }}-debug
 
       - name: Dockerhub description
         if: ${{ steps.prep.outputs.release_type == 'standard' }}
