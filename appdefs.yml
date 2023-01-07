@@ -1075,6 +1075,32 @@ container:
         temporarily and only when needed.
       type: public
       default: 0
+    - name: HANDBRAKE_GUI
+      description: >-
+        Setting this to `1` enables the HandBrake GUI, `0` disables it.
+      type: public
+      default: 1
+      unraid_template:
+        title: "HandBrake GUI State"
+        description: >-
+          Setting this to 1 enables the HandBrake GUI, 0 disables it.
+        display: advanced
+        required: false
+        mask: false
+    - name: AUTOMATIC_VIDEO_CONVERTER
+      description: >-
+        Setting this to `1` enables the automatic vido converter, `0` disables
+        it.
+      type: public
+      default: 1
+      unraid_template:
+        title: "Automatic Video Converter: State"
+        description: >-
+          Setting this to 1 enables the automatic vido converter, 0 disables
+          it.
+        display: advanced
+        required: false
+        mask: false
 
   # Volumes
   volumes:
