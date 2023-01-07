@@ -20,13 +20,12 @@ function log {
 
 HANDBRAKE_DEBUG_MODE="${1:-}"
 HANDBRAKE_URL="${2:-}"
-X264_URL="${3:-}"
-LIBVA_URL="${4:-}"
-INTEL_VAAPI_DRIVER_URL="${5:-}"
-GMMLIB_URL="${6:-}"
-INTEL_MEDIA_DRIVER_URL="${7:-}"
-INTEL_MEDIA_SDK_URL="${8:-}"
-INTEL_ONEVPL_GPU_RUNTIME_URL="${9:-}"
+LIBVA_URL="${3:-}"
+INTEL_VAAPI_DRIVER_URL="${4:-}"
+GMMLIB_URL="${5:-}"
+INTEL_MEDIA_DRIVER_URL="${6:-}"
+INTEL_MEDIA_SDK_URL="${7:-}"
+INTEL_ONEVPL_GPU_RUNTIME_URL="${8:-}"
 
 if [ -z "$HANDBRAKE_DEBUG_MODE" ]; then
     log "ERROR: HandBrake debug mode missing."
@@ -38,10 +37,10 @@ if [ -z "$HANDBRAKE_URL" ]; then
     exit 1
 fi
 
-if [ -z "$X264_URL" ]; then
-    log "ERROR: x264 URL missing."
-    exit 1
-fi
+#if [ -z "$X264_URL" ]; then
+#    log "ERROR: x264 URL missing."
+#    exit 1
+#fi
 
 if [ -z "$LIBVA_URL" ]; then
     log "ERROR: libva URL missing."

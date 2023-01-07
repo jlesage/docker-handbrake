@@ -8,10 +8,7 @@
 ARG DOCKER_IMAGE_VERSION=
 
 # Define software versions.
-# NOTE: x264 doesn't do releases.  We track branch "stable":
-#   https://code.videolan.org/videolan/x264/-/tree/stable.
 ARG HANDBRAKE_VERSION=1.6.0
-ARG X264_VERSION=5db6aa6cab1b146e07b60cc1736a01f21da01154
 ARG LIBVA_VERSION=2.14.0
 ARG INTEL_VAAPI_DRIVER_VERSION=2.4.1
 ARG GMMLIB_VERSION=22.1.4
@@ -21,7 +18,6 @@ ARG INTEL_ONEVPL_GPU_RUNTIME_VERSION=22.3.2
 
 # Define software download URLs.
 ARG HANDBRAKE_URL=https://github.com/HandBrake/HandBrake/releases/download/${HANDBRAKE_VERSION}/HandBrake-${HANDBRAKE_VERSION}-source.tar.bz2
-ARG X264_URL=https://code.videolan.org/videolan/x264/-/archive/${X264_VERSION}/x264-${X264_VERSION}.tar.gz
 ARG LIBVA_URL=https://github.com/intel/libva/releases/download/${LIBVA_VERSION}/libva-${LIBVA_VERSION}.tar.bz2
 ARG INTEL_VAAPI_DRIVER_URL=https://github.com/intel/intel-vaapi-driver/releases/download/${INTEL_VAAPI_DRIVER_VERSION}/intel-vaapi-driver-${INTEL_VAAPI_DRIVER_VERSION}.tar.bz2
 ARG GMMLIB_URL=https://github.com/intel/gmmlib/archive/intel-gmmlib-${GMMLIB_VERSION}.tar.gz
@@ -40,7 +36,6 @@ FROM --platform=$BUILDPLATFORM alpine:3.17 AS handbrake
 ARG TARGETPLATFORM
 ARG HANDBRAKE_DEBUG_MODE
 ARG HANDBRAKE_URL
-ARG X264_URL
 ARG LIBVA_URL
 ARG INTEL_VAAPI_DRIVER_URL
 ARG GMMLIB_URL
@@ -52,7 +47,6 @@ COPY src/handbrake /build
 RUN /build/build.sh \
     "$HANDBRAKE_DEBUG_MODE" \
     "$HANDBRAKE_URL" \
-    "$X264_URL" \
     "$LIBVA_URL" \
     "$INTEL_VAAPI_DRIVER_URL" \
     "$GMMLIB_URL" \
