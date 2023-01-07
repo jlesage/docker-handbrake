@@ -10,7 +10,7 @@ ARG DOCKER_IMAGE_VERSION=
 # Define software versions.
 # NOTE: x264 doesn't do releases.  We track branch "stable":
 #   https://code.videolan.org/videolan/x264/-/tree/stable.
-ARG HANDBRAKE_VERSION=1.5.1
+ARG HANDBRAKE_VERSION=1.6.0
 ARG X264_VERSION=5db6aa6cab1b146e07b60cc1736a01f21da01154
 ARG LIBVA_VERSION=2.14.0
 ARG INTEL_VAAPI_DRIVER_VERSION=2.4.1
