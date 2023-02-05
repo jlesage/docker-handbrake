@@ -6,7 +6,7 @@ concurrency:
 
 env:
   DOCKER_IMAGE_NAME: jlesage/handbrake
-  PLATFORMS: linux/amd64,linux/386,linux/arm64/v8
+  PLATFORMS: linux/amd64
 
 on:
   push:
