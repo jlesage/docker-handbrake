@@ -351,7 +351,9 @@ if [ "$(xx-info arch)" = "amd64" ]; then
 fi
 
 log "Patching HandBrake..."
-patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/cross-compile-fix.patch
+if xx-info is-cross; then
+    patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/cross-compile-fix.patch
+fi
 
 # Create the meson cross compile config file.
 if xx-info is-cross; then
@@ -392,7 +394,6 @@ log "Configuring HandBrake..."
         --enable-fdk-aac \
         --enable-x265 \
         $CONF_FLAGS \
-
 )
 
 log "Compiling HandBrake..."
