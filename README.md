@@ -145,7 +145,7 @@ of this parameter has the format `<VARIABLE_NAME>=<VALUE>`.
 |`AUTOMATED_CONVERSION_INSTALL_PKGS`| Space-separated list of Alpine Linux packages to install.  This is useful when the automatic video converter's hooks require tools not available in the container image.  See https://pkgs.alpinelinux.org for the list of available Alpine Linux packages. | (unset) |
 |`HANDBRAKE_DEBUG`| Setting this to `1` enables HandBrake debug logging for both the GUI and the automatic video converter.  For the latter, the increased verbosity is reflected in `/config/log/hb/conversion.log` (container path).  For the GUI, log messages are sent to `/config/log/hb/handbrake.debug.log` (container path).  **NOTE**: When enabled, a lot of information is generated and the log file will grow quickly.  Make sure to enable this temporarily and only when needed. | `0` |
 |`HANDBRAKE_GUI`| Setting this to `1` enables the HandBrake GUI, `0` disables it. | `1` |
-|`AUTOMATIC_VIDEO_CONVERTER`| Setting this to `1` enables the automatic vido converter, `0` disables it. | `1` |
+|`AUTOMATIC_VIDEO_CONVERTER`| Setting this to `1` enables the automatic video converter, `0` disables it. | `1` |
 
 #### Deployment Considerations
 
