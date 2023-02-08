@@ -200,8 +200,9 @@ app:
           `AUTOMATED_CONVERSION_OUTPUT_SUBDIR` environment variable sets to a
           subdirectory.  The application can then be configured to monitor this
           subdirectory.  For example, if `AUTOMATED_CONVERSION_OUTPUT_SUBDIR` is set to
-          `TV Shows` and `/output` is mapped to `$HOME/appvolumes/HandBrake` on the host,
-          `$HOME/appvolumes/HandBrake/TV Shows` should be monitored by the application.
+          `TV Shows` and `/output` is mapped to `/home/user/appvolumes/HandBrake` on the
+          host, `/home/user/appvolumes/HandBrake/TV Shows` should be monitored by the
+          application.
       - title: Intel Quick Sync Video
         level: 2
         content: |-
@@ -1122,7 +1123,7 @@ container:
   # Volumes
   volumes:
     - container_path: /watch
-      host_path_example: "$HOME/HandBrake/watch"
+      host_path_example: "/home/user/HandBrake/watch"
       description: >-
         This is where videos to be automatically converted are located
       permissions: rw
@@ -1136,7 +1137,7 @@ container:
         required: false
         mask: false
     - container_path: /output
-      host_path_example: "$HOME/HandBrake/output"
+      host_path_example: "/home/user/HandBrake/output"
       description: >-
         This is where automatically converted video files are written.
       permissions: rw
@@ -1144,7 +1145,7 @@ container:
       unraid_template:
         title: Output Directory
         description: >-
-          >This is the default output folder for converted videos.  Also used by
+          This is the default output folder for converted videos.  Also used by
           the automatic video converter.
         display: always
         required: true

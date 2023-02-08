@@ -66,17 +66,17 @@ docker run -d \
     --name=handbrake \
     -p 5800:5800 \
     -v /docker/appdata/handbrake:/config:rw \
-    -v $HOME:/storage:ro \
-    -v $HOME/HandBrake/watch:/watch:rw \
-    -v $HOME/HandBrake/output:/output:rw \
+    -v /home/user:/storage:ro \
+    -v /home/user/HandBrake/watch:/watch:rw \
+    -v /home/user/HandBrake/output:/output:rw \
     jlesage/handbrake
 ```
 
 Where:
   - `/docker/appdata/handbrake`: This is where the application stores its configuration, states, log and any files needing persistency.
-  - `$HOME`: This location contains files from your host that need to be accessible to the application.
-  - `$HOME/HandBrake/watch`: This is where videos to be automatically converted are located
-  - `$HOME/HandBrake/output`: This is where automatically converted video files are written.
+  - `/home/user`: This location contains files from your host that need to be accessible to the application.
+  - `/home/user/HandBrake/watch`: This is where videos to be automatically converted are located
+  - `/home/user/HandBrake/output`: This is where automatically converted video files are written.
 
 Browse to `http://your-host-ip:5800` to access the HandBrake GUI.
 Files from the host appear under the `/storage` folder in the container.
@@ -253,9 +253,9 @@ services:
       - "5800:5800"
     volumes:
       - "/docker/appdata/handbrake:/config:rw"
-      - "$HOME:/storage:ro"
-      - "$HOME/HandBrake/watch:/watch:rw"
-      - "$HOME/HandBrake/output:/output:rw"
+      - "/home/user:/storage:ro"
+      - "/home/user/HandBrake/watch:/watch:rw"
+      - "/home/user/HandBrake/output:/output:rw"
 ```
 
 ## Docker Image Versioning
@@ -728,8 +728,9 @@ video converter should be configured with the
 `AUTOMATED_CONVERSION_OUTPUT_SUBDIR` environment variable sets to a
 subdirectory.  The application can then be configured to monitor this
 subdirectory.  For example, if `AUTOMATED_CONVERSION_OUTPUT_SUBDIR` is set to
-`TV Shows` and `/output` is mapped to `$HOME/appvolumes/HandBrake` on the host,
-`$HOME/appvolumes/HandBrake/TV Shows` should be monitored by the application.
+`TV Shows` and `/output` is mapped to `/home/user/appvolumes/HandBrake` on the
+host, `/home/user/appvolumes/HandBrake/TV Shows` should be monitored by the
+application.
 
 ## Intel Quick Sync Video
 
