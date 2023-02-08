@@ -1063,6 +1063,24 @@ container:
         display: advanced
         required: false
         mask: false
+    - name: AUTOMATED_CONVERSION_USE_TRASH
+      description: >-
+        When set to `1`, the automatic video converter uses the trash directory.
+        So when the automatic video converter is configured to *not* keep
+        sources, it will move them to the trash directory (`/trash` inside the
+        container) instead of deleting them.
+      type: public
+      default: 0
+      unraid_template:
+        title: "Automatic Video Converter: Use Trash Directory"
+        description: >-
+          Set to 1 to enable usage of the trash directory. So when the automatic
+          video converter is configured to not keep sources, it will move files
+          to the trash directory (/trash inside the container) instead of
+          deleting them.
+        display: advanced
+        required: false
+        mask: false
     - name: HANDBRAKE_DEBUG
       description: >-
         Setting this to `1` enables HandBrake debug logging for both the GUI and
@@ -1130,6 +1148,17 @@ container:
           the automatic video converter.
         display: always
         required: true
+        mask: false
+    - container_path: /trash
+      host_path_example: "/home/user/HandBrake/trash"
+      description: >-
+        When trash usage is enabled, this is where the automatic video converter moves
+        converted files instead of deleting them.
+      permissions: rw
+      unraid_template:
+        title: Trash Directory
+        display: advanced
+        required: false
         mask: false
 
   # Network ports

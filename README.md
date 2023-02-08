@@ -143,6 +143,7 @@ of this parameter has the format `<VARIABLE_NAME>=<VALUE>`.
 |`AUTOMATED_CONVERSION_NO_GUI_PROGRESS`| When set to `1`, progress of videos converted by the automatic video converter is not shown in the HandBrake GUI. | `0` |
 |`AUTOMATED_CONVERSION_HANDBRAKE_CUSTOM_ARGS`| Custom arguments to pass to HandBrake when performing a conversion. | (unset) |
 |`AUTOMATED_CONVERSION_INSTALL_PKGS`| Space-separated list of Alpine Linux packages to install.  This is useful when the automatic video converter's hooks require tools not available in the container image.  See https://pkgs.alpinelinux.org for the list of available Alpine Linux packages. | (unset) |
+|`AUTOMATED_CONVERSION_USE_TRASH`| When set to `1`, the automatic video converter uses the trash directory. So when the automatic video converter is configured to *not* keep sources, it will move them to the trash directory (`/trash` inside the container) instead of deleting them. | `0` |
 |`HANDBRAKE_DEBUG`| Setting this to `1` enables HandBrake debug logging for both the GUI and the automatic video converter.  For the latter, the increased verbosity is reflected in `/config/log/hb/conversion.log` (container path).  For the GUI, log messages are sent to `/config/log/hb/handbrake.debug.log` (container path).  **NOTE**: When enabled, a lot of information is generated and the log file will grow quickly.  Make sure to enable this temporarily and only when needed. | `0` |
 |`HANDBRAKE_GUI`| Setting this to `1` enables the HandBrake GUI, `0` disables it. | `1` |
 |`AUTOMATIC_VIDEO_CONVERTER`| Setting this to `1` enables the automatic video converter, `0` disables it. | `1` |
@@ -196,6 +197,7 @@ format: `<HOST_DIR>:<CONTAINER_DIR>[:PERMISSIONS]`.
 |`/storage`| ro | This location contains files from your host that need to be accessible to the application. |
 |`/watch`| rw | This is where videos to be automatically converted are located |
 |`/output`| rw | This is where automatically converted video files are written. |
+|`/trash`| rw | When trash usage is enabled, this is where the automatic video converter moves converted files instead of deleting them. |
 
 ### Ports
 
