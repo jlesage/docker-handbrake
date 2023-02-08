@@ -7,6 +7,12 @@ SUCCESSFUL_CONVERSIONS="/config/successful_conversions"
 
 HANDBRAKE_CLI="/usr/bin/HandBrakeCLI --preset-import-file /config/ghb/presets.json"
 
+# https://gist.github.com/aaomidi/0a3b5c9bd563c9e012518b495410dc0e
+VIDEO_FILE_EXTENSIONS_INTERNAL_LIST="\
+    webm mkv flv vob ogv ogg rrc gifv mng mov avi qt wmv yuv rm asf amv mp4 \
+    m4p m4v mpg mp2 mpeg mpe mpv m4v svi 3gp 3g2 mxf roq nsv flv f4v f4p f4a \
+    f4b mod"
+
 if [ "${HANDBRAKE_DEBUG:-0}" -eq 1 ]; then
     HANDBRAKE_CLI="$HANDBRAKE_CLI --verbose=3"
 fi
@@ -153,22 +159,58 @@ process_video() {
     esac
     OUTPUT_DIR="$(echo "$OUTPUT_DIR" | sed 's|/\+|/|g' | sed 's|/\+$||')"
 
+    # Get the file extension.
+    VIDEO_FILE_EXT="${video##*.}"
+
+    # Determine if the extension is in the list of video file extensions.
+    if echo "$AC_VIDEO_FILE_EXTENSIONS" | grep -iwq "$VIDEO_FILE_EXT"; then
+        FILE_EXT_IN_VIDEO_LIST=true
+    else
+        FILE_EXT_IN_VIDEO_LIST=false
+    fi
+
+    # Determine if the extension is in the list of non-video file extensions.
+    if echo "$AC_NON_VIDEO_FILE_EXTENSIONS" | grep -iwq "$VIDEO_FILE_EXT"; then
+        FILE_EXT_IN_NON_VIDEO_LIST=true
+    else
+        FILE_EXT_IN_NON_VIDEO_LIST=false
+    fi
+
     # Get video titles.
-    if [ -n "$AC_VIDEO_FILE_EXTENSIONS" ] && ! echo "$AC_VIDEO_FILE_EXTENSIONS" | grep -iwq "${video##*.}"; then
+    if $FILE_EXT_IN_VIDEO_LIST && $FILE_EXT_IN_NON_VIDEO_LIST; then
+        log "ERROR: File '${video}' (${hash}) has an extension defined as both a video and non-video file."
+        return
+    elif [ -n "$AC_VIDEO_FILE_EXTENSIONS" ] && ! $FILE_EXT_IN_VIDEO_LIST; then
         log "File '${video}' (${hash}) has an extension not part of the inclusion list."
         VIDEO_TITLES=UNSET
         VIDEO_TITLES_RETVAL=1
-    elif echo "$AC_NON_VIDEO_FILE_EXTENSIONS" | grep -iwq "${video##*.}"; then
+    elif $FILE_EXT_IN_NON_VIDEO_LIST; then
         log "File '${video}' (${hash}) has an extension part of the exclusion list."
         VIDEO_TITLES=UNSET
         VIDEO_TITLES_RETVAL=1
     else
+        # Let Handbrake detects if the file is a video or not.
         VIDEO_TITLES="$(get_video_titles "$video")"
         VIDEO_TITLES_RETVAL=$?
         if [ "$VIDEO_TITLES_RETVAL" -ne 0 ]; then
+            # File is not a video.
             VIDEO_TITLES=UNSET
+
+            if $FILE_EXT_IN_VIDEO_LIST; then
+                # The file extension is part of the video file extension list.
+                # Make sure to fail the conversion and not consider the file
+                # as a non-video.
+                VIDEO_TITLES_RETVAL=0
+            elif echo "$VIDEO_FILE_EXTENSIONS_INTERNAL_LIST" | grep -iwq "$VIDEO_FILE_EXT"; then
+                # The file extension is part of our internal list.  Make sure to
+                # fail the conversion and not consider the file as a non-video.
+                # This is a protection against Handbrake not correctly detecting
+                # a video because of a bug, crash, missing support, etc.
+                VIDEO_TITLES_RETVAL=0
+            fi
         fi
     fi
+
     hb_rc=0
 
     VIDEO_TITLES="${VIDEO_TITLES:-UNSET}"
@@ -184,8 +226,8 @@ process_video() {
         cp -p "${video}" "${OUTPUT_DIR}/$(basename "${video}")" # "-p" maintains permissions, times etc...
     elif [ "$VIDEO_TITLES_RETVAL" -gt 0 ]; then
         log "File '$video' ($hash) is not a video, ignoring..."
-    elif [[ ${NUM_VIDEO_TITLES} -eq 0 ]]; then
-        log "ERROR: Could not identify titles in '${video}' (${hash})..."
+    elif [ "$NUM_VIDEO_TITLES" -eq 0 ]; then
+        log "ERROR: Could not identify titles in '${video}' (${hash})."
         hb_rc=1
     else
         # If main title detection is enabled, force the number of titles to 1.
