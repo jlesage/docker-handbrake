@@ -270,7 +270,7 @@ process_video() {
         fi
 
         # Check whether destination already exists
-        if [ -f "$OUTPUT_FILE" ] && [ "$AC_OVERWRITE_OUTPUT" == "0" ]; then
+        if [ -f "$OUTPUT_FILE" ] && is-bool-val-false "$AC_OVERWRITE_OUTPUT"; then
             hb_rc=1
             log "ERROR: Destination file '$OUTPUT_FILE' already exists."
             break
@@ -344,7 +344,7 @@ process_video() {
     if [ $hb_rc -eq 0 ]; then
         log "Conversion ended successfully."
         echo "$video $hash" >> "$SUCCESSFUL_CONVERSIONS"
-        if [ "$AC_KEEP_SOURCE" -eq 0 ]; then
+        if is-bool-val-false "$AC_KEEP_SOURCE"; then
             if [ "${AUTOMATED_CONVERSION_USE_TRASH:-0}" -eq 0 ]; then
                 rm -r "$video"
                 log "Removed $video'."
