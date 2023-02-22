@@ -13,8 +13,8 @@ PROCESSOR_NAME="$(cat /proc/cpuinfo | grep "model name" | head -n1 | cut -d':' -
 
 log "Processor: $PROCESSOR_NAME"
 
-if ! echo "$PROCESSOR_NAME" | grep -qiw "INTEL"; then
-    log "Intel Quick Sync Video not supported: not an Intel processor."
+if ! echo "$PROCESSOR_NAME" | grep -qiE "(INTEL|KVM|QEMU)"; then
+    log "Intel Quick Sync Video not supported: not a supported processor."
     exit 0
 fi
 
@@ -28,7 +28,7 @@ if [ ! -e "$DRI_DEV" ]; then
     exit 0
 fi
 
-if ! lspci -s "00:02.0" -k | grep -q -w i915; then
+if ! lspci -k | grep -qw i915; then
     log "Intel Quick Sync Video not supported: video adapter not using i915 driver."
     exit 0
 fi
