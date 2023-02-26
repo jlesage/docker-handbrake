@@ -824,6 +824,43 @@ container:
 
   # Environment variables.
   environment_variables:
+    - name: HANDBRAKE_DEBUG
+      description: >-
+        Setting this to `1` enables HandBrake debug logging for both the GUI and
+        the automatic video converter.  For the latter, the increased verbosity
+        is reflected in `/config/log/hb/conversion.log` (container path).  For
+        the GUI, log messages are sent to `/config/log/hb/handbrake.debug.log`
+        (container path).  **NOTE**: When enabled, a lot of information is
+        generated and the log file will grow quickly.  Make sure to enable this
+        temporarily and only when needed.
+      type: public
+      default: 0
+    - name: HANDBRAKE_GUI
+      description: >-
+        Setting this to `1` enables the HandBrake GUI, `0` disables it.
+      type: public
+      default: 1
+      unraid_template:
+        title: "HandBrake GUI State"
+        description: >-
+          Setting this to 1 enables the HandBrake GUI, 0 disables it.
+        display: advanced
+        required: false
+        mask: false
+    - name: AUTOMATED_CONVERSION
+      description: >-
+        Setting this to `1` enables the automatic video converter, `0` disables
+        it.
+      type: public
+      default: 1
+      unraid_template:
+        title: "Automatic Video Converter: State"
+        description: >-
+          Setting this to 1 enables the automatic video converter, 0 disables
+          it.
+        display: advanced
+        required: false
+        mask: false
     - name: AUTOMATED_CONVERSION_PRESET 
       description: >-
         HandBrake preset used by the automatic video converter.  Identification
@@ -1079,43 +1116,6 @@ container:
           video converter is configured to not keep sources, it will move files
           to the trash directory (/trash inside the container) instead of
           deleting them.
-        display: advanced
-        required: false
-        mask: false
-    - name: HANDBRAKE_DEBUG
-      description: >-
-        Setting this to `1` enables HandBrake debug logging for both the GUI and
-        the automatic video converter.  For the latter, the increased verbosity
-        is reflected in `/config/log/hb/conversion.log` (container path).  For
-        the GUI, log messages are sent to `/config/log/hb/handbrake.debug.log`
-        (container path).  **NOTE**: When enabled, a lot of information is
-        generated and the log file will grow quickly.  Make sure to enable this
-        temporarily and only when needed.
-      type: public
-      default: 0
-    - name: HANDBRAKE_GUI
-      description: >-
-        Setting this to `1` enables the HandBrake GUI, `0` disables it.
-      type: public
-      default: 1
-      unraid_template:
-        title: "HandBrake GUI State"
-        description: >-
-          Setting this to 1 enables the HandBrake GUI, 0 disables it.
-        display: advanced
-        required: false
-        mask: false
-    - name: AUTOMATIC_VIDEO_CONVERTER
-      description: >-
-        Setting this to `1` enables the automatic video converter, `0` disables
-        it.
-      type: public
-      default: 1
-      unraid_template:
-        title: "Automatic Video Converter: State"
-        description: >-
-          Setting this to 1 enables the automatic video converter, 0 disables
-          it.
         display: advanced
         required: false
         mask: false

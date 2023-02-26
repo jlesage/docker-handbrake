@@ -3,7 +3,7 @@
 set -e # Exit immediately if a command exits with a non-zero status.
 set -u # Treat unset variables as an error.
 
-if is-bool-val-true "${AUTOMATIC_VIDEO_CONVERTER:-1}"; then
+if is-bool-val-true "${AUTOMATED_CONVERSION:-1}"; then
     echo "false"
 else
     echo "true"
