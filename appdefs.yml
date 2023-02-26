@@ -338,6 +338,20 @@ app:
           On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
           `Extra Parameters` field of the container settings.
   changelog:
+    - version: 23.02.1
+      date: 2023-02-26
+      changes:
+        - 'Updated HandBrake to version 1.6.1.'
+        - 'Updated libva, gmmlib, Intel Media Driver, Intel Media SDK and Intel OneVPL.'
+        - 'The Automatic Video Converter now has the ability to move source files to trash instead of removing them.'
+        - 'Improved robustness of the Automatic Video Converter.'
+        - 'Added the ability to disable the HandBrake GUI.'
+        - 'Added the ability to disable the Automatic Video Converter.'
+        - 'Versioning scheme of the Docker image changed to `YY.MM.SEQUENCE`.'
+        - 'Update of the baseimage to version 4.3.6 brings the following new features:'
+        - '2:Support for dark mode.'
+        - '2:Support for remote window resize.'
+        - '2:Updated the web UI with a new, simplified and less intrusive look.'
     - version: 1.25.1
       date: 2022-06-28
       changes:
