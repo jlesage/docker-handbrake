@@ -338,6 +338,16 @@ app:
           On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
           `Extra Parameters` field of the container settings.
   changelog:
+    - version: 23.03.1
+      date: 2023-03-05
+      changes:
+        - 'Fixed `AUTOMATED_CONVERSION_NO_GUI_PROGRESS` environment variable not being handled.'
+        - 'Make sure the Automatic Video Converter does not report conversion progress to GUI when it is disabled.'
+        - 'Improved QSV checks by handling virtualized hosts.'
+        - 'Updated baseimage to version 4.4.0, which brings the following changes:'
+        - '2:Updated components providing access to application''s UI over web.'
+        - '2:Improved web UI usage with touch devices.'
+        - '2:Fixed issue with initialization of Linux users and groups when the `GROUP_ID` is also part of `SUP_GROUP_IDS`.'
     - version: 23.02.1
       date: 2023-02-26
       changes:
