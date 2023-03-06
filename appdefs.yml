@@ -338,6 +338,10 @@ app:
           On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
           `Extra Parameters` field of the container settings.
   changelog:
+    - version: 23.03.2
+      date: 2023-03-05
+      changes:
+        - 'Fixed issue where the Automatic Video Converter was not running with the correct supplementary groups.'
     - version: 23.03.1
       date: 2023-03-05
       changes:
