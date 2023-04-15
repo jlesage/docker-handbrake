@@ -419,7 +419,6 @@ process_watch_folder() {
     echo -----------------------------------------------------------------
     echo -----------------------------------------------------------------
 echo find "$WF" -follow -type f $FILE_EXTENSIONS_PARAMS $IGNORED_DIRECTORIES_PARAMS -not -path '*/\.*'  -printf "\"%T@ %p\n\""
-eval find "$WF" -follow -type f $FILE_EXTENSIONS_PARAMS $IGNORED_DIRECTORIES_PARAMS -not -path '*/\.*'  -printf "\"%T@ %p\n\""
     echo -----------------------------------------------------------------
     echo -----------------------------------------------------------------
 
