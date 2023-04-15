@@ -78,12 +78,12 @@ WATCHDIR_HASH_calculate() {
     echo -----------------------------------------------------------------
     echo -----------------------------------------------------------------
     echo -----------------------------------------------------------------
-    eval find "$WATCHDIR" -follow -type f $IGNORED_DIRECTORIES_PARAMS -not -path '*/\.*' -printf '%T@:%s:%p:%m\n' 
+    eval find "$WATCHDIR" -follow -type f  $FILE_EXTENSIONS_PARAMS $IGNORED_DIRECTORIES_PARAMS -not -path '*/\.*' -printf '%T@:%s:%p:%m\n'
     echo -----------------------------------------------------------------
     echo -----------------------------------------------------------------
     echo -----------------------------------------------------------------
 
-    eval find "$WATCHDIR" -follow -type f $IGNORED_DIRECTORIES_PARAMS -not -path '*/\.*' -printf '%T@:%s:%p:%m\n' | md5sum | cut -d' ' -f1
+    eval find "$WATCHDIR" -follow -type f  $FILE_EXTENSIONS_PARAMS $IGNORED_DIRECTORIES_PARAMS -not -path '*/\.*' -printf '%T@:%s:%p:%m\n' | md5sum | cut -d' ' -f1
 }
 
 WATCHDIR_HASH_isset() {
@@ -418,13 +418,11 @@ process_watch_folder() {
     # files under VIDEO_TS or BDMV and keeping only their parent directory.
     echo -----------------------------------------------------------------
     echo -----------------------------------------------------------------
-    echo -----------------------------------------------------------------
-    eval find "$WF" -follow -type f $IGNORED_DIRECTORIES_PARAMS -not -path '*/\.*'  -printf "\"%T@ %p\n\""
-    echo -----------------------------------------------------------------
+eval find "$WF" -follow -type f $FILE_EXTENSIONS_PARAMS $IGNORED_DIRECTORIES_PARAMS -not -path '*/\.*'  -printf "\"%T@ %p\n\""
     echo -----------------------------------------------------------------
     echo -----------------------------------------------------------------
 
-    eval find "$WF" -follow -type f $IGNORED_DIRECTORIES_PARAMS -not -path '*/\.*'  -printf "\"%T@ %p\n\"" | \
+    eval find "$WF" -follow -type f $FILE_EXTENSIONS_PARAMS $IGNORED_DIRECTORIES_PARAMS -not -path '*/\.*'  -printf "\"%T@ %p\n\"" | \
         sort -n | \
         cut -d' ' -f2- | \
         sed 's|/\([^/]*\)/VIDEO_TS/.*$|/\1|g' | \
@@ -499,8 +497,13 @@ set_default_settings() {
     for ignored_dir in $AC_IGNORE_DIRECTORIES; do
         IGNORED_DIRECTORIES_PARAMS="$IGNORED_DIRECTORIES_PARAMS -not -path '*$ignored_dir*'"
     done
-    echo IGNORED_DIRECTORIES_PARAMS $IGNORED_DIRECTORIES_PARAMS
-    echo AC_IGNORE_DIRECTORIES $AC_IGNORE_DIRECTORIES
+
+    FILE_EXTENSIONS_PARAMS=""
+    if [[ ! -z $AC_VIDEO_FILE_EXTENSIONS ]]; then
+        for file_extension in $AC_VIDEO_FILE_EXTENSIONS; do
+            FILE_EXTENSIONS_PARAMS="$FILE_EXTENSIONS_PARAMS -iname '*.$file_extension'"
+        done
+    fi
 
     # Apply per-watch folder settings.
     if [ -n "${DIR#*/watch}" ]; then
