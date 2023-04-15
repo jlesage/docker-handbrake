@@ -19,7 +19,7 @@ services:
       - AUTOMATED_CONVERSION=1
       - AUTOMATED_CONVERSION_PRESET=General/Super HQ 1080p30 Surround
       - AUTOMATED_CONVERSION_FORMAT=mp4
-      - AUTOMATED_CONVERSION_VIDEO_FILE_EXTENSIONS=avi # Convert just .avi files
+      - AUTOMATED_CONVERSION_VIDEO_FILE_EXTENSIONS=avi mp4 # Convert just .avi files
       - AUTOMATED_CONVERSION_OUTPUT_SUBDIR=SAME_AS_SRC # Output folder should be the same as the original file
       - AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION=ignore # Ignore non matching files
       - AUTOMATED_CONVERSION_CHECK_INTERVAL=3600 # Check every hour

@@ -500,9 +500,12 @@ set_default_settings() {
 
     FILE_EXTENSIONS_PARAMS=""
     if [[ ! -z $AC_VIDEO_FILE_EXTENSIONS ]]; then
+        FILE_EXTENSIONS_PARAMS="\\( "
         for file_extension in $AC_VIDEO_FILE_EXTENSIONS; do
-            FILE_EXTENSIONS_PARAMS="$FILE_EXTENSIONS_PARAMS -iname '*.$file_extension'"
+            FILE_EXTENSIONS_PARAMS="$FILE_EXTENSIONS_PARAMS -iname '*.$file_extension' -o"
         done
+        FILE_EXTENSIONS_PARAMS="${FILE_EXTENSIONS_PARAMS::-2} \\)"
+        echo FILE_EXTENSIONS_PARAMS $FILE_EXTENSIONS_PARAMS
     fi
 
     # Apply per-watch folder settings.
