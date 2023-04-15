@@ -1,0 +1,27 @@
+version: "3"
+services:
+  handbrake:
+    #build: ./
+    image: salvachll/handbrake
+    restart: always
+    user: 0:0
+    volumes:
+      - "./config:/config:rw"
+      - "/mnt/dirToWatch/:/watch:rw"
+      - "/mnt/dirToWatch/:/output:rw"
+    ports:
+      - 5800:5800
+    environment:
+      - USER_ID=0
+      - GROUP_ID=0
+      - KEEP_APP_RUNNING=1
+      - CONTAINER_DEBUG=1
+      - AUTOMATED_CONVERSION=1
+      - AUTOMATED_CONVERSION_PRESET=General/Super HQ 1080p30 Surround
+      - AUTOMATED_CONVERSION_FORMAT=mp4
+      - AUTOMATED_CONVERSION_VIDEO_FILE_EXTENSIONS=avi # Convert just .avi files
+      - AUTOMATED_CONVERSION_OUTPUT_SUBDIR=SAME_AS_SRC # Output folder should be the same as the original file
+      - AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION=ignore # Ignore non matching files
+      - AUTOMATED_CONVERSION_CHECK_INTERVAL=3600 # Check every hour
+      - AUTOMATED_CONVERSION_SOURCE_STABLE_TIME=2
+      - AUTOMATED_CONVERSION_IGNORE_DIRECTORIES=ignore alsothis

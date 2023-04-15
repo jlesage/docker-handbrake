@@ -75,7 +75,15 @@ log_hb_encode_progress_yad() {
 
 WATCHDIR_HASH_calculate() {
     WATCHDIR="$1"
-    find "$WATCHDIR" -follow -type f -not -path '*/\.*' -printf '%T@:%s:%p:%m\n' | md5sum | cut -d' ' -f1
+    echo -----------------------------------------------------------------
+    echo -----------------------------------------------------------------
+    echo -----------------------------------------------------------------
+    eval find "$WATCHDIR" -follow -type f $IGNORED_DIRECTORIES_PARAMS -not -path '*/\.*' -printf '%T@:%s:%p:%m\n' 
+    echo -----------------------------------------------------------------
+    echo -----------------------------------------------------------------
+    echo -----------------------------------------------------------------
+
+    eval find "$WATCHDIR" -follow -type f $IGNORED_DIRECTORIES_PARAMS -not -path '*/\.*' -printf '%T@:%s:%p:%m\n' | md5sum | cut -d' ' -f1
 }
 
 WATCHDIR_HASH_isset() {
@@ -408,7 +416,15 @@ process_watch_folder() {
 
     # First, get the list of files in the watch folder, filtering all files
     # files under VIDEO_TS or BDMV and keeping only their parent directory.
-    find "$WF" -follow -type f -not -path '*/\.*' -printf "%T@ %p\n" | \
+    echo -----------------------------------------------------------------
+    echo -----------------------------------------------------------------
+    echo -----------------------------------------------------------------
+    eval find "$WF" -follow -type f $IGNORED_DIRECTORIES_PARAMS -not -path '*/\.*'  -printf "\"%T@ %p\n\""
+    echo -----------------------------------------------------------------
+    echo -----------------------------------------------------------------
+    echo -----------------------------------------------------------------
+
+    eval find "$WF" -follow -type f $IGNORED_DIRECTORIES_PARAMS -not -path '*/\.*'  -printf "\"%T@ %p\n\"" | \
         sort -n | \
         cut -d' ' -f2- | \
         sed 's|/\([^/]*\)/VIDEO_TS/.*$|/\1|g' | \
@@ -460,6 +476,41 @@ process_watch_folder() {
 [ -f "$FAILED_CONVERSIONS" ] || touch "$FAILED_CONVERSIONS"
 [ -f "$SUCCESSFUL_CONVERSIONS" ] || touch "$SUCCESSFUL_CONVERSIONS"
 
+
+set_default_settings() {
+    # Set default settings.
+    AC_PRESET="${AUTOMATED_CONVERSION_PRESET:-Very Fast 1080p30}"
+    AC_FORMAT="${AUTOMATED_CONVERSION_FORMAT:-mp4}"
+    AC_SOURCE_STABLE_TIME="${AUTOMATED_CONVERSION_SOURCE_STABLE_TIME:-5}"
+    AC_SOURCE_MIN_DURATION="${AUTOMATED_CONVERSION_SOURCE_MIN_DURATION:-10}"
+    AC_SOURCE_MAIN_TITLE_DETECTION="${AUTOMATED_CONVERSION_SOURCE_MAIN_TITLE_DETECTION:-0}"
+    AC_OUTPUT_DIR="${AUTOMATED_CONVERSION_OUTPUT_DIR:-/output}"
+    AC_OUTPUT_SUBDIR="${AUTOMATED_CONVERSION_OUTPUT_SUBDIR:-UNSET}"
+    AC_KEEP_SOURCE="${AUTOMATED_CONVERSION_KEEP_SOURCE:-1}"
+    AC_VIDEO_FILE_EXTENSIONS="${AUTOMATED_CONVERSION_VIDEO_FILE_EXTENSIONS:-}"
+    AC_NON_VIDEO_FILE_ACTION="${AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION:-ignore}"
+    AC_NON_VIDEO_FILE_EXTENSIONS="${AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS:-jpg jpeg bmp png gif txt nfo}"
+    AC_NO_GUI_PROGRESS="${AUTOMATED_CONVERSION_NO_GUI_PROGRESS:-0}"
+    AC_HANDBRAKE_CUSTOM_ARGS="${AUTOMATED_CONVERSION_HANDBRAKE_CUSTOM_ARGS:-}"
+    AC_OVERWRITE_OUTPUT="${AUTOMATED_CONVERSION_OVERWRITE_OUTPUT:-0}"
+    AC_IGNORE_DIRECTORIES="${AUTOMATED_CONVERSION_IGNORE_DIRECTORIES:-}"
+
+    IGNORED_DIRECTORIES_PARAMS=""
+    for ignored_dir in $AC_IGNORE_DIRECTORIES; do
+        IGNORED_DIRECTORIES_PARAMS="$IGNORED_DIRECTORIES_PARAMS -not -path '*$ignored_dir*'"
+    done
+    echo IGNORED_DIRECTORIES_PARAMS $IGNORED_DIRECTORIES_PARAMS
+    echo AC_IGNORE_DIRECTORIES $AC_IGNORE_DIRECTORIES
+
+    # Apply per-watch folder settings.
+    if [ -n "${DIR#*/watch}" ]; then
+        for VAR in PRESET FORMAT SOURCE_STABLE_TIME SOURCE_MIN_DURATION SOURCE_MAIN_TITLE_DETECTION OUTPUT_DIR OUTPUT_SUBDIR KEEP_SOURCE VIDEO_FILE_EXTENSIONS NON_VIDEO_FILE_ACTION NON_VIDEO_FILE_EXTENSIONS NO_GUI_PROGRESS HANDBRAKE_CUSTOM_ARGS OVERWRITE_OUTPUT IGNORE_DIRECTORIES
+        do
+            eval "AC_$VAR=\"\${AUTOMATED_CONVERSION_${VAR}_${DIR#*/watch}:-\$AC_$VAR}\""
+        done
+    fi
+}
+
 while true; do
     for i in $(seq 1 ${AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS:-5}); do
         DIR="/watch$i"
@@ -467,29 +518,7 @@ while true; do
             DIR="/watch"
         fi
 
-        # Set default settings.
-        AC_PRESET="${AUTOMATED_CONVERSION_PRESET:-Very Fast 1080p30}"
-        AC_FORMAT="${AUTOMATED_CONVERSION_FORMAT:-mp4}"
-        AC_SOURCE_STABLE_TIME="${AUTOMATED_CONVERSION_SOURCE_STABLE_TIME:-5}"
-        AC_SOURCE_MIN_DURATION="${AUTOMATED_CONVERSION_SOURCE_MIN_DURATION:-10}"
-        AC_SOURCE_MAIN_TITLE_DETECTION="${AUTOMATED_CONVERSION_SOURCE_MAIN_TITLE_DETECTION:-0}"
-        AC_OUTPUT_DIR="${AUTOMATED_CONVERSION_OUTPUT_DIR:-/output}"
-        AC_OUTPUT_SUBDIR="${AUTOMATED_CONVERSION_OUTPUT_SUBDIR:-UNSET}"
-        AC_KEEP_SOURCE="${AUTOMATED_CONVERSION_KEEP_SOURCE:-1}"
-        AC_VIDEO_FILE_EXTENSIONS="${AUTOMATED_CONVERSION_VIDEO_FILE_EXTENSIONS:-}"
-        AC_NON_VIDEO_FILE_ACTION="${AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION:-ignore}"
-        AC_NON_VIDEO_FILE_EXTENSIONS="${AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS:-jpg jpeg bmp png gif txt nfo}"
-        AC_NO_GUI_PROGRESS="${AUTOMATED_CONVERSION_NO_GUI_PROGRESS:-0}"
-        AC_HANDBRAKE_CUSTOM_ARGS="${AUTOMATED_CONVERSION_HANDBRAKE_CUSTOM_ARGS:-}"
-        AC_OVERWRITE_OUTPUT="${AUTOMATED_CONVERSION_OVERWRITE_OUTPUT:-0}"
-
-        # Apply per-watch folder settings.
-        if [ -n "${DIR#*/watch}" ]; then
-            for VAR in PRESET FORMAT SOURCE_STABLE_TIME SOURCE_MIN_DURATION SOURCE_MAIN_TITLE_DETECTION OUTPUT_DIR OUTPUT_SUBDIR KEEP_SOURCE VIDEO_FILE_EXTENSIONS NON_VIDEO_FILE_ACTION NON_VIDEO_FILE_EXTENSIONS NO_GUI_PROGRESS HANDBRAKE_CUSTOM_ARGS OVERWRITE_OUTPUT
-            do
-                eval "AC_$VAR=\"\${AUTOMATED_CONVERSION_${VAR}_${DIR#*/watch}:-\$AC_$VAR}\""
-            done
-        fi
+        set_default_settings
 
         # Process watch folder.
         process_watch_folder "$DIR"
@@ -498,4 +527,3 @@ while true; do
     sleep "${AUTOMATED_CONVERSION_CHECK_INTERVAL:-5}"
 done
 
-# vim:ft=sh:ts=4:sw=4:et:sts=4
