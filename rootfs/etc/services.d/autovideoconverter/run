@@ -17,6 +17,11 @@ if [ "${HANDBRAKE_DEBUG:-0}" -eq 1 ]; then
     HANDBRAKE_CLI="$HANDBRAKE_CLI --verbose=3"
 fi
 
+# make AUTO_CROP an environment variable so this can be enforced for auto video converter
+if [ "${AUTO_CROP:-0}" -eq 1 ]; then
+    HANDBRAKE_CLI="$HANDBRAKE_CLI --crop=0:0:0:0"
+fi
+
 WATCHDIR_HASH="$(mktemp -d)"
 
 OUTPUT_DIR_TMP=""
