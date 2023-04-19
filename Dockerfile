@@ -58,7 +58,7 @@ RUN xx-verify \
     /tmp/handbrake-install/usr/bin/HandBrakeCLI
 
 # Pull base image.
-FROM jlesage/baseimage-gui:alpine-3.17-v4.4.0
+FROM jlesage/baseimage-gui:alpine-3.17-v4.4.1
 
 ARG HANDBRAKE_VERSION
 ARG DOCKER_IMAGE_VERSION
