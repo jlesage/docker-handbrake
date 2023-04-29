@@ -145,32 +145,32 @@ xx-apk --no-cache --no-scripts add \
 
 #log "Downloading x264 sources..."
 #mkdir /tmp/x264
-#curl -# -L ${X264_URL} | tar xz --strip 1 -C /tmp/x264
+#curl -# -L -f ${X264_URL} | tar xz --strip 1 -C /tmp/x264
 
 log "Downloading libva sources..."
 mkdir /tmp/libva
-curl -# -L ${LIBVA_URL} | tar xj --strip 1 -C /tmp/libva
+curl -# -L -f ${LIBVA_URL} | tar xj --strip 1 -C /tmp/libva
 
 if [ "$(xx-info arch)" = "amd64" ]; then
     log "Downloading Intel VAAPI driver sources..."
     mkdir /tmp/intel-vaapi-driver
-    curl -# -L ${INTEL_VAAPI_DRIVER_URL} | tar xj --strip 1 -C /tmp/intel-vaapi-driver
+    curl -# -L -f ${INTEL_VAAPI_DRIVER_URL} | tar xj --strip 1 -C /tmp/intel-vaapi-driver
 
     log "Downloading gmmlib sources..."
     mkdir /tmp/gmmlib
-    curl -# -L ${GMMLIB_URL} | tar xz --strip 1 -C /tmp/gmmlib
+    curl -# -L -f ${GMMLIB_URL} | tar xz --strip 1 -C /tmp/gmmlib
 
     log "Downloading Intel Media driver sources..."
     mkdir /tmp/intel-media-driver
-    curl -# -L ${INTEL_MEDIA_DRIVER_URL} | tar xz --strip 1 -C /tmp/intel-media-driver
+    curl -# -L -f ${INTEL_MEDIA_DRIVER_URL} | tar xz --strip 1 -C /tmp/intel-media-driver
 
     log "Downloading Intel Media SDK sources..."
     mkdir /tmp/MediaSDK
-    curl -# -L ${INTEL_MEDIA_SDK_URL} | tar xz --strip 1 -C /tmp/MediaSDK
+    curl -# -L -f ${INTEL_MEDIA_SDK_URL} | tar xz --strip 1 -C /tmp/MediaSDK
 
     log "Downloading Intel OneVPL GPU Runtime sources..."
     mkdir /tmp/oneVPL-intel-gpu
-    curl -# -L ${INTEL_ONEVPL_GPU_RUNTIME_URL} | tar xz --strip 1 -C /tmp/oneVPL-intel-gpu
+    curl -# -L -f ${INTEL_ONEVPL_GPU_RUNTIME_URL} | tar xz --strip 1 -C /tmp/oneVPL-intel-gpu
 fi
 
 log "Downloading HandBrake sources..."
@@ -179,7 +179,7 @@ if echo "${HANDBRAKE_URL}" | grep -q '\.git$'; then
     git -C /tmp/handbrake checkout "${HANDBRAKE_VERSION}"
 else
     mkdir /tmp/handbrake
-    curl -# -L ${HANDBRAKE_URL} | tar xj --strip 1 -C /tmp/handbrake
+    curl -# -L -f ${HANDBRAKE_URL} | tar xj --strip 1 -C /tmp/handbrake
 fi
 
 #
