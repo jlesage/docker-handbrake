@@ -18,22 +18,28 @@ function log {
     echo ">>> $*"
 }
 
-HANDBRAKE_DEBUG_MODE="${1:-}"
+HANDBRAKE_VERSION="${1:-}"
 HANDBRAKE_URL="${2:-}"
-LIBVA_URL="${3:-}"
-INTEL_VAAPI_DRIVER_URL="${4:-}"
-GMMLIB_URL="${5:-}"
-INTEL_MEDIA_DRIVER_URL="${6:-}"
-INTEL_MEDIA_SDK_URL="${7:-}"
-INTEL_ONEVPL_GPU_RUNTIME_URL="${8:-}"
+HANDBRAKE_DEBUG_MODE="${3:-}"
+LIBVA_URL="${4:-}"
+INTEL_VAAPI_DRIVER_URL="${5:-}"
+GMMLIB_URL="${6:-}"
+INTEL_MEDIA_DRIVER_URL="${7:-}"
+INTEL_MEDIA_SDK_URL="${8:-}"
+INTEL_ONEVPL_GPU_RUNTIME_URL="${9:-}"
 
-if [ -z "$HANDBRAKE_DEBUG_MODE" ]; then
-    log "ERROR: HandBrake debug mode missing."
+if [ -z "$HANDBRAKE_VERSION" ]; then
+    log "ERROR: HandBrake version missing."
     exit 1
 fi
 
 if [ -z "$HANDBRAKE_URL" ]; then
     log "ERROR: HandBrake URL missing."
+    exit 1
+fi
+
+if [ -z "$HANDBRAKE_DEBUG_MODE" ]; then
+    log "ERROR: HandBrake debug mode missing."
     exit 1
 fi
 
@@ -175,8 +181,10 @@ fi
 
 log "Downloading HandBrake sources..."
 if echo "${HANDBRAKE_URL}" | grep -q '\.git$'; then
-    git clone ${HANDBRAKE_URL} handbrake
-    git -C /tmp/handbrake checkout "${HANDBRAKE_VERSION}"
+    # Sources from git for nightly builds.
+    git clone ${HANDBRAKE_URL} /tmp/handbrake
+    # HANDBRAKE_VERSION is in the format "nightly-<date>-<commit hash>".
+    git -C /tmp/handbrake checkout "$(echo "${HANDBRAKE_VERSION}" | cut -d'-' -f3)"
 else
     mkdir /tmp/handbrake
     curl -# -L -f ${HANDBRAKE_URL} | tar xj --strip 1 -C /tmp/handbrake
