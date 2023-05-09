@@ -23,6 +23,7 @@ jobs:
 
     # Map a step output to a job output.
     outputs:
+      handbrake_version: ${{ steps.prep.outputs.handbrake_version }}
       version: ${{ steps.prep.outputs.version }}
       label_version: ${{ steps.prep.outputs.label_version }}
       tags: ${{ steps.prep.outputs.tags }}
