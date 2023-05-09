@@ -118,6 +118,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
+          context: .
           push: false # TODO: To be changed.
           platforms: ${{ env.PLATFORMS }}
           tags: ${{ needs.prepare.outputs.tags }}
