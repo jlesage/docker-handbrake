@@ -401,7 +401,6 @@ log "Configuring HandBrake..."
         --prefix=/usr \
         --build=build \
         --debug=$HANDBRAKE_DEBUG_MODE \
-        --disable-gtk-update-checks \
         --enable-fdk-aac \
         --enable-x265 \
         $CONF_FLAGS \
