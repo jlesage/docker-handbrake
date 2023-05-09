@@ -67,7 +67,7 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "label_version=${LABEL_VERSION}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
-          echo "build_needed=${BUILD_NEEDED}" >> GITHUB_OUTPUT
+          echo "build_needed=${BUILD_NEEDED}" >> $GITHUB_OUTPUT
 
   build:
     name: Build image
