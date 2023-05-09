@@ -1,0 +1,148 @@
+name: Docker nightly image CI/CD
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOCKER_IMAGE_NAME: jlesage/handbrake
+  PLATFORMS: linux/amd64
+
+on:
+  push:
+    branches: '*'
+
+#on:
+#  schedule:
+#    - cron: '0 0 * * *'
+
+jobs:
+  prepare:
+    name: Prepare
+    runs-on: ubuntu-20.04
+
+    # Map a step output to a job output.
+    outputs:
+      version: ${{ steps.prep.outputs.version }}
+      label_version: ${{ steps.prep.outputs.label_version }}
+      tags: ${{ steps.prep.outputs.tags }}
+      build_needed: ${{ steps.prep.outputs.build_needed }}
+
+    steps:
+      - name: Prepare
+        id: prep
+        run: |
+          # Get info about the last HandBrake commit.
+          HANDBRAKE_LAST_COMMIT="$(curl -s "https://api.github.com/repos/HandBrake/HandBrake/commits?page=1&per_page=1" | jq -r '.[0] | .commit.committer.date + " " + .sha')"
+          HANDBRAKE_LAST_COMMIT_SHORT_HASH="$(echo "$HANDBRAKE_LAST_COMMIT" | awk '{print substr($2,0,10)}')"
+          HANDBRAKE_LAST_COMMIT_DATE="$(env TZ=UTC date -d"$(echo "$HANDBRAKE_LAST_COMMIT" | awk '{print $1}')" +%Y%m%d%H%M%S)"
+          # Determine the HandBrake version.
+          HANDBRAKE_VERSION="nightly-${HANDBRAKE_LAST_COMMIT_DATE}-${HANDBRAKE_LAST_COMMIT_SHORT_HASH}"
+          # Determine the Docker nightly image version.
+          # NOTE: The image version is the same as the HandBrake version.
+          VERSION="$HANDBRAKE_VERSION"
+          # Determine the version to put in container label.
+          LABEL_VERSION="$VERSION"
+          # Determine the Docker container tags.
+          TAGS="${{ env.DOCKER_IMAGE_NAME }}:${VERSION},${{ env.DOCKER_IMAGE_NAME }}:nightly-latest"
+          # Determine if a build is needed.
+          if curl --silent -f "https://hub.docker.com/v2/repositories/${{ env.DOCKER_IMAGE_NAME }}/tags/${VERSION}/" > /dev/null
+          then
+              BUILD_NEEDED=no
+          else
+              BUILD_NEEDED=yes
+          fi
+          # Print results.
+          echo "::group::Results"
+          echo "HandBrake last commit hash: $HANDBRAKE_LAST_COMMIT_SHORT_HASH"
+          echo "HandBrake last commit date: $HANDBRAKE_LAST_COMMIT_DATE"
+          echi "HandBrake version: $HANDBRAKE_VERSION"
+          echo "Docker nightly image version: $VERSION"
+          echo "Docker nightly image version label: $LABEL_VERSION"
+          echo "Docker nightly image tag(s): $TAGS"
+          echo "Build needed: $BUILD_NEEDED"
+          echo "::endgroup::"
+          # Export outputs.
+          echo "handbrake_version=${HANDBRAKE_VERSION}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "label_version=${LABEL_VERSION}" >> $GITHUB_OUTPUT
+          echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+          echo "build_needed=${BUILD_NEEDED}" >> GITHUB_OUTPUT
+
+  build:
+    name: Build image
+    runs-on: ubuntu-20.04
+    needs: prepare
+    if: ${{ needs.prepare.outputs.build_needed == 'yes' }}
+
+    steps:
+      - name: Free disk space
+        run: |
+          # Free disk space.
+          echo "::group::Before"
+          df -h /
+          echo "::endgroup::"
+          echo "::group::Removing unneeded softwares and files..."
+          for DIR in /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          do
+            if [ -d "$DIR" ]; then
+                echo "Removing $DIR..."
+                sudo rm -r "$DIR"
+            fi
+          done
+          echo "::endgroup::"
+          echo "::group::After"
+          df -h /
+          echo "::endgroup::"
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: nightly
+
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: arm,arm64,ppc64le,mips64,s390x
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          push: false # TODO: To be changed.
+          platforms: ${{ env.PLATFORMS }}
+          tags: ${{ needs.prepare.outputs.tags }}
+          build-args: |
+            DOCKER_IMAGE_VERSION=${{ needs.prepare.outputs.label_version }}
+            HANDBRAKE_VERSION=${{ needs.prepare.outputs.handbrake_version }}
+            HANDBRAKE_URL=https://github.com/HandBrake/HandBrake.git
+            HANDBRAKE_DEBUG_MODE=max
+          cache-from: type=gha,scope=${{ env.DOCKER_IMAGE_NAME }}-nightly
+          cache-to: type=gha,mode=max,scope=${{ env.DOCKER_IMAGE_NAME }}-nightly
+
+      # TODO: Uncomment
+#      - name: Inspect
+#        run: |
+#          docker buildx imagetools inspect ${{ env.DOCKER_IMAGE_NAME }}:${{ needs.prepare.outputs.version }}
+
+  notification:
+    name: Notification
+    needs: [ prepare, build ]
+    runs-on: ubuntu-20.04
+    if: ${{ always && needs.prepare.outputs.build_needed == 'yes' }}
+
+    steps:
+      - name: Pushover notification
+        uses: desiderati/github-action-pushover@v1
+        with:
+          job-status: ${{ needs.build.result }}
+          pushover-api-token: ${{ secrets.PUSHOVER_API_TOKEN }}
+          pushover-user-key: ${{ secrets.PUSHOVER_USER_KEY }}
