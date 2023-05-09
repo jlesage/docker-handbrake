@@ -56,7 +56,7 @@ jobs:
           echo "::group::Results"
           echo "HandBrake last commit hash: $HANDBRAKE_LAST_COMMIT_SHORT_HASH"
           echo "HandBrake last commit date: $HANDBRAKE_LAST_COMMIT_DATE"
-          echi "HandBrake version: $HANDBRAKE_VERSION"
+          echo "HandBrake version: $HANDBRAKE_VERSION"
           echo "Docker nightly image version: $VERSION"
           echo "Docker nightly image version label: $LABEL_VERSION"
           echo "Docker nightly image tag(s): $TAGS"
