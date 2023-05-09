@@ -800,19 +800,31 @@ modprobe i915
 
 ## Nightly Builds
 
-HandBrake nightly builds are based on the latest development code,
-which means they may or may not be stable.
+Nightly builds are based on the latest HandBrake development code.
+This means that they may have bugs, crashes and instabilities.
 
-The latest development version is available by using the `dev-latest` Docker
-image tag.  For other specific development versions, look at available
-[tags on Docker Hub].
-
-When creating the container, the tag needs to be appended to the name of the
-Docker image, like this:
+Nightly builds are available through Docker image tags.  These tags have the
+following format:
 ```
-docker run [OPTIONS..] jlesage/handbrake:dev-latest
+nightly-<COMMIT_DATE>-<COMMIT_HASH>
 ```
 
+Where:
+  - `COMMIT_DATE` is the date (in `YYMMDDHHMMSS` format) of the latest commit
+    from the HandBrake [Git repository].
+  - `COMMIT_HASH` is the short hash of the latest commit from the HandBrake
+    [Git repository].
+
+The latest nightly build is available through the `nightly-latest` Docker image
+tag.  The list of available tags are available on [Docker Hub].
+
+To use a Docker image tag, it has to be appended to the name of the Docker image
+during the creation of the container.  Here is an example:
+```
+docker run [OPTIONS..] jlesage/handbrake:nightly-latest
+```
+
+[Git repository]: https://github.com/HandBrake/HandBrake
 [tags on Docker Hub]: https://hub.docker.com/r/jlesage/handbrake/tags/
 
 ## Debug Builds
