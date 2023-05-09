@@ -1,7 +1,7 @@
 name: Docker nightly image CI/CD
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: nightly-build
   cancel-in-progress: true
 
 env:
@@ -9,12 +9,12 @@ env:
   PLATFORMS: linux/amd64
 
 on:
-  push:
-    branches: '*'
+  # Run this workflow once a day.
+  schedule:
+    - cron: '0 0 * * *'
 
-#on:
-#  schedule:
-#    - cron: '0 0 * * *'
+  # Allows to run this workflow manually from the Actions tab.
+  workflow_dispatch:
 
 jobs:
   prepare:
@@ -119,7 +119,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          push: false # TODO: To be changed.
+          push: true
           platforms: ${{ env.PLATFORMS }}
           tags: ${{ needs.prepare.outputs.tags }}
           build-args: |
@@ -130,10 +130,9 @@ jobs:
           cache-from: type=gha,scope=${{ env.DOCKER_IMAGE_NAME }}-nightly
           cache-to: type=gha,mode=max,scope=${{ env.DOCKER_IMAGE_NAME }}-nightly
 
-      # TODO: Uncomment
-#      - name: Inspect
-#        run: |
-#          docker buildx imagetools inspect ${{ env.DOCKER_IMAGE_NAME }}:${{ needs.prepare.outputs.version }}
+      - name: Inspect
+        run: |
+          docker buildx imagetools inspect ${{ env.DOCKER_IMAGE_NAME }}:${{ needs.prepare.outputs.version }}
 
   notification:
     name: Notification
