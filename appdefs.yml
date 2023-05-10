@@ -296,7 +296,7 @@ app:
           ```
 
           [Git repository]: https://github.com/HandBrake/HandBrake
-          [tags on Docker Hub]: https://hub.docker.com/r/jlesage/{{ app.name }}/tags/
+          [Docker Hub]: https://hub.docker.com/r/jlesage/{{ app.name }}/tags/
       - title: Debug Builds
         level: 2
         content: |-

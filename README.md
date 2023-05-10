@@ -828,7 +828,7 @@ docker run [OPTIONS..] jlesage/handbrake:nightly-latest
 ```
 
 [Git repository]: https://github.com/HandBrake/HandBrake
-[tags on Docker Hub]: https://hub.docker.com/r/jlesage/handbrake/tags/
+[Docker Hub]: https://hub.docker.com/r/jlesage/handbrake/tags/
 
 ## Debug Builds
 
