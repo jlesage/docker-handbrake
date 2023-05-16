@@ -136,7 +136,7 @@ of this parameter has the format `<VARIABLE_NAME>=<VALUE>`.
 |`AUTOMATED_CONVERSION_VIDEO_FILE_EXTENSIONS`| Space-separated list of file extensions to be considered as video files. By default, this list is empty, meaning that the automatic video converter will let HandBrake automatically detects if a file, no matter its extension, is a video or not (note that extensions defined by the `AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS` environment variable are always considered as non-video files).  Normally, this variable doesn't need to be set.  Usage of this variable is useful when only specific video files need to converted. | (no value) |
 |`AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION`| When set to `ignore`, a non-video file found in the watch folder is ignored.  If set to `copy`, a non-video file is copied as-is to the output folder. | `ignore` |
 |`AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS`| Space-separated list of file extensions to be considered as not being videos.  Most non-video files are properly rejected by HandBrake. However, some files, like images, are convertible by HandBrake even if they are not video files. | `jpg jpeg bmp png gif txt nfo` |
-|`AUTOMATED_CONVERSION_OUTPUT_DIR`| Root directory where converted videos should be written. | `/output` |
+|`AUTOMATED_CONVERSION_OUTPUT_DIR`| Root directory, inside the container, where converted videos should be written.  **NOTE**: Make sure a volume mapping for this directory is defined when creating the container. | `/output` |
 |`AUTOMATED_CONVERSION_OUTPUT_SUBDIR`| Subdirectory of the output folder into which converted videos should be written.  By default, this variable is not set, meaning that videos are saved directly into `/output/`.  If `Home/Movies` is set, converted videos will be written to `/output/Home/Movies`.  Use the special value `SAME_AS_SRC` to use the same subfolder as the source.  For example, if the video source file is `/watch/Movies/mymovie.mkv`, the converted video will be written to `/output/Movies/`. | (no value) |
 |`AUTOMATED_CONVERSION_OVERWRITE_OUTPUT`| Setting this to `1` allows the final destination file to be overwritten if it already exists. | `0` |
 |`AUTOMATED_CONVERSION_SOURCE_STABLE_TIME`| Time (in seconds) during which properties (e.g. size, time, etc) of a video file in the watch folder need to remain the same.  This is to avoid processing a file that is being copied. | `5` |
@@ -594,20 +594,18 @@ batch-convert videos without user interaction.
 
 Basically, files copied to the `/watch` container folder are automatically
 converted by HandBrake to a pre-defined video format according to a pre-defined
-preset.  Both the format and the preset are specified via environment variables:
+preset.
 
-| Variable       | Default |
-|----------------|---------|
-|`AUTOMATED_CONVERSION_PRESET` | "General/Very Fast 1080p30" |
-|`AUTOMATED_CONVERSION_FORMAT` | "mp4" |
-
-See the [Environment Variables](#environment-variables) section for details
-about setting environment variables.
+All configuration parameters of the automatic video converter are
+defined via environment variables.  See the
+[Environment Variables](#environment-variables) section for the list of
+available variables.  The ones having their name starting with
+`AUTOMATED_CONVERSION_` apply to the automatic video converter.
 
 **NOTE**: A preset is identified by its category and its name.
 
 **NOTE**: All default presets, along with personalized/custom ones, can be seen
-with the HandBrake GUI.
+and edited with the HandBrake GUI.
 
 **NOTE**: Converted videos are stored, by default, to the `/output` folder of
 the container.
@@ -628,36 +626,31 @@ If needed, additionnal watch folders can be used:
   - `/watch5`
   - etc.
 
-This is useful in scenarios where videos need to be converted by different
+This is useful for scenarios where videos need to be converted by different
 presets.  For example, one could use a watch folder for movies and another watch
 folder for TV shows, both having different encoding quality requirements.
 
 By default, additional watch folders inherits the same settings has the main one
-(`/watch`).  A setting for a particular watch folder can be overrided by adding
+(`/watch`).  A setting for a particular watch folder can be overriden by adding
 its index to the corresponding environment variable name.
 
 For example, to set the HandBrake preset used to convert videos in `/watch2`,
 the environment variable `AUTOMATED_CONVERSION_PRESET_2` is used.
 `AUTOMATED_CONVERSION_PRESET_3` is used for `/watch3`, and so on.
 
-All settings related to the automatic video converter can be overrided for each
-additional watch folder:
-  - `AUTOMATED_CONVERSION_PRESET`
-  - `AUTOMATED_CONVERSION_FORMAT`
-  - `AUTOMATED_CONVERSION_SOURCE_STABLE_TIME`
-  - `AUTOMATED_CONVERSION_SOURCE_MIN_DURATION`
-  - `AUTOMATED_CONVERSION_SOURCE_MAIN_TITLE_DETECTION`
-  - `AUTOMATED_CONVERSION_OUTPUT_DIR`
-  - `AUTOMATED_CONVERSION_OUTPUT_SUBDIR`
-  - `AUTOMATED_CONVERSION_OVERWRITE_OUTPUT`
-  - `AUTOMATED_CONVERSION_KEEP_SOURCE`
-  - `AUTOMATED_CONVERSION_VIDEO_FILE_EXTENSIONS`
-  - `AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION`
-  - `AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS`
-  - `AUTOMATED_CONVERSION_HANDBRAKE_CUSTOM_ARGS`
+All settings related to the automatic video converter (environment variables
+with name prefixed with `AUTOMATED_CONVERSION_`) can be overriden for each
+additional watch folder.
 
 The maximum number of watch folders handled by the automatic video converter
 is defined by the `AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS` environment variable.
+
+**NOTE**: Each additional watch folder must be mapped to a folder on the host by
+adding a volume mapping during the creation of the container.
+
+**NOTE**: Each output folder defined via the `AUTOMATED_CONVERSION_OUTPUT_DIR`
+environment variable must be mapped to a folder on the host by adding a volume
+mapping during the creation of the container.
 
 ### Video Discs
 
