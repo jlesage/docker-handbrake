@@ -393,6 +393,21 @@ process_watch_folder() {
     [ -d "$WF" ] || return
     WATCHDIR_HASH_changed "$WF" || return
 
+    # Make sure the output directory is properly setup.
+    if [ ! -d "$AC_OUTPUT_DIR" ]; then
+        log "ERROR: Cannot process watch folder '$WF', because the associated output directory '$AC_OUTPUT_DIR' doesn't exist."
+        return
+    else
+        TMPFILE="$(mktemp "$AC_OUTPUT_DIR"/.test_XXXXXX 2>/dev/null)"
+        RC=$?
+        if [ "$RC" -eq 0 ]; then
+            rm "$TMPFILE"
+        else
+            log "ERROR: Cannot process watch folder '$WF', because the associated output directory '$AC_OUTPUT_DIR' is not writable."
+            return
+        fi
+    fi
+
     if WATCHDIR_HASH_isset "$WF"; then
         log "Change detected in watch folder '$WF'."
     fi
@@ -454,7 +469,6 @@ process_watch_folder() {
         /bin/sh /config/hooks/post_watch_folder_processing.sh "$WF"
         log "Post watch folder processing hook exited with $?"
     fi
-
 }
 
 [ -f "$FAILED_CONVERSIONS" ] || touch "$FAILED_CONVERSIONS"
