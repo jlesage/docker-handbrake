@@ -105,6 +105,8 @@ apk --no-cache add \
     bash \
     nasm \
     meson \
+    cargo \
+    cargo-c \
     gettext-dev \
     glib-dev \
 
@@ -403,6 +405,7 @@ log "Configuring HandBrake..."
         --debug=$HANDBRAKE_DEBUG_MODE \
         --enable-fdk-aac \
         --enable-x265 \
+        --enable-libdovi \
         $CONF_FLAGS \
 )
 
