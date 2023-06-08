@@ -343,6 +343,17 @@ app:
           On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
           `Extra Parameters` field of the container settings.
   changelog:
+    - version: 23.06.1
+      date: 2023-06-08
+      changes:
+        - 'Updated libva to version 2.18.'
+        - 'Updated gmmlib to version 22.3.5.'
+        - 'Updated Intel Media Driver to version 23.1.6.'
+        - 'Updated OneVPL GPU Runtime to version 23.1.5.'
+        - 'Validate the output folder used by the Automatic Video Converter.'
+        - 'Updated baseimage to version 4.4.2, which brings the following changes:'
+        - '2:Rebuilt against latest distro images to get security fixes.'
+        - '2:Updated X server to version 1.20.14.'
     - version: 23.04.1
       date: 2023-04-29
       changes:
