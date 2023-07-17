@@ -40,8 +40,8 @@ do
         if ! (su-exec "$USER_ID:$GROUP_ID" test -r "$DRI_DEV") || \
            ! (su-exec "$USER_ID:$GROUP_ID" test -w "$DRI_DEV")
         then
-            echo "Intel Quick Sync Video not supported: device $DRI_DEV owned "
-                 "by group 'root' and configured user doesn't have permissions. "
+            echo "Intel Quick Sync Video not supported: device $DRI_DEV owned" \
+                 "by group 'root' and configured user doesn't have permissions" \
                  "to access it."
             break
         fi
