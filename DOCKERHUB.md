@@ -26,8 +26,9 @@ of modern, widely supported codecs.
 
 ## Quick Start
 
-**NOTE**: The Docker command provided in this quick start is given as an example
-and parameters should be adjusted to your need.
+**NOTE**:
+    The Docker command provided in this quick start is given as an example
+    and parameters should be adjusted to your need.
 
 Launch the HandBrake docker container with the following command:
 ```shell
@@ -42,6 +43,7 @@ docker run -d \
 ```
 
 Where:
+
   - `/docker/appdata/handbrake`: This is where the application stores its configuration, states, log and any files needing persistency.
   - `/home/user`: This location contains files from your host that need to be accessible to the application.
   - `/home/user/HandBrake/watch`: This is where videos to be automatically converted are located
