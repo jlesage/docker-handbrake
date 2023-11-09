@@ -12,6 +12,7 @@ app:
   name: handbrake
   friendly_name: HandBrake
   gui_type: x11
+  base_os: alpine
   project:
     description: |-
       HandBrake is a tool for converting video from nearly any format to a selection
