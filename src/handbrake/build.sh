@@ -264,6 +264,9 @@ if [ "$(xx-info arch)" = "amd64" ]; then
 fi
 
 if [ "$(xx-info arch)" = "amd64" ]; then
+    log "Patching Intel Media Driver..."
+    patch -d /tmp/intel-media-driver -p1 < "$SCRIPT_DIR"/intel-media-driver-compile-fix.patch
+
     log "Configuring Intel Media driver..."
     (
         mkdir /tmp/intel-media-driver/build && \

@@ -1,0 +1,20 @@
+--- a/media_driver/cmake/linux/media_compile_flags_linux.cmake	2023-11-10 16:00:32.182289902 -0500
++++ b/media_driver/cmake/linux/media_compile_flags_linux.cmake	2023-11-10 16:01:23.034436228 -0500
+@@ -51,8 +51,6 @@
+     -ffunction-sections
+     -Wl,--gc-sections
+ 
+-    # Enable c++14 features
+-    -std=c++14
+     # -m32 or -m64
+     -m${ARCH}
+ 
+@@ -110,6 +108,8 @@
+     -fexceptions
+     -fpermissive
+     -fcheck-new
++    # Enable c++14 features
++    -std=c++14
+ )
+ 
+ if(NOT ${PLATFORM} STREQUAL "android")
