@@ -344,6 +344,12 @@ app:
           On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
           `Extra Parameters` field of the container settings.
   changelog:
+    - version: 23.11.2
+      date: 2023-11-11
+      changes:
+        - 'Updated Intel Media Driver to version 23.3.5.'
+        - 'Updated Intel Media SDK to version 23.2.2.'
+        - 'Updated Intel OneVPL GPU runtime to version 23.3.4.'
     - version: 23.11.1
       date: 2023-11-10
       changes:
