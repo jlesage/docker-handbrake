@@ -15,6 +15,7 @@ ARG GMMLIB_VERSION=22.3.12
 ARG INTEL_MEDIA_DRIVER_VERSION=23.3.5
 ARG INTEL_MEDIA_SDK_VERSION=23.2.2
 ARG INTEL_ONEVPL_GPU_RUNTIME_VERSION=23.3.4
+ARG CPU_FEATURES_VERSION=0.9.0
 
 # Define software download URLs.
 ARG HANDBRAKE_URL=https://github.com/HandBrake/HandBrake/releases/download/${HANDBRAKE_VERSION}/HandBrake-${HANDBRAKE_VERSION}-source.tar.bz2
@@ -24,6 +25,7 @@ ARG GMMLIB_URL=https://github.com/intel/gmmlib/archive/intel-gmmlib-${GMMLIB_VER
 ARG INTEL_MEDIA_DRIVER_URL=https://github.com/intel/media-driver/archive/intel-media-${INTEL_MEDIA_DRIVER_VERSION}.tar.gz
 ARG INTEL_MEDIA_SDK_URL=https://github.com/Intel-Media-SDK/MediaSDK/archive/intel-mediasdk-${INTEL_MEDIA_SDK_VERSION}.tar.gz
 ARG INTEL_ONEVPL_GPU_RUNTIME_URL=https://github.com/oneapi-src/oneVPL-intel-gpu/archive/refs/tags/intel-onevpl-${INTEL_ONEVPL_GPU_RUNTIME_VERSION}.tar.gz
+ARG CPU_FEATURES_URL=https://github.com/google/cpu_features/archive/refs/tags/v${CPU_FEATURES_VERSION}.tar.gz
 
 # Set to 'max' to keep debug symbols.
 ARG HANDBRAKE_DEBUG_MODE=none
@@ -58,6 +60,15 @@ RUN /build/build.sh \
 RUN xx-verify \
     /tmp/handbrake-install/usr/bin/ghb \
     /tmp/handbrake-install/usr/bin/HandBrakeCLI
+
+# Build cpu_features.
+FROM --platform=$BUILDPLATFORM alpine:3.17 AS cpu_features
+ARG TARGETPLATFORM
+ARG CPU_FEATURES_URL
+COPY --from=xx / /
+COPY src/cpu_features /build
+RUN /build/build.sh "$CPU_FEATURES_URL"
+RUN xx-verify /tmp/cpu_features-install/bin/list_cpu_features
 
 # Pull base image.
 FROM jlesage/baseimage-gui:alpine-3.17-v4.5.1
@@ -116,6 +127,7 @@ RUN \
 # Add files.
 COPY rootfs/ /
 COPY --from=handbrake /tmp/handbrake-install /
+COPY --from=cpu_features /tmp/cpu_features-install/bin/list_cpu_features /usr/bin/
 
 # Set internal environment variables.
 RUN \
