@@ -13,6 +13,7 @@ CPU_SUPPORTED_BY_HB=true
 
 echo "Processor: $PROCESSOR_NAME"
 echo "Microarchitecture: $MICROARCHITECTURE"
+echo "Kernel: $(uname -r)"
 
 #
 # Determine if the microarchitecture supports QSV.  If it does, verify if it is
