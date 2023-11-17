@@ -4,7 +4,7 @@ set -e # Exit immediately if a command exits with a non-zero status.
 set -u # Treat unset variables as an error.
 
 DRI_DIR="/dev/dri"
-DRI_DEV="$DRI_DIR/renderD128"
+DRI_DEV="$(ls "$DRI_DIR"/renderD* 2>/dev/null || true)"
 PROCESSOR_NAME="$(list_cpu_features | grep "^brand " | awk -F ':' '{ gsub(/^[ \t]+/,"",$2); print $2 }')"
 MICROARCHITECTURE="$(list_cpu_features | grep "^uarch " | awk -F ':' '{ gsub(/^[ \t]+/,"",$2); print $2 }')"
 
@@ -69,8 +69,8 @@ if [ ! -d "$DRI_DIR" ]; then
     exit 0
 fi
 
-if [ ! -e "$DRI_DEV" ]; then
-    echo "Intel Quick Sync Video not supported: device $DRI_DEV not found."
+if [ -z "${DRI_DEV:-}" ]; then
+    echo "Intel Quick Sync Video not supported: no Direct Rendering Manager (DRM) device found under $DRI_DIR."
     exit 0
 fi
 
