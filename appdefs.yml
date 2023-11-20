@@ -344,6 +344,13 @@ app:
           On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
           `Extra Parameters` field of the container settings.
   changelog:
+    - version: 23.11.3
+      date: 2023-11-19
+      changes:
+        - 'Updated HandBrake to version 1.7.0.'
+        - 'Improved QSV checks.'
+        - 'Updated baseimage to version 4.5.2, which brings the following changes:'
+        - '2:Fixed issue that would cause the helper that takes ownership of a directory to fail when using a very high user or group ID.'
     - version: 23.11.2
       date: 2023-11-11
       changes:
