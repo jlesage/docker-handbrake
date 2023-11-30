@@ -1,4 +1,67 @@
 #!/bin/sh
+#
+# Script to build HandBrake.
+#
+# Support for QSV requires multiple components:
+#
+# - libva: implementation for VA-API (Video Acceleration API), an open-source
+#   library and API specification, which provides access to graphics hardware
+#   acceleration capabilities for video processing.  It consists of a main
+#   library and driver-specific acceleration backends for each supported
+#   hardware vendor (aka drivers for libva).
+#
+# - Intel VAAPI driver
+#   - Driver for libva.
+#   - Used for older Intel generation CPUs.
+#   - Provides `i965_drv_video.so` (under `/usr/lib/dri/`).
+#
+# - Intel Media Driver
+#   - Driver for libva.
+#   - Used for newer Intel generation CPUs.
+#   - Provides `iHD_drv_video.so` (under `/usr/lib/dri/`).
+#   - Depends on gmmlib.
+#
+# - Intel Media SDK
+#   - High level library that provides API to access hardware-accelerated video
+#     decode, encode and filtering on Intel graphics hardware platforms.
+#   - Discontinued.
+#   - Depends on libva.
+#   - Provides `libmfx.so`, the dispatcher used to select the runtime
+#     implementation to use (`libmfxhw64.so` or `libmfx-gen.so) depending on the
+#     CPU.
+#     - It is not used by HandBrake.
+#     - HandBrake has an embedded version of the oneVPL dispatcher (libvpl.so),
+#       statically linked.
+#   - Provides `libmfxhw64.so`, a runtime implementation for older Intel CPUs.
+#     It also includes its plugins (under `/usr/lib/mfx/`):
+#     - `plugins/libmfx_hevce_hw64.so`
+#     - `plugins/libmfx_hevc_fei_hw64.so`
+#     - `plugins/libmfx_vp9e_hw64.so`
+#     - `plugins/libmfx_h264la_hw64.so`
+#     - `plugins/libmfx_hevcd_hw64.so`
+#     - `plugins/libmfx_hevcd_hw64.so`
+#     - `plugins/libmfx_vp8d_hw64.so`
+#     - `plugins/libmfx_vp9d_hw64.so`
+#
+# - libvpl
+#   - Implementation of the Intel oneAPI Video Processing Library (oneVPL).
+#     oneVPL is the new name of Intel Media SDK.  It is the 2.x API continuation
+#     of Intel Media SDK API.
+#   - HandBrake has its embedded version of the oneVPL dispatcher (libvpl.so),
+#     statically linked.
+#     - The dispatcher supports runtime implementations from both the Media SDK
+#       (`libmfxhw64.so`) and oneVPL (`libmfx-gen.so`).
+#   - This library is not compiled by this script.
+#
+# - oneVPL GPU Runtime
+#   - Provides `libmfx-gen.so` (under `/usr/lib/`), a runtime implementation
+#     for latest Intel CPUs.
+#   - Can be used by the Media SDK and oneVPL dispatchers.
+#   - Successor of the Media SDK's runtime implementation.
+#
+# Some interesting links:
+#   - https://trac.ffmpeg.org/wiki/Hardware/QuickSync
+#
 
 set -e # Exit immediately if a command exits with a non-zero status.
 set -u # Treat unset variables as an error.
@@ -241,7 +304,6 @@ log "Configuring libva..."
         --disable-wayland \
         --disable-static \
         --enable-shared \
-        --with-drivers-path=/opt/intel/mediasdk/lib \
 )
 
 log "Compiling libva..."
@@ -249,6 +311,7 @@ make -C /tmp/libva -j$(nproc)
 
 log "Installing libva..."
 make -C /tmp/libva install
+make DESTDIR=/tmp/handbrake-install -C /tmp/libva install
 
 if [ "$(xx-info arch)" = "amd64" ]; then
     log "Configuring Intel VAAPI driver..."
@@ -262,12 +325,13 @@ if [ "$(xx-info arch)" = "amd64" ]; then
     make -C /tmp/intel-vaapi-driver -j$(nproc)
 
     log "Installing Intel VAAPI driver..."
-    make -C /tmp/intel-vaapi-driver install
+    make DESTDIR=/tmp/handbrake-install -C /tmp/intel-vaapi-driver install
 fi
 
 if [ "$(xx-info arch)" = "amd64" ]; then
     log "Patching Intel Media Driver..."
     patch -d /tmp/intel-media-driver -p1 < "$SCRIPT_DIR"/intel-media-driver-compile-fix.patch
+    rm -rf /tmp/intel-media-driver/media_driver/*/ult
 
     log "Configuring Intel Media driver..."
     (
@@ -279,11 +343,10 @@ if [ "$(xx-info arch)" = "amd64" ]; then
             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
-            -DCMAKE_INSTALL_PREFIX=/opt/intel/mediasdk \
+            -DCMAKE_INSTALL_PREFIX=/usr \
             -DCMAKE_BUILD_TYPE=Release \
             -Wno-dev \
             -DBUILD_TYPE=Release \
-            -DLIBVA_DRIVERS_PATH=/opt/intel/mediasdk/lib \
             -DINSTALL_DRIVER_SYSCONF=OFF \
             -DMEDIA_RUN_TEST_SUITE=OFF \
             -DSKIP_GMM_CHECK=ON \
@@ -294,7 +357,7 @@ if [ "$(xx-info arch)" = "amd64" ]; then
     make -C /tmp/intel-media-driver/build  -j$(nproc)
 
     log "Installing Intel Media driver..."
-    make -C /tmp/intel-media-driver/build install
+    make DESTDIR=/tmp/handbrake-install -C /tmp/intel-media-driver/build install
 fi
 
 if [ "$(xx-info arch)" = "amd64" ]; then
@@ -310,7 +373,6 @@ if [ "$(xx-info arch)" = "amd64" ]; then
     log "Configuring Intel Media SDK..."
     (
         mkdir /tmp/MediaSDK/build && \
-        # HandBrake's libmfx is looking at /opt/intel/mediasdk/plugins for MFX plugins.
         cd /tmp/MediaSDK/build && cmake \
             $(xx-clang --print-cmake-defines) \
             -DCMAKE_FIND_ROOT_PATH=$(xx-info sysroot) \
@@ -318,10 +380,8 @@ if [ "$(xx-info arch)" = "amd64" ]; then
             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
-            -DCMAKE_INSTALL_PREFIX=/opt/intel/mediasdk \
+            -DCMAKE_INSTALL_PREFIX=/usr \
             -DCMAKE_BUILD_TYPE=$INTEL_MEDIA_SDK_BUILD_TYPE \
-            -DMFX_PLUGINS_DIR=/opt/intel/mediasdk/plugins \
-            -DMFX_PLUGINS_CONF_DIR=/opt/intel/mediasdk/plugins \
             -DENABLE_OPENCL=OFF \
             -DENABLE_X11_DRI3=OFF \
             -DENABLE_WAYLAND=OFF \
@@ -337,7 +397,7 @@ if [ "$(xx-info arch)" = "amd64" ]; then
     make -C /tmp/MediaSDK/build -j$(nproc)
 
     log "Installing Intel Media SDK..."
-    make -C /tmp/MediaSDK/build install
+    make DESTDIR=/tmp/handbrake-install -C /tmp/MediaSDK/build install
 fi
 
 if [ "$(xx-info arch)" = "amd64" ]; then
@@ -352,6 +412,7 @@ if [ "$(xx-info arch)" = "amd64" ]; then
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY \
             -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr \
             -DCMAKE_INSTALL_LIBDIR=lib \
             ../
     )
@@ -360,7 +421,7 @@ if [ "$(xx-info arch)" = "amd64" ]; then
     make -C /tmp/oneVPL-intel-gpu/build -j$(nproc)
 
     log "Installing Intel oneVPL GPU Runtime..."
-    make -C /tmp/oneVPL-intel-gpu/build install
+    make DESTDIR=/tmp/handbrake-install -C /tmp/oneVPL-intel-gpu/build install
 fi
 
 log "Patching HandBrake..."
@@ -416,27 +477,18 @@ log "Installing HandBrake..."
 make DESTDIR=/tmp/handbrake-install -C /tmp/handbrake/build -j1 install
 make DESTDIR=/tmp/handbrake-install -C /tmp/libva install
 
-# HandBrake is looking for libmfx-gen.so under /opt/intel/mediasdk/lib64.
-if [ "$(xx-info arch)" = "amd64" ]; then
-    ln -s lib /opt/intel/mediasdk/lib64
-fi
-
 # Remove uneeded installed files.
 if [ "$(xx-info arch)" = "amd64" ]; then
     rm -r \
-        /opt/intel/mediasdk/include \
-        /opt/intel/mediasdk/lib/pkgconfig \
-        /opt/intel/mediasdk/lib/*.la \
-        /opt/intel/mediasdk/lib/libigfxcmrt.so* \
         /tmp/handbrake-install/usr/include \
+        /tmp/handbrake-install/usr/lib/*.la \
+        /tmp/handbrake-install/usr/lib/libmfx.* \
+        /tmp/handbrake-install/usr/lib/libigfxcmrt.so* \
+        /tmp/handbrake-install/usr/lib/dri/*.la \
         /tmp/handbrake-install/usr/lib/pkgconfig \
-        /tmp/handbrake-install/usr/lib/*.la
-
-    # HandBrake already include a statically-linked version of libmfx.
-    rm /opt/intel/mediasdk/lib64/libmfx.*
-
-    mkdir /tmp/handbrake-install/opt/
-    mv /opt/intel /tmp/handbrake-install/opt/
+        /tmp/handbrake-install/usr/share/metainfo \
+        /tmp/handbrake-install/usr/share/applications \
 fi
+
 log "Handbrake install content:"
 find /tmp/handbrake-install
