@@ -488,6 +488,7 @@ if [ "$(xx-info arch)" = "amd64" ]; then
         /tmp/handbrake-install/usr/lib/pkgconfig \
         /tmp/handbrake-install/usr/share/metainfo \
         /tmp/handbrake-install/usr/share/applications \
+
 fi
 
 log "Handbrake install content:"
