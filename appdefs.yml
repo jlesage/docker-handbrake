@@ -344,6 +344,10 @@ app:
           On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
           `Extra Parameters` field of the container settings.
   changelog:
+    - version: 23.11.5
+      date: 2023-11-30
+      changes:
+        - 'Fixed QSV issue caused by the oneVPL runtime implementation not being selected for Intel CPUs/GPUs requiring it.'
     - version: 23.11.4
       date: 2023-11-22
       changes:
