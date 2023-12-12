@@ -27,35 +27,38 @@ echo "Kernel: $(uname -r)"
 #
 case "$MICROARCHITECTURE" in
     # QSV Version 1
-    INTEL_SNB)      # SANDYBRIDGE
+    INTEL_SNB)              # SANDYBRIDGE
         CPU_SUPPORTED_BY_HB=false
         ;;
     # QSV Version 2
-    INTEL_IVB)      # IVYBRIDGE
+    INTEL_IVB)              # IVYBRIDGE
         CPU_SUPPORTED_BY_HB=false
         ;;
     # QSV Version 3
-    INTEL_HSW)      # HASWELL
+    INTEL_HSW)              # HASWELL
         CPU_SUPPORTED_BY_HB=false
         ;;
     # QSV Version 4
-    INTEL_BDW)      # BROADWELL
+    INTEL_BDW)              # BROADWELL
         CPU_SUPPORTED_BY_HB=false
         ;;
     # QSV Version 5
-    INTEL_SKL) ;;   # SKYLAKE
+    INTEL_SKL) ;;           # SKYLAKE
+    INTEL_ATOM_GMT) ;;      # GOLDMONT
+    INTEL_ATOM_GMT_PLUS) ;; # GOLDMONT+
     # QSV Version 6
-    INTEL_KBL) ;;   # KABY LAKE
-    INTEL_CFL) ;;   # COFFEE LAKE
-    INTEL_WHL) ;;   # WHISKEY LAKE
-    INTEL_CML) ;;   # COMET LAKE
+    INTEL_KBL) ;;           # KABY LAKE
+    INTEL_CFL) ;;           # COFFEE LAKE
+    INTEL_WHL) ;;           # WHISKEY LAKE
+    INTEL_CML) ;;           # COMET LAKE
     # QSV Version 7
-    INTEL_ICL) ;;   # ICE LAKE
+    INTEL_ICL) ;;           # ICE LAKE
     # QSV Version 8
-    INTEL_TGL) ;;   # TIGER LAKE
-    INTEL_RCL) ;;   # ROCKET LAKE
-    INTEL_ADL) ;;   # ALDER LAKE
-    INTEL_RPL) ;;   # RAPTOR LAKE
+    INTEL_TGL) ;;           # TIGER LAKE
+    INTEL_RCL) ;;           # ROCKET LAKE
+    INTEL_ADL) ;;           # ALDER LAKE
+    INTEL_RPL) ;;           # RAPTOR LAKE
+    INTEL_ATOM_TMT) ;;      # TREMONT
     # QSV Version 9
     #     Only Intel ARC for now.
     # QSV not supported by the processor.
