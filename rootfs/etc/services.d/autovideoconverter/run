@@ -355,7 +355,7 @@ process_video() {
         log "Conversion ended successfully."
         echo "$video $hash" >> "$SUCCESSFUL_CONVERSIONS"
         if is-bool-val-false "$AC_KEEP_SOURCE"; then
-            if [ "${AUTOMATED_CONVERSION_USE_TRASH:-0}" -eq 0 ]; then
+            if is-bool-val-false "${AUTOMATED_CONVERSION_USE_TRASH:-0}"; then
                 rm -r "$video"
                 log "Removed $video'."
             else
