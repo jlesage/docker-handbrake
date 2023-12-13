@@ -356,20 +356,33 @@ process_video() {
         echo "$video $hash" >> "$SUCCESSFUL_CONVERSIONS"
         if is-bool-val-false "$AC_KEEP_SOURCE"; then
             if is-bool-val-false "${AUTOMATED_CONVERSION_USE_TRASH:-0}"; then
-                rm -r "$video"
-                log "Removed $video'."
+                log "Removing '$video'..."
+                rm -rf "$video"
+                if [ $? -eq 0 ]; then
+                    log "Removed '$video'."
+                else
+                    log "ERROR: Could not remove '$video'."
+                fi
             else
                 VIDEO_TRASH_PATH="/trash/${video#"$wf"}"
                 mkdir -p "$(dirname "$VIDEO_TRASH_PATH")"
-                log "Moving $video to trash directory..."
+                log "Moving '$video' to trash directory..."
                 mv "$video" "$VIDEO_TRASH_PATH"
-                log "Moved $video to trash directory."
+                if [ $? -eq 0 ]; then
+                    log "Moved '$video' to trash directory."
+                else
+                    log "ERROR: Could not move '$video' to trash directory."
+                fi
             fi
             # Remove directory if empty (hidden files/folders are ignored).
             videodir="$(dirname "$video")"
             while [ "$videodir" != "$wf" ] && [ -z "$(ls "$videodir")" ]; do
-                log "Removed directory '$videodir'."
                 rm -rf "$videodir"
+                if [ $? -eq 0 ]; then
+                    log "Removed directory '$videodir'."
+                else
+                    log "ERROR: Could not remove directory '$videodir'."
+                fi
                 videodir="$(dirname "$videodir")"
             done
         fi
