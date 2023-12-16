@@ -802,7 +802,7 @@ methods:
     sudo chown root:video /dev/dri/*
     ```
 
-[list]: https://ark.intel.com/Search/FeatureFilter?productType=processors&QuickSyncVideo=true
+[list]: https://ark.intel.com/Search/FeatureFilter?productType=873&0_QuickSyncVideo=True
 [Intel Ark]: https://ark.intel.com
 
 ### unRAID
