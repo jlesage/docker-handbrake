@@ -344,6 +344,12 @@ app:
           On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
           `Extra Parameters` field of the container settings.
   changelog:
+    - version: 23.12.1
+      date: 2023-12-17
+      changes:
+        - 'Adjusted QSV check script to handle Atom microarchitectures.'
+        - 'Fixed issue with the automatic video converter where removing a video file could block.'
+        - 'Enabled AVX-512 optimizations for SVT-AV1.'
     - version: 23.11.5
       date: 2023-11-30
       changes:
