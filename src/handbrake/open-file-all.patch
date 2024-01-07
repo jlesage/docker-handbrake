@@ -1,0 +1,19 @@
+commit c24e102387a4d1a783693715688fc8726a5a73bf
+Author: Jocelyn Le Sage <jocelyn@le-sage.com>
+Date:   Sat Jan 6 10:23:02 2024 -0500
+
+    LinuxGUI: Fixed the "All Files" open file dialog filter to really show all files.
+
+diff --git a/gtk/src/callbacks.c b/gtk/src/callbacks.c
+index d15bc3047..f02e1febd 100644
+--- a/gtk/src/callbacks.c
++++ b/gtk/src/callbacks.c
+@@ -5400,7 +5400,7 @@ GtkFileFilter *ghb_add_file_filter(GtkFileChooser *chooser,
+ static void
+ add_video_file_filters (GtkFileChooser *chooser, signal_user_data_t *ud)
+ {
+-    ghb_add_file_filter(chooser, ud, _("All Files"), "SourceFilterAll");
++    ghb_add_file_filter(chooser, ud, _("All Files"), "FilterAll");
+     ghb_add_file_filter(chooser, ud, _("Video"), "SourceFilterVideo");
+     ghb_add_file_filter(chooser, ud, g_content_type_get_description("video/mp4"), "SourceFilterMP4");
+     ghb_add_file_filter(chooser, ud, g_content_type_get_description("video/mp2t"), "SourceFilterTS");
