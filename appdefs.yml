@@ -344,6 +344,10 @@ app:
           On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
           `Extra Parameters` field of the container settings.
   changelog:
+    - version: 24.01.2
+      date: 2024-01-13
+      changes:
+        - 'Issue where Linux device of an optical drive could not be opened is now really fixed.'
     - version: 24.01.1
       date: 2024-01-12
       changes:
