@@ -484,13 +484,14 @@ process_watch_folder() {
     fi
 }
 
-is_within_allowed_time_range() {
+is_now_within_time_range() {
     allowed_time_ranges=$1
 
     if [ -z "$allowed_time_ranges" ]; then
         return 0
     fi
-
+    
+    # Example formats: Mon, Tue-3, Wed-12-15
     range_pattern="^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)(-[0-9]{1,2})?(-[0-9]{1,2})?$"
 
     day_now=$(LC_ALL=C date +%a) # Mon, Tue, Wed, etc.
@@ -547,7 +548,7 @@ is_within_allowed_time_range() {
 [ -f "$SUCCESSFUL_CONVERSIONS" ] || touch "$SUCCESSFUL_CONVERSIONS"
 
 while true; do
-    if is_within_allowed_time_range "${ALLOWED_TIME_RANGES:-}"; then
+    if is_now_within_time_range "${ALLOWED_TIME_RANGES:-}"; then
         for i in $(seq 1 ${AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS:-5}); do
             DIR="/watch$i"
             if [ "$i" -eq 1 ]; then
