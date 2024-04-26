@@ -770,7 +770,7 @@ The format of a single time range is `DAY-START_HOUR-END_HOUR`, where:
 If both `START_HOUR` and `END_HOUR` are omitted, the time range is set to the whole day (0-24).
 
 Examples of valid values:
-  - `Tue-14-18`: Convert videos only on Monday, between 14:00 and 17:59.
+  - `Tue-14-18`: Convert videos only on Tuesday, between 14:00 and 17:59.
   - `Wed-9-17,Thu-9-17,Fri-9-17`: Convert videos only on Wednesday, Thursday and Friday, between 9:00 and 16:59.
   - `Sun-1-2`: Convert videos only on Sunday, between 1:00 and 1:59. Equivalent to `Sun-1`.
   - `Mon-0-24`: Convert videos only on Monday, at any hour. Equivalent to `Mon`.
