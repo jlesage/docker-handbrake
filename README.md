@@ -776,6 +776,8 @@ Examples of valid values:
   - `Mon-0-24`: Convert videos only on Monday, at any hour. Equivalent to `Mon`.
   - `Fri-18-24,Sat,Sun,Mon-0-6`: Convert videos from Friday 18:00 to Monday 5:59.
 
+Keep in mind, if a video conversion starts within an allowed time range, and the conversion lasts longer than the time range, the conversion process will continue until it's finished.
+
 **NOTE**: Don't forget to adjust the time zone of the container to avoid confusion.
 
 ## Intel Quick Sync Video
