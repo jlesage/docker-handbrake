@@ -156,6 +156,7 @@ of this parameter has the format `<VARIABLE_NAME>=<VALUE>`.
 |`AUTOMATED_CONVERSION_HANDBRAKE_CUSTOM_ARGS`| Custom arguments to pass to HandBrake when performing a conversion. | (no value) |
 |`AUTOMATED_CONVERSION_INSTALL_PKGS`| Space-separated list of Alpine Linux packages to install.  This is useful when the automatic video converter's hooks require tools not available in the container image.  See https://pkgs.alpinelinux.org for the list of available Alpine Linux packages. | (no value) |
 |`AUTOMATED_CONVERSION_USE_TRASH`| When set to `1`, the automatic video converter uses the trash directory. So when the automatic video converter is configured to *not* keep sources, it will move them to the trash directory (`/trash` inside the container) instead of deleting them. | `0` |
+|`AUTOMATED_CONVERSION_ALLOWED_TIME_RANGES`| Comma-separated list of time ranges during which the automatic video converter is allowed to convert videos. See the [Time-based Automated Conversion](#time-based-automated-conversion) section for more details. | (no value) |
 
 #### Deployment Considerations
 
@@ -751,6 +752,29 @@ subdirectory.  For example, if `AUTOMATED_CONVERSION_OUTPUT_SUBDIR` is set to
 `TV Shows` and `/output` is mapped to `/home/user/appvolumes/HandBrake` on the
 host, `/home/user/appvolumes/HandBrake/TV Shows` should be monitored by the
 application.
+
+### Time-based Automated Conversion
+
+The automatic video converter can be configured to convert videos only during a specific time range(s).
+This is useful to prevent the automatic video converter from running during the night (or day), active hours, etc.
+
+The time ranges are defined by the `AUTOMATED_CONVERSION_ALLOWED_TIME_RANGES` environment variable.
+
+The value of this variable is a comma-separated list of time ranges.
+The format of a single time range is `DAY-START_HOUR-END_HOUR`, where:
+  - `DAY` is a short name of the day of the week. It can be one of the following values: `Mon`, `Tue`, `Wed`, `Thu`, `Fri`, `Sat`, `Sun`.
+  - `START_HOUR` is the starting hour of the time range. It must be an integer between 0 and 23.
+  - `END_HOUR` is the ending hour of the time range. It must be an integer between 1 and 24. Always greater than `START_HOUR`. End hour is exclusive.
+
+`START_HOUR` and `END_HOUR` are optional. If `END_HOUR` is omitted, it defaults to `START_HOUR + 1`.
+If both `START_HOUR` and `END_HOUR` are omitted, the time range is set to the whole day (0-24).
+
+Examples of valid values:
+  - `Tue-14-18`: Convert videos only on Monday, between 14:00 and 17:59.
+  - `Wed-9-17,Thu-9-17,Fri-9-17`: Convert videos only on Wednesday, Thursday and Friday, between 9:00 and 16:59.
+  - `Sun-1-2`: Convert videos only on Sunday, between 1:00 and 1:59. Equivalent to `Sun-1`.
+  - `Mon-0-24`: Convert videos only on Monday, at any hour. Equivalent to `Mon`.
+  - `Fri-18-24,Sat,Sun,Mon-0-6`: Convert videos from Friday 18:00 to Monday 5:59.
 
 ## Intel Quick Sync Video
 
