@@ -484,43 +484,104 @@ process_watch_folder() {
     fi
 }
 
+is_within_allowed_time_range() {
+    allowed_time_ranges=$1
+
+    if [ -z "$allowed_time_ranges" ]; then
+        return 0
+    fi
+
+    range_pattern="^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)(-[0-9]{1,2})?(-[0-9]{1,2})?$"
+
+    day_now=$(LC_ALL=C date +%a) # Mon, Tue, Wed, etc.
+    hour_now=$(LC_ALL=C date +%k) # 0-23
+
+    IFS=',' read -r -a ranges_array <<< "$allowed_time_ranges"
+
+    for range in "${ranges_array[@]}"; do
+        if [[ $range =~ $range_pattern ]]; then
+            day=${BASH_REMATCH[1]}
+             # :1 removes the leading dash
+            start_hour=${BASH_REMATCH[2]:1}
+            end_hour=${BASH_REMATCH[3]:1}
+
+            # Mon turns into Mon-0-24
+            if [ -z "$start_hour" ]; then
+                start_hour=0
+                end_hour=24
+            fi
+
+            # Mon-12 turns into Mon-12-13
+            if [ -z "$end_hour" ]; then
+                end_hour=$((start_hour + 1))
+            fi
+
+            if [ "$start_hour" -lt 0 ] || [ "$start_hour" -gt 23 ]; then
+                echo "Invalid range: '$range', start hour must be from 0 to 23"
+                exit 1
+            fi
+
+            if [ "$end_hour" -lt 1 ] || [ "$end_hour" -gt 24 ]; then
+                echo "Invalid range: '$range', end hour must be from 1 to 24"
+                exit 1
+            fi
+
+            if [ "$start_hour" -ge "$end_hour" ]; then
+                echo "Invalid range: '$range', start hour must be less than end hour"
+                exit 1
+            fi
+
+            if [ "$day" == "$day_now" ] && [ "$hour_now" -ge "$start_hour" ] && [ "$hour_now" -lt "$end_hour" ]; then
+                return 0
+            fi
+        else
+            echo "Invalid 'allowed_time_ranges' format"
+            exit 1
+        fi
+    done
+
+    return 1
+}
+
 [ -f "$FAILED_CONVERSIONS" ] || touch "$FAILED_CONVERSIONS"
 [ -f "$SUCCESSFUL_CONVERSIONS" ] || touch "$SUCCESSFUL_CONVERSIONS"
 
 while true; do
-    for i in $(seq 1 ${AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS:-5}); do
-        DIR="/watch$i"
-        if [ "$i" -eq 1 ]; then
-            DIR="/watch"
-        fi
+    if is_within_allowed_time_range "${ALLOWED_TIME_RANGES:-}"; then
+        for i in $(seq 1 ${AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS:-5}); do
+            DIR="/watch$i"
+            if [ "$i" -eq 1 ]; then
+                DIR="/watch"
+            fi
 
-        # Set default settings.
-        AC_PRESET="${AUTOMATED_CONVERSION_PRESET:-Very Fast 1080p30}"
-        AC_FORMAT="${AUTOMATED_CONVERSION_FORMAT:-mp4}"
-        AC_SOURCE_STABLE_TIME="${AUTOMATED_CONVERSION_SOURCE_STABLE_TIME:-5}"
-        AC_SOURCE_MIN_DURATION="${AUTOMATED_CONVERSION_SOURCE_MIN_DURATION:-10}"
-        AC_SOURCE_MAIN_TITLE_DETECTION="${AUTOMATED_CONVERSION_SOURCE_MAIN_TITLE_DETECTION:-0}"
-        AC_OUTPUT_DIR="${AUTOMATED_CONVERSION_OUTPUT_DIR:-/output}"
-        AC_OUTPUT_SUBDIR="${AUTOMATED_CONVERSION_OUTPUT_SUBDIR:-UNSET}"
-        AC_KEEP_SOURCE="${AUTOMATED_CONVERSION_KEEP_SOURCE:-1}"
-        AC_VIDEO_FILE_EXTENSIONS="${AUTOMATED_CONVERSION_VIDEO_FILE_EXTENSIONS:-}"
-        AC_NON_VIDEO_FILE_ACTION="${AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION:-ignore}"
-        AC_NON_VIDEO_FILE_EXTENSIONS="${AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS:-jpg jpeg bmp png gif txt nfo}"
-        AC_NO_GUI_PROGRESS="${AUTOMATED_CONVERSION_NO_GUI_PROGRESS:-0}"
-        AC_HANDBRAKE_CUSTOM_ARGS="${AUTOMATED_CONVERSION_HANDBRAKE_CUSTOM_ARGS:-}"
-        AC_OVERWRITE_OUTPUT="${AUTOMATED_CONVERSION_OVERWRITE_OUTPUT:-0}"
+            # Set default settings.
+            AC_PRESET="${AUTOMATED_CONVERSION_PRESET:-Very Fast 1080p30}"
+            AC_FORMAT="${AUTOMATED_CONVERSION_FORMAT:-mp4}"
+            AC_SOURCE_STABLE_TIME="${AUTOMATED_CONVERSION_SOURCE_STABLE_TIME:-5}"
+            AC_SOURCE_MIN_DURATION="${AUTOMATED_CONVERSION_SOURCE_MIN_DURATION:-10}"
+            AC_SOURCE_MAIN_TITLE_DETECTION="${AUTOMATED_CONVERSION_SOURCE_MAIN_TITLE_DETECTION:-0}"
+            AC_OUTPUT_DIR="${AUTOMATED_CONVERSION_OUTPUT_DIR:-/output}"
+            AC_OUTPUT_SUBDIR="${AUTOMATED_CONVERSION_OUTPUT_SUBDIR:-UNSET}"
+            AC_KEEP_SOURCE="${AUTOMATED_CONVERSION_KEEP_SOURCE:-1}"
+            AC_VIDEO_FILE_EXTENSIONS="${AUTOMATED_CONVERSION_VIDEO_FILE_EXTENSIONS:-}"
+            AC_NON_VIDEO_FILE_ACTION="${AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION:-ignore}"
+            AC_NON_VIDEO_FILE_EXTENSIONS="${AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS:-jpg jpeg bmp png gif txt nfo}"
+            AC_NO_GUI_PROGRESS="${AUTOMATED_CONVERSION_NO_GUI_PROGRESS:-0}"
+            AC_HANDBRAKE_CUSTOM_ARGS="${AUTOMATED_CONVERSION_HANDBRAKE_CUSTOM_ARGS:-}"
+            AC_OVERWRITE_OUTPUT="${AUTOMATED_CONVERSION_OVERWRITE_OUTPUT:-0}"
 
-        # Apply per-watch folder settings.
-        if [ -n "${DIR#*/watch}" ]; then
-            for VAR in PRESET FORMAT SOURCE_STABLE_TIME SOURCE_MIN_DURATION SOURCE_MAIN_TITLE_DETECTION OUTPUT_DIR OUTPUT_SUBDIR KEEP_SOURCE VIDEO_FILE_EXTENSIONS NON_VIDEO_FILE_ACTION NON_VIDEO_FILE_EXTENSIONS NO_GUI_PROGRESS HANDBRAKE_CUSTOM_ARGS OVERWRITE_OUTPUT
-            do
-                eval "AC_$VAR=\"\${AUTOMATED_CONVERSION_${VAR}_${DIR#*/watch}:-\$AC_$VAR}\""
-            done
-        fi
+            # Apply per-watch folder settings.
+            if [ -n "${DIR#*/watch}" ]; then
+                for VAR in PRESET FORMAT SOURCE_STABLE_TIME SOURCE_MIN_DURATION SOURCE_MAIN_TITLE_DETECTION OUTPUT_DIR OUTPUT_SUBDIR KEEP_SOURCE VIDEO_FILE_EXTENSIONS NON_VIDEO_FILE_ACTION NON_VIDEO_FILE_EXTENSIONS NO_GUI_PROGRESS HANDBRAKE_CUSTOM_ARGS OVERWRITE_OUTPUT
+                do
+                    eval "AC_$VAR=\"\${AUTOMATED_CONVERSION_${VAR}_${DIR#*/watch}:-\$AC_$VAR}\""
+                done
+            fi
 
-        # Process watch folder.
-        process_watch_folder "$DIR"
-    done
+            # Process watch folder.
+            process_watch_folder "$DIR"
+        done
+    fi 
 
     sleep "${AUTOMATED_CONVERSION_CHECK_INTERVAL:-5}"
 done
