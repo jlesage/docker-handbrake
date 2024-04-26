@@ -512,10 +512,14 @@ is_now_within_time_range() {
                 end_hour=24
             fi
 
+            start_hour=$(echo "$start_hour" | bc) # Remove leading zeros
+
             # Mon-12 turns into Mon-12-13
             if [ -z "$end_hour" ]; then
                 end_hour=$((start_hour + 1))
             fi
+
+            end_hour=$(echo "$end_hour" | bc) # Remove leading zeros
 
             if [ "$start_hour" -lt 0 ] || [ "$start_hour" -gt 23 ]; then
                 echo "Invalid range: '$range', start hour must be from 0 to 23"
