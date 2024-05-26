@@ -83,9 +83,9 @@ WORKDIR /tmp
 RUN \
     add-pkg \
         libstdc++ \
-        gtk+3.0 \
+        gtk4.0 \
+        mesa-dri-gallium \
         libgudev \
-        dbus-glib \
         libnotify \
         libsamplerate \
         libass \
@@ -93,9 +93,10 @@ RUN \
         jansson \
         xz \
         numactl \
+        libturbojpeg \
         # Media codecs:
         libtheora \
-        lame \
+        lame-libs \
         opus \
         libvorbis \
         speex \
@@ -117,7 +118,10 @@ RUN \
         bash \
         coreutils \
         findutils \
-        expect
+        expect \
+        && \
+    # Save some space by removing unused DRI drivers.
+    find /usr/lib/xorg/modules/dri/ -type f ! -name swrast_dri.so ! -name libgallium_dri.so -exec echo "Removing {}..." ';' -delete
 
 # Generate and install favicons.
 RUN \
