@@ -429,6 +429,7 @@ log "Patching HandBrake..."
 if xx-info is-cross; then
     patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/cross-compile-fix.patch
 fi
+patch -d /tmp/handbrake -p1 < "$SCRIPT_DIR"/maximized-window.patch
 
 # Create the meson cross compile config file.
 if xx-info is-cross; then
