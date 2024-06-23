@@ -168,7 +168,6 @@ apk --no-cache add \
     bash \
     nasm \
     meson \
-    cargo \
     cargo-c \
     gettext-dev \
     glib-dev \
@@ -209,6 +208,25 @@ xx-apk --no-cache --no-scripts add \
     dbus-glib-dev \
     libnotify-dev \
     libgudev-dev \
+
+# Install Rust.
+USE_RUST_FROM_ALPINE_REPO=false
+if $USE_RUST_FROM_ALPINE_REPO; then
+    apk --no-cache add \
+        cargo
+else
+    apk --no-cache add \
+        gcc \
+        musl-dev
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | bash -s -- -y
+    source /root/.cargo/env
+
+    # NOTE: When not installing Rust from the Alpine repository, we must compile
+    #       with `RUSTFLAGS="-C target-feature=-crt-static"` to avoid crash
+    #       during GTK initialization.
+    #       See https://github.com/qarmin/czkawka/issues/416.
+    export RUSTFLAGS="-C target-feature=-crt-static"
+fi
 
 #
 # Download sources.
