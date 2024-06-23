@@ -1,5 +1,6 @@
 #!/bin/sh
 
+export HOME=/config
 export GTK_A11Y=none
 export LIBGL_ALWAYS_SOFTWARE=true
 

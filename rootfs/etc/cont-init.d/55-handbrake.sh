@@ -13,6 +13,7 @@ fi
 mkdir -p /config/ghb
 mkdir -p /config/hooks
 mkdir -p /config/log/hb
+ln -sf ghb /config/.ghb
 
 # Copy default configuration if needed.
 if [ ! -f /config/ghb/preferences.json ]; then
