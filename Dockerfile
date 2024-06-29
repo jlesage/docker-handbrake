@@ -71,7 +71,7 @@ RUN /build/build.sh "$CPU_FEATURES_URL"
 RUN xx-verify /tmp/cpu_features-install/bin/list_cpu_features
 
 # Pull base image.
-FROM jlesage/baseimage-gui:alpine-3.19-v4.5.3
+FROM jlesage/baseimage-gui:alpine-3.19-v4.6.3
 
 ARG HANDBRAKE_VERSION
 ARG DOCKER_IMAGE_VERSION
@@ -84,7 +84,6 @@ RUN \
     add-pkg \
         libstdc++ \
         gtk4.0 \
-        mesa-dri-gallium \
         libgudev \
         libnotify \
         libsamplerate \
@@ -118,10 +117,11 @@ RUN \
         bash \
         coreutils \
         findutils \
-        expect \
-        && \
-    # Save some space by removing unused DRI drivers.
-    find /usr/lib/xorg/modules/dri/ -type f ! -name swrast_dri.so ! -name libgallium_dri.so -exec echo "Removing {}..." ';' -delete
+        expect
+
+#        && \
+#    # Save some space by removing unused DRI drivers.
+#    find /usr/lib/xorg/modules/dri/ -type f ! -name swrast_dri.so ! -name libgallium_dri.so -exec echo "Removing {}..." ';' -delete
 
 # Generate and install favicons.
 RUN \
