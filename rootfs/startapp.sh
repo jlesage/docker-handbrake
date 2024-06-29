@@ -12,4 +12,5 @@ if [ "${HANDBRAKE_DEBUG:-0}" -eq 1 ]; then
 else
   exec /usr/bin/ghb $COMMON_ARGS
 fi
+
 # vim:ft=sh:ts=4:sw=4:et:sts=4
