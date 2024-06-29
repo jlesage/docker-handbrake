@@ -84,6 +84,8 @@ RUN \
     add-pkg \
         libstdc++ \
         gtk4.0 \
+        gst-plugins-good \
+        gst-libav \
         libgudev \
         libnotify \
         libsamplerate \
