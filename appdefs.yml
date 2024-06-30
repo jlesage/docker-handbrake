@@ -344,6 +344,22 @@ app:
           On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
           `Extra Parameters` field of the container settings.
   changelog:
+    - version: 24.06.1
+      date: 2024-06-30
+      changes:
+        - 'Updated HandBrake to version 1.8.1.'
+        - 'Updated libva to version 2.21.0.'
+        - 'Updated gmmlib to version 22.4.0.'
+        - 'Updated Intel Media Driver to version 24.1.5.'
+        - 'Updated Intel OneVPL GPU runtime to version 24.1.5.'
+        - 'Updated baseimage to version 4.6.3, which brings the following changes:'
+        - '2:Audio support through web browser.'
+        - '2:Web authentication support.'
+        - '2:Better support of GTK4 applications.'
+        - '2:Updated noVNC to version 1.5.0.'
+        - '2:Updated web UI components (Bootstrap, Font Awesome).'
+        - '2:When connecting, the control bar is now temporarily shown only once.'
+        - '2:During package mirror setup, make sure to keep permissions of copied files.'
     - version: 24.03.1
       date: 2024-03-04
       changes:
