@@ -291,18 +291,24 @@ process_video() {
         # Set the temporary output directory: this is where the video will be
         # actually written before being moved its final location once conversion is
         # terminated.
-#####################################################################################################
-        if echo "$AC_VIDEO_FILE_EXTENSIONS"; then
-            FILE_EXT_IN_VIDEO_LIST=true
-        else
-            OUTPUT_DIR_TMP="$(mktemp -d "$AC_OUTPUT_DIR/.XXXXXX")"
-            if [ ! -d "$OUTPUT_DIR_TMP" ]; then
-                hb_rc=1
-                log "ERROR: Failed to create temporary directory under '$AC_OUTPUT_DIR'."
-                break
-            fi
-        fi
-        
+        case "$AC_OUTPUT_TEMP" in
+            UNSET)
+                OUTPUT_DIR_TMP="$(mktemp -d "$AC_OUTPUT_DIR/.XXXXXX")"
+                if [ ! -d "$OUTPUT_DIR_TMP" ]; then
+                    hb_rc=1
+                    log "ERROR: Failed to create temporary directory under '$AC_OUTPUT_DIR'."
+                    break
+                fi
+                ;;
+            *)
+                OUTPUT_DIR_TMP="/output_tmp"
+                if [ ! -d "$OUTPUT_DIR_TMP" ]; then
+                    hb_rc=1
+                    log "ERROR: Failed to create temporary directory under '$AC_OUTPUT_TEMP'."
+                    break
+                fi
+                ;;
+        esac
 
         # Set the temporary output filename.
         OUTPUT_FILE_TMP="$OUTPUT_DIR_TMP/$basename.$AC_FORMAT"
@@ -417,14 +423,29 @@ process_watch_folder() {
         log "ERROR: Cannot process watch folder '$WF', because the associated output directory '$AC_OUTPUT_DIR' doesn't exist."
         return
     else
-        TMPFILE="$(mktemp "$AC_OUTPUT_DIR"/.test_XXXXXX 2>/dev/null)"
-        RC=$?
-        if [ "$RC" -eq 0 ]; then
-            rm "$TMPFILE"
-        else
-            log "ERROR: Cannot process watch folder '$WF', because the associated output directory '$AC_OUTPUT_DIR' is not writable."
-            return
-        fi
+        case "$AC_OUTPUT_TEMP" in
+            UNSET)
+                TMPFILE="$(mktemp "$AC_OUTPUT_DIR"/.test_XXXXXX 2>/dev/null)"
+                RC=$?
+                if [ "$RC" -eq 0 ]; then
+                    rm "$TMPFILE"
+                else
+                    log "ERROR: Cannot process watch folder '$WF', because the associated output directory '$AC_OUTPUT_DIR' is not writable."
+                    return
+                fi
+                ;;
+            *)
+                TMPFILE="$(mktemp /output_tmp/.test_XXXXXX 2>/dev/null)"
+                RC=$?
+                if [ "$RC" -eq 0 ]; then
+                    rm "$TMPFILE"
+                else
+                    log "ERROR: Cannot process watch folder '$WF', because the associated output directory '$AC_OUTPUT_TEMP' is not writable."
+                    return
+                fi
+                ;;
+        esac
+        
     fi
 
     if WATCHDIR_HASH_isset "$WF"; then
