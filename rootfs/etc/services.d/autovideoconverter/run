@@ -301,7 +301,7 @@ process_video() {
                 fi
                 ;;
             *)
-                OUTPUT_DIR_TMP="/output_tmp"
+                OUTPUT_DIR_TMP="$(mktemp -d "/output_tmp/.XXXXXX")"
                 if [ ! -d "$OUTPUT_DIR_TMP" ]; then
                     hb_rc=1
                     log "ERROR: Failed to create temporary directory under '$AC_OUTPUT_TEMP'."
