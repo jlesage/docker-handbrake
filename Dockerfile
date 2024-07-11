@@ -170,6 +170,7 @@ ENV \
 # Define mountable directories.
 VOLUME ["/storage"]
 VOLUME ["/output"]
+VOLUME ["/output_tmp"]
 VOLUME ["/watch"]
 VOLUME ["/trash"]
 
