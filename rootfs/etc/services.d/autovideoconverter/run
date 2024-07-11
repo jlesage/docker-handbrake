@@ -292,12 +292,17 @@ process_video() {
         # actually written before being moved its final location once conversion is
         # terminated.
 #####################################################################################################
-        OUTPUT_DIR_TMP="$(mktemp -d "$AC_OUTPUT_DIR/.XXXXXX")"
-        if [ ! -d "$OUTPUT_DIR_TMP" ]; then
-            hb_rc=1
-            log "ERROR: Failed to create temporary directory under '$AC_OUTPUT_DIR'."
-            break
+        if echo "$AC_VIDEO_FILE_EXTENSIONS"; then
+            FILE_EXT_IN_VIDEO_LIST=true
+        else
+            OUTPUT_DIR_TMP="$(mktemp -d "$AC_OUTPUT_DIR/.XXXXXX")"
+            if [ ! -d "$OUTPUT_DIR_TMP" ]; then
+                hb_rc=1
+                log "ERROR: Failed to create temporary directory under '$AC_OUTPUT_DIR'."
+                break
+            fi
         fi
+        
 
         # Set the temporary output filename.
         OUTPUT_FILE_TMP="$OUTPUT_DIR_TMP/$basename.$AC_FORMAT"
