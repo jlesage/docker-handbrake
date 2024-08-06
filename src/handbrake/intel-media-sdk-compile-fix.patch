@@ -1,0 +1,10 @@
+--- a/api/mfx_dispatch/linux/mfxparser.cpp	2024-05-13 19:26:39.409018293 -0400
++++ b/api/mfx_dispatch/linux/mfxparser.cpp	2024-05-13 19:26:59.205040655 -0400
+@@ -22,6 +22,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <stdint.h>
+ 
+ #include <list>
+ 

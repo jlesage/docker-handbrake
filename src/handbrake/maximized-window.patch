@@ -1,0 +1,12 @@
+diff --git a/gtk/src/ui/ghb.ui b/gtk/src/ui/ghb.ui
+index 4cf7371cf..627169643 100644
+--- a/gtk/src/ui/ghb.ui
++++ b/gtk/src/ui/ghb.ui
+@@ -1336,6 +1336,7 @@ Van Jacobson</property>
+     <property name="default-height">400</property>
+     <property name="icon-name">fr.handbrake.ghb</property>
+     <property name="show-menubar">True</property>
++    <property name="maximized">true</property>
+     <signal name="close-request" handler="window_close_request_cb" swapped="no"/>
+     <signal name="notify::default-height" handler="hb_window_save_size_cb" swapped="no"/>
+     <signal name="notify::default-width" handler="hb_window_save_size_cb" swapped="no"/>
