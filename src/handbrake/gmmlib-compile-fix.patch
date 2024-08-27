@@ -1,0 +1,12 @@
+# Use the same C++ version as Intel Media Driver.
+--- a/Source/GmmLib/Linux.cmake	2024-08-26 19:18:50.798504950 -0400
++++ b/Source/GmmLib/Linux.cmake	2024-08-26 19:18:55.078570496 -0400
+@@ -130,7 +130,7 @@
+     -fno-rtti
+     -fexceptions
+     -fcheck-new
+-    -std=c++11
++    -std=c++14
+     -pthread
+     -Werror=non-virtual-dtor
+     )

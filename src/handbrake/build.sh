@@ -349,6 +349,7 @@ fi
 if [ "$(xx-info arch)" = "amd64" ]; then
     log "Patching Intel Media Driver..."
     patch -d /tmp/intel-media-driver -p1 < "$SCRIPT_DIR"/intel-media-driver-compile-fix.patch
+    patch -d /tmp/gmmlib -p1 < "$SCRIPT_DIR"/gmmlib-compile-fix.patch
     rm -rf /tmp/intel-media-driver/media_driver/*/ult
 
     log "Configuring Intel Media driver..."
@@ -363,6 +364,7 @@ if [ "$(xx-info arch)" = "amd64" ]; then
             -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER \
             -DCMAKE_INSTALL_PREFIX=/usr \
             -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
             -Wno-dev \
             -DBUILD_TYPE=Release \
             -DINSTALL_DRIVER_SYSCONF=OFF \
@@ -372,7 +374,7 @@ if [ "$(xx-info arch)" = "amd64" ]; then
     )
 
     log "Compiling Intel Media driver..."
-    make -C /tmp/intel-media-driver/build  -j$(nproc)
+    make VERBOSE=0 -C /tmp/intel-media-driver/build -j$(nproc)
 
     log "Installing Intel Media driver..."
     make DESTDIR=/tmp/handbrake-install -C /tmp/intel-media-driver/build install
