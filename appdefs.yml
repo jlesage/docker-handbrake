@@ -976,6 +976,24 @@ container:
         display: advanced
         required: false
         mask: false
+    - name: HANDBRAKE_GUI_QUEUE_STARTUP_ACTION
+      description: >-
+        Action to be taken on the queue of HandBrake (GUI) when it starts. When set to
+        `PROCESS`, HandBrake automatically starts encoding elements present in the queue.
+        When set to `CLEAR`, the content of the queue is cleared. With any other value,
+        no action is taken on the queue.
+      type: public
+      default: NONE
+      unraid_template:
+        title: "HandBrake GUI State"
+        description: >-
+          Action to be taken on the queue of HandBrake (GUI) when it starts. When set to
+          "PROCESS", HandBrake automatically starts encoding elements present in the
+          queue. When set to "CLEAR", the content of the queue is cleared. With any other
+          value, no action is taken on the queue.
+        display: advanced
+        required: false
+        mask: false
     - name: AUTOMATED_CONVERSION
       description: >-
         Setting this to `1` enables the automatic video converter, `0` disables
