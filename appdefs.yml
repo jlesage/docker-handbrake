@@ -344,6 +344,15 @@ app:
           On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
           `Extra Parameters` field of the container settings.
   changelog:
+    - version: 24.09.1
+      date: 2024-09-14
+      changes:
+        - 'Updated HandBrake to version 1.8.2.'
+        - 'Updated libva to version 2.22.0.'
+        - 'Updated gmmlib to version 22.5.0.'
+        - 'Updated Intel Media Driver to version 24.2.5.'
+        - 'Updated Intel OneVPL GPU Runtime to version 24.2.5.'
+        - 'Added environment variable to control the HandBrake GUI queue startup action.'
     - version: 24.06.1
       date: 2024-06-30
       changes:
