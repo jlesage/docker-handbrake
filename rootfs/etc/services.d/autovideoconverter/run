@@ -4,6 +4,8 @@ set -u # Treat unset variables as an error.
 
 FAILED_CONVERSIONS="/config/failed_conversions"
 SUCCESSFUL_CONVERSIONS="/config/successful_conversions"
+INPROGRESS_CONVERSIONS="/config/inprogress_conversions"
+INPROGRESS_MUTEX="/config/.inprogress_lock_file"
 
 HANDBRAKE_CLI="/usr/bin/HandBrakeCLI --preset-import-file /config/ghb/presets.json"
 
@@ -16,6 +18,8 @@ VIDEO_FILE_EXTENSIONS_INTERNAL_LIST="\
 if [ "${HANDBRAKE_DEBUG:-0}" -eq 1 ]; then
     HANDBRAKE_CLI="$HANDBRAKE_CLI --verbose=3"
 fi
+
+declare -Ag lock_fds=()
 
 WATCHDIR_HASH="$(mktemp -d)"
 
@@ -114,6 +118,36 @@ get_video_titles() {
     return ${PIPESTATUS[0]}
 }
 
+acquire_lock() {
+    local name="${1:-$INPROGRESS_CONVERSIONS}"
+    local file="${2:-$INPROGRESS_MUTEX}"
+    local lock_fd
+
+    exec {lock_fd}>"$file"
+
+    echo "🔑 Trying to acquire lock: ${file}: "
+    while ! ([[ -v lock_fds[$name] ]] || flock -n -x "$lock_fd"); do
+        echo "🔒 Waiting on lock ${file}"
+        sleep 3s
+    done
+
+    [[ -v lock_fds[$name] ]] || lock_fds[$name]=$lock_fd
+
+    echo "🔐 Lock acquired [${file}]"
+}
+
+release_lock() {
+    local name="${1:-$INPROGRESS_CONVERSIONS}"
+    local file="${2:-$INPROGRESS_MUTEX}"
+
+    echo "🔓 Releasing lock [${file}]"
+
+    [[ -v lock_fds[$name] ]] || return
+
+    flock --unlock ${lock_fds[$name]}
+    unset 'lock_fds[$name]'
+}
+
 process_video() {
     video="$1"
     wf="$2"
@@ -139,6 +173,17 @@ process_video() {
         log "Skipping '$video' ($hash): already processed with failure."
         return
     fi
+
+    acquire_lock $INPROGRESS_CONVERSIONS $INPROGRESS_MUTEX
+    if [ -f "$INPROGRESS_CONVERSIONS" ] && grep -q -w "$hash" "$INPROGRESS_CONVERSIONS"; then
+      log "Skipping video '$video' ($hash): already in progress"
+      release_lock $INPROGRESS_CONVERSIONS $INPROGRESS_MUTEX
+      return
+    else
+      log "$(hostname) claiming '$video' ($hash)"
+      echo "$(hostname) $video $hash" >> $INPROGRESS_CONVERSIONS
+    fi
+    release_lock $INPROGRESS_CONVERSIONS $INPROGRESS_MUTEX
 
     # Skip video if it is not stable.
     log "Waiting $AC_SOURCE_STABLE_TIME seconds before processing '$video'..."
@@ -396,6 +441,11 @@ process_video() {
         fi
         echo "$video $hash" >> "$FAILED_CONVERSIONS"
     fi
+
+    # clear the video from the inprogress tracking file
+    acquire_lock $INPROGRESS_CONVERSIONS $INPROGRESS_MUTEX
+    sed -i "\#$(hostname) $video $hash#d" $INPROGRESS_CONVERSIONS
+    release_lock $INPROGRESS_CONVERSIONS $INPROGRESS_MUTEX
 }
 
 process_watch_folder() {
@@ -486,6 +536,8 @@ process_watch_folder() {
 
 [ -f "$FAILED_CONVERSIONS" ] || touch "$FAILED_CONVERSIONS"
 [ -f "$SUCCESSFUL_CONVERSIONS" ] || touch "$SUCCESSFUL_CONVERSIONS"
+[ -f "$INPROGRESS_CONVERSIONS" ] || touch "$INPROGRESS_CONVERSIONS"
+[ -f "$INPROGRESS_MUTEX" ] || touch "$INPROGRESS_MUTEX"
 
 while true; do
     for i in $(seq 1 ${AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS:-5}); do
