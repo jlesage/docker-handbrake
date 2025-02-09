@@ -1,30 +1,80 @@
 #!/bin/sh
+#
+# Find and report issues with detected optical drives that would prevent them
+# to be used by MakeMKV.
+#
 
 set -e # Exit immediately if a command exits with a non-zero status.
 set -u # Treat unset variables as an error.
 
-FOUND_USABLE_DRIVE=0
+permissions_ok() {
+    DEV_UID="$(stat -c "%u" "$1")"
+    DEV_GID="$(stat -c "%g" "$1")"
+
+    DEV_PERM="$(stat -c "%a" "$1")"
+    DEV_PERM_U="$(echo "$DEV_PERM" | head -c 1 | tail -c 1)"
+    DEV_PERM_G="$(echo "$DEV_PERM" | head -c 2 | tail -c 1)"
+    DEV_PERM_O="$(echo "$DEV_PERM" | head -c 3 | tail -c 1)"
+
+    # NOTE: Write access to the device *is* required, otherwise MakeMKV will
+    #       complain.
+
+    # OK: User permission of the device is R/W and the container runs as root.
+    [ "$DEV_PERM_U" -ge 6 ] && [ "$USER_ID" = "0" ] && return 0
+
+    # OK: User permission of the device is R/W and user matches the container
+    #     user.
+    [ "$DEV_PERM_U" -ge 6 ] && [ "$DEV_UID" = "$USER_ID" ] && return 0
+
+    # OK: The group permission of the device is R/W and group maches the
+    #     container group.
+    [ "$DEV_PERM_G" -ge 6 ] && [ "$DEV_GID" = "$GROUP_ID" ] && return 0
+
+    # OK: The group permission of the device is R/W and group is not root,
+    #     meaning that a supplementary group can be automatically added.
+    [ "$DEV_PERM_G" -ge 6 ] && [ "$DEV_GID" != "0" ] && return 0
+
+    # OK: The other permission of the device is R/W.
+    [ "$DEV_PERM_O" -ge 6 ] && return 0
+
+    return 1
+}
 
 echo "looking for usable optical drives..."
 
-DRIVES_INFO="$(mktemp)"
-lsscsi -g -k | grep -w "cd/dvd" | tr -s ' ' > "$DRIVES_INFO"
+USABLE_DRIVES_FOUND="$(mktemp)"
+echo 0 > "$USABLE_DRIVES_FOUND"
 
-while read -r DRV; do
-    DRV_DEV="$(echo "$DRV" | rev | sed -e 's/^[ \t]*//' | cut -d' ' -f2 | rev)"
+lsscsi | grep -w "cd/dvd" | awk '{print $1}' | tr -d '[]' | while read -r DRV_ID
+do
+    DRV="$(lsscsi -b -k "$DRV_ID" | tr -s ' ' | xargs)"
+    DRV_NAME="$(lsscsi -c "$DRV_ID" | grep Vendor: | sed -r 's/(Vendor:|Model:|Rev:)//g' | tr -s ' ' | xargs)"
 
-    if [ -e "$DRV_DEV" ]; then
-        FOUND_USABLE_DRIVE=1
-        DRV_GRP="$(stat -c "%g" "$DRV_DEV")"
-        echo "found optical drive $DRV_DEV, group $DRV_GRP."
+    SR_DEV="$(echo "$DRV" | awk '{print $2}')"
+
+    echo "found optical drive '$DRV_NAME' [$SR_DEV]"
+    if [ "$SR_DEV" = "-" ]; then
+        echo "  [ ERR  ] no associated SCSI CD-ROM (sr) device detected."
     else
-        echo "found optical drive $DRV_DEV, but it is not usable because is not exposed to the container."
+        echo "  [ OK ]   associated SCSI CD-ROM (sr) device detected: $SR_DEV."
+        if [ -e "$SR_DEV" ]; then
+            echo "  [ OK ]   the host device $SR_DEV is exposed to the container."
+            if permissions_ok "$SR_DEV"; then
+                echo 1 > "$USABLE_DRIVES_FOUND"
+                echo "  [ OK ]   the host device $SR_DEV has proper permissions."
+            else
+                echo "  [ ERR ]  the host device $SR_DEV does not have proper permissions."
+                is-bool-val-false "${CONTAINER_DEBUG:-0}" || echo "           permissions: $(ls -l "$SR_DEV" | awk '{print $1,$3,$4}')"
+            fi
+        else
+            echo "  [ ERR ]  the host device $SR_DEV is not exposed to the container."
+        fi
     fi
-done < "$DRIVES_INFO"
-rm "$DRIVES_INFO"
+done
 
-if [ "$FOUND_USABLE_DRIVE" -eq 0 ]; then
-    echo "no usable optical drive found."
+if [ "$(cat "$USABLE_DRIVES_FOUND")" -eq 0 ]; then
+    echo "no usable optical drives found."
 fi
+rm "$USABLE_DRIVES_FOUND"
 
-# vim:ts=4:sw=4:et:sts=4
+# vim:ft=sh:ts=4:sw=4:et:sts=4

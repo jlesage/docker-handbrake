@@ -6,19 +6,18 @@ set -u # Treat unset variables as an error.
 GRPS=$(mktemp)
 
 # Get supplementary group(s) associated to optical drive(s).
-if true; then
-    DRIVES_INFO="$(mktemp)"
-    lsscsi -g -k | grep -w "cd/dvd" | tr -s ' ' > "$DRIVES_INFO"
+    if true; then
+    lsscsi -k | grep -w "cd/dvd" | tr -s ' ' | while read -r DRV
+    do
+        SR_DEV="$(echo "$DRV" | rev | awk '{print $1}' | rev)"
 
-    while read -r DRV; do
-        DRV_DEV="$(echo "$DRV" | rev | sed -e 's/^[ \t]*//' | cut -d' ' -f2 | rev)"
-        if [ -e "$DRV_DEV" ]; then
+        # Save the associated group.
+        if [ -e "$SR_DEV" ]; then
             # Save the associated group.
-            G="$(stat -c "%g" "$DRV_DEV")"
-            echo "$G" >> "$GRPS"
+            G="$(stat -c "%g" "$SR_DEV")"
+            [ "$G" -eq 0 ] || echo "$G" >> "$GRPS"
         fi
-    done < "$DRIVES_INFO"
-    rm "$DRIVES_INFO"
+    done
 fi
 
 # Get supplementary group(s) associated to QSV device.
