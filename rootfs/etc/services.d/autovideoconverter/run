@@ -67,7 +67,7 @@ log_hb_encode_progress_yad() {
             --title "Automatic Video Converter" \
             --window-icon /opt/novnc/images/icons/master_icon.png \
             --borders 10 \
-            --text "Encoding $video..." \
+            --text "Encoding $(echo "$video" | sed 's/&/&amp;/g')..." \
             --no-buttons \
             --progress \
             2>/dev/null
