@@ -41,14 +41,16 @@ permissions_ok() {
 }
 
 write_access_test() {
-    (
-        exec 3<> "$1"
-        rc=$?
-        if [ $rc -eq 0 ]; then
-            exec 3>&-
+    [ -e "$1" ] || return 1
+    output="$(2>&1 >> "$1")"
+    rc=$?
+    if [ $rc -ne 0 ]; then
+        if ! echo "$output" | grep -iq "permission denied"; then
+            # We just want error related to the lack of write permission.
+            rc=0
         fi
-        return $rc
-    ) 2>/dev/null
+    fi
+    return $rc
 }
 
 using_initial_user_namespace() {
