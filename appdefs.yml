@@ -370,6 +370,12 @@ app:
           On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
           `Extra Parameters` field of the container settings.
   changelog:
+    - version: 25.02.2
+      date: 2025-02-12
+      changes:
+        - 'Updated HandBrake to version 1.9.1.'
+        - 'Updated Intel OneVPL GPU Runtime to version 24.4.4.'
+        - 'Report the case where an optical drive cannot be used because of an improper user namespace configuration.'
     - version: 25.02.1
       date: 2025-02-09
       changes:
