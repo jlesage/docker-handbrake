@@ -472,9 +472,9 @@ fi
 log "Configuring HandBrake..."
 (
     if [ "$(xx-info arch)" = "amd64" ]; then
-        CONF_FLAGS="--enable-qsv"
+        CONF_FLAGS="--enable-qsv --enable-nvenc --enable-vce"
     else
-        CONF_FLAGS="--disable-qsv --disable-nvenc"
+        CONF_FLAGS="--disable-qsv --disable-nvenc --disable-vce"
     fi
 
     if xx-info is-cross; then

@@ -119,7 +119,9 @@ RUN \
         bash \
         coreutils \
         findutils \
-        expect
+        expect \
+        # amd gpu support
+        linux-firmware-amdgpu
 
 #        && \
 #    # Save some space by removing unused DRI drivers.
