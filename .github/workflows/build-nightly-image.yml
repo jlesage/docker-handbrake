@@ -19,7 +19,7 @@ on:
 jobs:
   prepare:
     name: Prepare
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     # Map a step output to a job output.
     outputs:
@@ -72,7 +72,7 @@ jobs:
 
   build:
     name: Build image
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: prepare
     if: ${{ needs.prepare.outputs.build_needed == 'yes' }}
 
@@ -137,7 +137,7 @@ jobs:
   notification:
     name: Notification
     needs: [ prepare, build ]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     if: ${{ always() && needs.prepare.outputs.build_needed == 'yes' }}
 
     steps:
