@@ -17,6 +17,13 @@ if [ "${HANDBRAKE_DEBUG:-0}" -eq 1 ]; then
     HANDBRAKE_CLI="$HANDBRAKE_CLI --verbose=3"
 fi
 
+# QSV decoding can crash with x264 8-bit files.
+# https://github.com/jlesage/docker-handbrake/issues/347
+if HandBrakeCLI --help 2>/dev/null | grep -q disable-qsv-decoding
+then
+    HANDBRAKE_CLI="$HANDBRAKE_CLI --disable-qsv-decoding"
+fi
+
 WATCHDIR_HASH="$(mktemp -d)"
 
 OUTPUT_DIR_TMP=""
