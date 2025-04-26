@@ -654,8 +654,8 @@ of the `docker run` command.
 
 In the Linux world, optical drives are represented by device files named
 `/dev/srX`,  where `X` is a number. The first drive is `/dev/sr0`, the second
-is `/dev/sr1` and so on. To allow fre:ac to access the first drive, the
-following parameter is needed:
+is `/dev/sr1` and so on. To allow HandBrake to access the first drive,
+the following parameter is needed:
 ```
 --device /dev/sr0
 ```
