@@ -164,6 +164,7 @@ of this parameter has the format `<VARIABLE_NAME>=<VALUE>`.
 |`AUTOMATED_CONVERSION_HANDBRAKE_CUSTOM_ARGS`| Custom arguments to pass to HandBrake when performing a conversion. | (no value) |
 |`AUTOMATED_CONVERSION_INSTALL_PKGS`| Space-separated list of Alpine Linux packages to install.  This is useful when the automatic video converter's hooks require tools not available in the container image.  See https://pkgs.alpinelinux.org for the list of available Alpine Linux packages. | (no value) |
 |`AUTOMATED_CONVERSION_USE_TRASH`| When set to `1`, the automatic video converter uses the trash directory. So when the automatic video converter is configured to *not* keep sources, it will move them to the trash directory (`/trash` inside the container) instead of deleting them. | `0` |
+|`AUTOMATED_CONVERSION_IGNORE_DIRECTORIES`| Space-separated list of directories which should be ignored. | (no value) |
 
 #### Deployment Considerations
 
