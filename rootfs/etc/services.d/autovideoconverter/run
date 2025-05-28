@@ -316,7 +316,7 @@ process_video() {
         fi
 
         # Read per-file CLI options written by pre_conversion.sh
-        HANDBRAKE_CLI_OPTIONS_FILE="/config/handbrake_cli_options"
+        HANDBRAKE_CLI_OPTIONS_FILE="/config/HANDBRAKE_CLI_OPTIONS"
         HANDBRAKE_CLI_OPTIONS=""
         if [ -f "$HANDBRAKE_CLI_OPTIONS_FILE" ]; then
             HANDBRAKE_CLI_OPTIONS="$(cat "$HANDBRAKE_CLI_OPTIONS_FILE")"
