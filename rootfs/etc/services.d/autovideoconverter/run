@@ -315,14 +315,24 @@ process_video() {
             TITLE_ARG="--main-feature"
         fi
 
+        # Read per-file CLI options written by pre_conversion.sh
+        HANDBRAKE_CLI_OPTIONS_FILE="/config/handbrake_cli_options"
+        HANDBRAKE_CLI_OPTIONS=""
+        if [ -f "$HANDBRAKE_CLI_OPTIONS_FILE" ]; then
+            HANDBRAKE_CLI_OPTIONS="$(cat "$HANDBRAKE_CLI_OPTIONS_FILE")"
+            : > "$HANDBRAKE_CLI_OPTIONS_FILE"
+        fi
+        echo "HANDBRAKE_CLI_OPTIONS: $HANDBRAKE_CLI_OPTIONS"
+
         # Invoke HandBrake.
         echo "------- CONVERSION OUTPUT $(date) -------" >> \
             /config/log/hb/conversion.log
         $HANDBRAKE_CLI -i "$video" \
-                       -o "$OUTPUT_FILE_TMP" \
-                       $TITLE_ARG \
-                       --preset "$AC_PRESET" \
-                       $AC_HANDBRAKE_CUSTOM_ARGS 2>> \
+                    -o "$OUTPUT_FILE_TMP" \
+                    $TITLE_ARG \
+                    --preset "$AC_PRESET" \
+                    $AC_HANDBRAKE_CUSTOM_ARGS \
+                    $HANDBRAKE_CLI_OPTIONS 2>> \
             /config/log/hb/conversion.log | \
             /usr/bin/unbuffer -p grep "^Encoding" | \
             stdbuf -oL cut -d' ' -f2- | \
