@@ -1,0 +1,20 @@
+#!/bin/sh
+#
+# This is an example of a custom HandBrake args hook. This script is always
+# invoked with /bin/sh (shebang ignored).
+#
+# The first parameter is the full path to the source file.
+#
+# The secomd argument is the name of the HandBrake preset that will be used to
+# convert the video.
+#
+
+SOURCE_FILE="$1"
+PRESET="$2"
+
+# Print any debug to stderr since stdout is for custom arguments.
+echo "custom-handbrake-args: Source File = $SOURCE_FILE" >&2
+echo "custom-handbrake-args: Preset = $PRESET" >&2
+
+# TODO: Do something to determine if additional HandBrake arguments are needed
+#       and print them as a space-separated list to stdout.

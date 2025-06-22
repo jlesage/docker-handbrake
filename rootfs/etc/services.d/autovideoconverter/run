@@ -295,6 +295,19 @@ process_video() {
             log "WARNING: Overwriting '$OUTPUT_FILE'"
         fi
 
+        # Call the custom HandBrake args hook.
+        HANDBRAKE_HOOK_CUSTOM_ARGS=
+        if [ -f /config/hooks/hb_custom_args.sh ]; then
+            log "Executing custom HandBrake args hook..."
+            args="$(/bin/sh /config/hooks/pre_conversion.sh "$video" "$AC_PRESET")"
+            hook_rc=$?
+            log "Custom HandBrake args hook exited with $hook_rc"
+
+            if [ $hook_rc -eq 0 ]; then
+                HANDBRAKE_HOOK_CUSTOM_ARGS="$(echo "$args" | head -n1)"
+            fi
+        fi
+
         # Set the temporary output directory: this is where the video will be
         # actually written before being moved its final location once conversion is
         # terminated.
@@ -322,6 +335,7 @@ process_video() {
                        -o "$OUTPUT_FILE_TMP" \
                        $TITLE_ARG \
                        --preset "$AC_PRESET" \
+                       $HANDBRAKE_HOOK_CUSTOM_ARGS \
                        $AC_HANDBRAKE_CUSTOM_ARGS 2>> \
             /config/log/hb/conversion.log | \
             /usr/bin/unbuffer -p grep "^Encoding" | \
