@@ -26,24 +26,24 @@ app:
       A fully automated mode is also available: drop files into a watch folder and let
       {{ app.friendly_name }} process them without any user interaction.
     sections:
-      - title: Access to Optical Drive(s)
+      - title: Access to Optical Drives
         level: 2
         content: |-
-          By default, a Docker container doesn't have access to host's devices. However,
+          By default, a Docker container does not have access to host's devices. However,
           access to one or more devices can be granted with the `--device DEV` parameter
           of the `docker run` command.
 
-          In the Linux world, optical drives are represented by device files named
-          `/dev/srX`,  where `X` is a number. The first drive is `/dev/sr0`, the second
-          is `/dev/sr1` and so on. To allow {{ app.friendly_name }} to access the first drive,
-          the following parameter is needed:
+          In Linux, optical drives are represented by device files named `/dev/srX`, where
+          `X` is a number (e.g., `/dev/sr0` for the first drive, `/dev/sr1` for the
+          second, etc). To allow {{ app.friendly_name }} to access the first drive, use
+          this parameter:
+
           ```
           --device /dev/sr0
           ```
 
-          The easiest way to determine the correct Linux devices to expose is to run the
-          container and look at its log. During the startup, messages similar to these
-          ones are outputed:
+          To identify the correct Linux devices to expose, check the container's log
+          during startup. Look for messages like:
           ```
           [cont-init   ] 54-check-optical-drive.sh: looking for usable optical drives...
           [cont-init   ] 54-check-optical-drive.sh: found optical drive 'hp HLDS DVDRW GUD1N LD02' [/dev/sr0]
@@ -52,23 +52,19 @@ app:
           [cont-init   ] 54-check-optical-drive.sh: no usable optical drives found.
           ```
 
-          In this case, it's clearly indicated that `/dev/sr0` needs to be exposed to the
-          container.
+          This indicates that `/dev/sr0` needs to be exposed to the container.
 
           > [!NOTE]
-          > The container's log can be viewed by running the command
-          > `docker logs <container name>`.
+          > View the container’s log by running `docker logs <container_name>`.
 
-          Alternatively, Linux devices can be found by executing the following command on
-          the **host**:
+          Alternatively, identify Linux devices from the host by running:
 
           ```
           lsscsi -k
           ```
 
-          From the command's output, the last column associated to an optical drive
-          indicates the Linux device that should be exposed to the container. In the
-          following output example, `/dev/sr0` would be exposed:
+          The output's last column for an optical drive indicates the device to expose.
+          The following example shows that `/dev/sr0` should be exposed:
 
           ```
           [0:0:0:0]    disk    ATA      SanDisk SSD PLUS 9100  /dev/sda
@@ -77,213 +73,195 @@ app:
           [4:0:0:0]    cd/dvd  hp HLDS  DVDRW  GUD1N     LD02  /dev/sr0
           ```
 
-          Since HandBrake can decrypt DVD video discs, their conversion can be performed
-          directly from the optical device.  From the graphical interface, click the
-          `Open Source` button and browse through the file system to find your optical
-          drive device (e.g. `/dev/sr0`).
+          Since {{ app.friendly_name }} can decrypt DVD video discs, conversions can be
+          performed directly from the optical device. In the GUI, click the `Open Source`
+          button and browse to the optical drive device in the file system
+          (e.g., `/dev/sr0`).
       - title: Automatic Video Conversion
         level: 2
         content: |-
-          This container has an automatic video converter built-in.  This is useful to
-          batch-convert videos without user interaction.
+          This container includes a built-in automatic video converter for
+          batch-converting videos without user interaction.
 
-          Basically, files copied to the `/watch` container folder are automatically
-          converted by HandBrake to a pre-defined video format according to a pre-defined
-          preset.
+          Files placed in the `/watch` container folder are automatically converted by
+          {{ app.friendly_name }} to a predefined video format using a specified preset.
 
-          All configuration parameters of the automatic video converter are
-          defined via environment variables.  See the
-          [Environment Variables](#environment-variables) section for the list of
-          available variables.  The ones having their name starting with
-          `AUTOMATED_CONVERSION_` apply to the automatic video converter.
+          All configuration parameters for the automatic video converter are set via
+          environment variables. See the [Environment Variables](#environment-variables)
+          section for available variables, particularly those starting with
+          `AUTOMATED_CONVERSION_`.
 
-          **NOTE**: A preset is identified by its category and its name.
+          > [!NOTE]
+          > Presets are identified by their category and name (e.g.,
+          > `General/Very Fast 1080p30`).
 
-          **NOTE**: All default presets, along with personalized/custom ones, can be seen
-          and edited with the HandBrake GUI.
+          > [!NOTE]
+          > All default and custom presets can be viewed and edited in the
+          > {{ app.friendly_name }} GUI.
 
-          **NOTE**: Converted videos are stored, by default, to the `/output` folder of
-          the container.
+          > [!NOTE]
+          > By default, converted videos are stored in the `/output` folder of the
+          > container.
 
-          **NOTE**: The status and progression of conversions performed by the automatic
-          video converter can be seen from both the GUI and the container's log.
-          Container's log can be obtained by executing the command
-          `docker logs handbrake`, where `handbrake` is the name of the container.  Also,
-          full details about the conversion are stored in `/config/log/hb/conversion.log`
-          (container path).
+          > [!NOTE]
+          > The status and progress of conversions can be monitored via the GUI or the
+          > container’s log. View the log with `docker logs <container name>`, Full
+          > conversion details are stored in `/config/log/hb/conversion.log` within the
+          > container.
       - title: Multiple Watch Folders
         level: 3
         content: |-
-          If needed, additionnal watch folders can be used:
+          Additional watch folders can be used, such as:
             - `/watch2`
             - `/watch3`
             - `/watch4`
             - `/watch5`
             - etc.
 
-          This is useful for scenarios where videos need to be converted by different
-          presets.  For example, one could use a watch folder for movies and another watch
-          folder for TV shows, both having different encoding quality requirements.
+          This is useful for scenarios where videos require different presets (e.g., one
+          folder for movies and another for TV shows with distinct encoding quality
+          requirements).
 
-          By default, additional watch folders inherits the same settings has the main one
-          (`/watch`).  A setting for a particular watch folder can be overriden by adding
-          its index to the corresponding environment variable name.
+          By default, additional watch folders inherit the settings of the main `/watch`
+          folder. To override a setting for a specific watch folder, append its index to
+          the environment variable name. For example, to set the preset for `/watch2`, use
+          `AUTOMATED_CONVERSION_PRESET_2`. For `/watch3`, use
+          `AUTOMATED_CONVERSION_PRESET_3`, and so on.
 
-          For example, to set the HandBrake preset used to convert videos in `/watch2`,
-          the environment variable `AUTOMATED_CONVERSION_PRESET_2` is used.
-          `AUTOMATED_CONVERSION_PRESET_3` is used for `/watch3`, and so on.
-
-          All settings related to the automatic video converter (environment variables
-          with name prefixed with `AUTOMATED_CONVERSION_`) can be overriden for each
+          All settings prefixed with `AUTOMATED_CONVERSION_` can be overridden for each
           additional watch folder.
 
-          The maximum number of watch folders handled by the automatic video converter
-          is defined by the `AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS` environment variable.
+          The maximum number of watch folders is defined by the
+          `AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS` environment variable.
 
-          **NOTE**: Each additional watch folder must be mapped to a folder on the host by
-          adding a volume mapping during the creation of the container.
+          > [!NOTE]
+          >Each additional watch folder must be mapped to a host folder via a volume
+          > mapping during container creation.
 
-          **NOTE**: Each output folder defined via the `AUTOMATED_CONVERSION_OUTPUT_DIR`
-          environment variable must be mapped to a folder on the host by adding a volume
-          mapping during the creation of the container.
+          > [!NOTE]
+          > Each output folder defined via `AUTOMATED_CONVERSION_OUTPUT_DIR` must be
+          > mapped to a host folder via a volume mapping during container creation.
       - title: Video Discs
         level: 3
         content: |-
-          The automatic video converter supports video discs, in the following format:
-            - ISO image file.
-            - DVD video disc folder containing the `VIDEO_TS` folder.
-            - Blu-ray video disc folder containing the `BDMV` folder.
+          The automatic video converter supports video discs in the following format:
+            - ISO image file
+            - DVD video disc folder containing the `VIDEO_TS` folder
+            - Blu-ray video disc folder containing the `BDMV` folder
 
-          Note that folder names are case sensitive.  For example, `video_ts`, `Video_Ts`
-          or `Bdmv` won't be treated as discs, but as normal directories.
+          Folder names are case-sensitive. For example, `video_ts`, `Video_Ts`, or `Bdmv`
+          are not treated as discs but as regular directories.
 
-          When the source is a disc folder, the name of the converted video file will
-          match to one of its folder.  For example, `/watch/MyMovie/VIDEO_TS` will produce
-          a video file with name `MyMovie.mp4`.
+          For disc folders, the converted video file’s name matches the folder name.
+          For example, `/watch/MyMovie/VIDEO_TS` produces `MyMovie.mp4`.
 
-          Video discs can have multiple titles (the main movie, previews, extras, etc).
-          In a such case, each title is converted to its own file.  These files have the
-          suffix `.title-XX`, where `XX` is the title number. For example, if the file
-          `MyMovie.iso` has 2 titles, the following files would be generated:
+          Video discs may have multiple titles (e.g., main movie, previews, extras).
+          Each title is converted to a separate file with a `.title-XX` suffix, where `XX`
+          is the title number. For example, if `MyMovie.iso` has two titles, the output
+          files are:
             - `MyMovie.title-1.mp4`
             - `MyMovie.title-2.mp4`
 
-          It is possible to ignore titles shorted than a specific amount of time.  By
-          default, only titles longer than 10 seconds are processed.  This duration can be
-          adjusted via the `AUTOMATED_CONVERSION_SOURCE_MIN_DURATION` environment
-          variable.  See the [Environment Variables](#environment-variables) section for
-          details about setting environment variables.
+          Titles shorter than a specified duration can be ignored. By default, only titles
+          longer than 10 seconds are processed, adjustable via the
+          `AUTOMATED_CONVERSION_SOURCE_MIN_DURATION` environment variable.
       - title: Hooks
         level: 3
         content: |-
-          Custom actions can be performed using hooks.  Hooks are shell scripts executed
-          by the automatic video converter.
+          Custom actions can be performed using hooks, which are shell scripts executed by
+          the automatic video converter.
 
-          **NOTE**: Hooks are always invoked via `/bin/sh`, ignoring any shebang the
-          script may have.
+          > [!NOTE]
+          > Hooks are always executed via `/bin/sh`, ignoring any shebang in the script.
 
-          Hooks are optional and by default, no one is defined.  A hook is defined and
-          executed when the script is found at a specific location.
+          Hooks are optional and undefined by default. A hook is executed when a script is
+          found at a specific location.
 
-          The following table describe available hooks:
+          The following table describes available hooks:
 
-          | Container location | Description | Parameter(s) |
+          | Container Location | Description | Parameter(s) |
           |--------------------|-------------|--------------|
-          | `/config/hooks/pre_conversion.sh` | Hook executed before the beginning of a video conversion. | The first argument is the path of the converted video.  The second argument is the path to the source file.  Finally, the third argument is the name of the Handbrake preset that will be used to convert the video. |
-          | `/config/hooks/post_conversion.sh` | Hook executed when the conversion of a video file is terminated. | The first parameter is the status of the conversion.  A value of `0` indicates that the conversion terminated successfuly.  Any other value represent a failure.  The second argument is the path to the converted video (the output).  The third argument is the path to the source file.  Finally, the fourth argument is the name of the Handbrake preset used to convert the video. |
-          | `/config/hooks/post_watch_folder_processing.sh` | Hook executed after all videos in the watch folder have been processed. | The path of the watch folder. |
+          | `/config/hooks/pre_conversion.sh` | Executed before a video conversion begins. | The first argument is the path of the converted video. The second argument is the path to the source file. The third argument is the name of the Handbrake preset used for conversion. |
+          | `/config/hooks/post_conversion.sh` | Executed when a video conversion completes. | The first parameter is the conversion status (`0` for success, any other value for failure). The second argument is the path to the converted video. The third argument is the path to the source file. The fourth argument is the name of the Handbrake preset used for conversion. |
+          | `/config/hooks/post_watch_folder_processing.sh` | Executed after all videos in the watch folder are processed. | The path of the watch folder. |
+          | `/config/hooks/hb_custom_args.sh` | Executed to obtain custom {{ app.friendly_name }} arguments for conversion. The script should print a space-separated list of arguments to its standard output. | The first argument is the path to the source file. The second argument is the name of the Handbrake preset used for conversion. |
 
-          During the first start of the container, example hooks are installed in
-          `/config/hooks/`.  Example scripts have the suffix `.example`.  For example,
-          you can use `/config/hooks/post_conversion.sh.example` as a starting point.
+          > [!TIP]
+          > Example hooks are installed in `/config/hooks/` with a `.example` suffix. They
+          > can be used as a starting point.
 
-          **NOTE**: Keep in mind that this container has the minimal set of packages
-          required to run HandBrake.  This may limit actions that can be performed in
-          hooks.
+          > [!TIP]
+          > Use the `INSTALL_PACKAGES` environment variable to install additional
+          > packages needed by features implemented via hooks.
       - title: Temporary Conversion Directory
         level: 3
         content: |-
-          A video being converted is written in a hidden, temporary directory under the
-          root of the output directory (`/output` by default).  Once a conversion
-          successfully terminates, the video file is moved to its final location.
+          Videos being converted are written to a hidden, temporary directory under the
+          root of the output directory (`/output` by default). Once conversion completes
+          successfully, the video file is moved to its final location.
 
-          This feature can be useful for scenarios where the output folder is monitored
-          by another application: with proper configuration, one can make sure this
-          application only "sees" the final, converted video file and not the transient
+          This feature is useful when the output folder is monitored by another
+          application, ensuring it only sees the final converted file, not transient
           versions.
 
-          If the monitoring application ignores hidden directories, then nothing special
-          is required and the application should always see the final file.
+          If the monitoring application ignores hidden directories, no special
+          configuration is needed.
 
-          However, if the monitoring application handles hidden directories, the automatic
-          video converter should be configured with the
-          `AUTOMATED_CONVERSION_OUTPUT_SUBDIR` environment variable sets to a
-          subdirectory.  The application can then be configured to monitor this
-          subdirectory.  For example, if `AUTOMATED_CONVERSION_OUTPUT_SUBDIR` is set to
-          `TV Shows` and `/output` is mapped to `/home/user/appvolumes/HandBrake` on the
-          host, `/home/user/appvolumes/HandBrake/TV Shows` should be monitored by the
-          application.
+          If the monitoring application processes hidden directories, set the
+          `AUTOMATED_CONVERSION_OUTPUT_SUBDIR` environment variable to a subdirectory.
+          Configure the monitoring application to watch this subdirectory. For example,
+          if `AUTOMATED_CONVERSION_OUTPUT_SUBDIR` is set to `TV Shows` and `/output` is
+          mapped to `/home/user/appvolumes/HandBrake` on the host, monitor
+          `/home/user/appvolumes/HandBrake/TV Shows`.
       - title: Intel Quick Sync Video
         level: 2
         content: |-
-          Intel Quick Sync Video is Intel's brand for its dedicated video encoding and
-          decoding hardware core.  It is a technology that is capable of offloading video
-          decoding and encoding task to the integrated GPU, thus saving the CPU usage to
-          do other tasks.  As a specialized hardware core on the processor die, Quick Sync
-          offers a much more power efficient video processing which is much superior to
-          video encoding on a CPU.
+          Intel Quick Sync Video is Intel’s dedicated video encoding and decoding hardware
+          core, offloading tasks to the integrated GPU to reduce CPU usage and improve
+          power efficiency.
 
-          For HandBrake to be able to use hardware-accelerated encoding, the following are
-          required:
-
-            - Have a compatible Intel processor.  To determine if your CPU has the Quick
-              Sync Video hardware, consult this [list] from the [Intel Ark] website.  The
-              model name of your processor is printed to the container's log during its
-              startup.  Look for a message like this:
+          For {{ app.friendly_name }} to use hardware-accelerated encoding, the following
+          are required:
+            - A compatible Intel processor. Check if your CPU supports Quick Sync Video on
+              the [Intel Ark] website. The processor model is logged during container
+              startup, e.g.:
               ```
               [cont-init.d] 95-check-qsv.sh: Processor: Intel(R) Core(TM) i7-2600 CPU @ 3.40GHz
               ```
-            - The Intel i915 graphic driver must be loaded on the **host**.
-            - The `/dev/dri` device must be exposed to the container.  This is done by
-              adding the `--device /dev/dri` parameter to the `docker run` command.
+            - The Intel i915 graphics driver must be loaded on the host.
+            - The `/dev/dri` device must be exposed to the container using the
+              `--device /dev/dri` parameter in the `docker run` command.
 
-          When Intel Quick Sync Video is properly enabled, HandBrake offers the following
-          video encoder:
-          ```
-          H.264 (Intel QSV)
-          ```
+          When Intel Quick Sync Video is enabled, {{ app.friendly_name }} offers the
+          `H.264 (Intel QSV)` video encoder. If this encoder is not listed, check the
+          container’s log for details on the issue.
 
-          If this encoder is not part of the list, something is wrong and looking at the
-          container's log can give more details about the issue.
+          > [!NOTE]
+          > In most cases, {{ app.friendly_name }} can access `/dev/dri` without host
+          > modifications, as the container’s user is automatically added to the group
+          > owning the device. If the device is owned by the `root` group, use one of
+          > these solutions:
+          >   - Run the container as root (`USER_ID=0`).
+          >   - Grant read/write permissions to all for the `/dev/dri` device on the host:
+          >     ```
+          >     sudo chmod a+wr /dev/dri/*
+          >     ```
+          >   - Change the group owning the `/dev/dri` device on the host. For example,
+          >     to set it to `video`:
+          >     ```
+          >     sudo chown root:video /dev/dri/*
+          >     ```
 
-          **NOTE**: In most cases, HandBrake can successfully access the `/dev/dri` device
-          without changing anything on the host side.  This is possible because the user
-          under which the container is running is automatically added to the group owning
-          the `/dev/dri` device.  However, this method doesn't work if the device is owned
-          by the group `root`.  The problem can be fixed using one of the following
-          methods:
-            - Running the container as root (`USER_ID=0`).
-            - Adding, on the host, read/write permissions for all to the `/dev/dri`
-              device:
-              ```
-              sudo chmod a+wr /dev/dri/*
-              ```
-            - Changing, on the host, the group owning the `/dev/dri` device.  For example,
-              to change the group to `video`:
-              ```
-              sudo chown root:video /dev/dri/*
-              ```
-
-          [list]: https://ark.intel.com/Search/FeatureFilter?productType=873&0_QuickSyncVideo=True
-          [Intel Ark]: https://ark.intel.com
+          [Intel Ark]: https://ark.intel.com/Search/FeatureFilter?productType=873&0_QuickSyncVideo=True
       - title: unRAID
         level: 3
         content: |-
-          With recent versions of unRAID, the Intel i915 driver is already included in the
-          distribution and is automatically loaded.
-          
-          With older versions, the following lines might need to be added to
-          `/boot/config/go` for the driver to be loaded during the startup of unRAID:
+          In recent unRAID versions, the Intel i915 driver is included and loaded
+          automatically.
+
+          For older versions, add the following lines to `/boot/config/go` to load the
+          driver during unRAID startup:
+
           ```
           # Load the i915 driver.
           modprobe i915
@@ -291,11 +269,11 @@ app:
       - title: Nightly Builds
         level: 2
         content: |-
-          Nightly builds are based on the latest {{ app.friendly_name }} development code.
-          This means that they may have bugs, crashes and instabilities.
+          Nightly builds are based on the latest {{ app.friendly_name }} development code
+          and may contain bugs, crashes, or instabilities.
 
-          Nightly builds are available through Docker image tags.  These tags have the
-          following format:
+          Nightly builds are available via Docker image tags in the format:
+
           ```
           nightly-<COMMIT_DATE>-<COMMIT_HASH>
           ```
@@ -303,16 +281,16 @@ app:
           Where:
             - `COMMIT_DATE` is the date (in `YYMMDDHHMMSS` format) of the latest commit
               from the {{ app.friendly_name }} [Git repository].
-            - `COMMIT_HASH` is the short hash of the latest commit from the {{ app.friendly_name }}
-              [Git repository].
+            - `COMMIT_HASH` is the short hash of the latest commit.
 
-          The latest nightly build is available through the `nightly-latest` Docker image
-          tag.  The list of available tags are available on [Docker Hub].
+          The latest nightly build is available via the `nightly-latest` tag. View all
+          tags on [Docker Hub].
 
-          To use a Docker image tag, it has to be appended to the name of the Docker image
-          during the creation of the container.  Here is an example:
+          To use a nightly build, append the tag to the Docker image name during container
+          creation, e.g.:
+
           ```
-          docker run [OPTIONS..] jlesage/{{ app.name }}:nightly-latest
+          docker run [OPTIONS...] jlesage/{{ app.name }}:nightly-latest
           ```
 
           [Git repository]: https://github.com/HandBrake/HandBrake
@@ -320,55 +298,51 @@ app:
       - title: Debug Builds
         level: 2
         content: |-
-          Debug builds can be used to better investigate problems that can occur with
-          {{ app.friendly_name }}.  These builds have {{ app.friendly_name }}
-          compiled in debug mode and all symbols are kept.
+          Debug builds are used to investigate issues with {{ app.friendly_name }}. They
+          are compiled in debug mode with all symbols retained, primarily for debugging
+          crashes.
 
-          The main use case of debug builds is debugging a crash.  To do this, a core dump
-          needs to be generated when {{ app.friendly_name }} crashes.  To make sure
-          this core dump is properly generated, two things are required:
+          To generate a core dump when {{ app.friendly_name }} crashes, two requirements
+          must be met:
+            1. Enable core dumps by setting the maximum core size using the
+               `--ulimit core=-1` parameter in the `docker run` command (`-1` means
+               unlimited).
+            2. Set the core dump location on the host with:
 
-            1. Core dumps must be enabled.  This is done by setting the maximum size of
-               cores via the `--ulimit core=-1` parameter of the `docker run` command.
-               A value of `-1` mean "unlimited".
-            2. Location of the cores must be set.  This can be done by executing the
-               following command on the **host**:
                ```
                echo 'CORE_PATTERN' | sudo tee /proc/sys/kernel/core_pattern
                ```
-               Where `CORE_PATTERN` is the template that defines the naming of core dump
-               files.  For example, to set the files in the configuration volume of the
-               container (for easy retrieval from the host), use the pattern
-               `/config/core.%e.%t`.
 
-               **NOTE**: Because a core file contains the complete memory layout of an
-               application, it is created with restrictive permissions.  If another user
-               other than the one used to run {{ app.friendly_name }} needs to access
-               the core file, permissions must be changed by executing
-               `chmod a+r CORE`, where `CORE` is the path to the core file.
+               Replace `CORE_PATTERN` with a template for naming core dump files. For
+               example, to store core dumps in the container’s configuration volume (for
+               easy host access), use `/config/core.%e.%t`.
 
-               **NOTE**: Since the core dump files pattern is shared between the host and
-               the container, you may want to revert to the original pattern once
-               done.
+          > [!NOTE]
+          > Core dump files contain the application’s complete memory layout and are
+          > created with restrictive permissions. To allow access by a user other than the
+          > one running {{ app.friendly_name }}, run `chmod a+r CORE`, where `CORE` is the
+          > path to the core file.
 
-               **NOTE**: The current value of the pattern can be obtained by executing
-               `cat /proc/sys/kernel/core_pattern`.
+          > [!NOTE]
+          > The core dump pattern is shared between the host and container. Revert to the
+          > original pattern after debugging by checking the current pattern with
+          > `cat /proc/sys/kernel/core_pattern`.
 
-          Debug builds are available by using Docker image tags with the `debug` suffix.
-          Make sure to look at available [tags on Docker Hub].
+          Debug builds are available via Docker image tags with a `debug` suffix. Check
+          available tags on [Docker Hub].
 
-          When creating the container, the tag needs to be appended to the name of the
-          Docker image, like this:
+          To use a debug build, append the tag to the Docker image name, e.g.:
+
           ```
-          docker run [OPTIONS..] jlesage/{{ app.name }}:v1.14.3-debug
+          docker run [OPTIONS...] jlesage/{{ app.name }}:v1.14.3-debug
           ```
 
-          [tags on Docker Hub]: https://hub.docker.com/r/jlesage/{{ app.name }}/tags/
+          [Docker Hub]: https://hub.docker.com/r/jlesage/{{ app.name }}/tags/
       - title: unRAID
         level: 3
         content: |-
-          On systems running unRAID, the `--ulimit core=-1` parameter can be added to the
-          `Extra Parameters` field of the container settings.
+          On unRAID systems, add the `--ulimit core=-1` parameter to the
+          `Extra Parameters` field in the container settings.
   changelog:
     - version: 25.02.3
       date: 2025-02-23
@@ -638,7 +612,7 @@ app:
     - version: 1.19.0
       date: 2019-12-08
       changes:
-        - 'Added the ability to set a list of file extensions to be considered as non-video files.  This fixes an issue where the automatic video converter would successfully convert non-video files, like images.'
+        - 'Added the ability to set a list of file extensions to be considered as non-video files. This fixes an issue where the automatic video converter would successfully convert non-video files, like images.'
         - 'Added the ability to provide custom arguments to HandBrake when it is invoked by the automatic video converter.'
     - version: 1.18.0
       date: 2019-11-11
@@ -1024,42 +998,41 @@ container:
   environment_variables:
     - name: HANDBRAKE_DEBUG
       description: >-
-        Setting this to `1` enables HandBrake debug logging for both the GUI and
-        the automatic video converter.  For the latter, the increased verbosity
-        is reflected in `/config/log/hb/conversion.log` (container path).  For
-        the GUI, log messages are sent to `/config/log/hb/handbrake.debug.log`
-        (container path).  **NOTE**: When enabled, a lot of information is
-        generated and the log file will grow quickly.  Make sure to enable this
-        temporarily and only when needed.
+        When set to `1`, enables {{ app.friendly_name }} debug logging for both the GUI
+        and the automatic video converter. For the latter, increased verbosity is
+        reflected in `/config/log/hb/conversion.log` (container path). For the GUI, log
+        messages are sent to `/config/log/hb/handbrake.debug.log` (container path).
+        **NOTE**: When enabled, a large amount of information is generated, and the log
+        file grows quickly. Enable this temporarily and only when needed.
       type: public
       default: 0
     - name: HANDBRAKE_GUI
       description: >-
-        Setting this to `1` enables the HandBrake GUI, `0` disables it.
+        Setting this to `1` enables the HandBrake GUI; `0` disables it.
       type: public
       default: 1
       unraid_template:
         title: "HandBrake GUI State"
         description: >-
-          Setting this to 1 enables the HandBrake GUI, 0 disables it.
+          Setting this to "1" enables the HandBrake GUI, "0" disables it.
         display: advanced
         required: false
         mask: false
     - name: HANDBRAKE_GUI_QUEUE_STARTUP_ACTION
       description: >-
-        Action to be taken on the queue of HandBrake (GUI) when it starts. When set to
-        `PROCESS`, HandBrake automatically starts encoding elements present in the queue.
-        When set to `CLEAR`, the content of the queue is cleared. With any other value,
-        no action is taken on the queue.
+        Action to be taken on the {{ app.friendly_name }} GUI queue at startup. When set
+        to `PROCESS`, {{ app.friendly_name }} automatically starts encoding items in the
+        queue. When set to `CLEAR`, the queue is cleared. Any other value results in no
+        action on the queue.
       type: public
       default: NONE
       unraid_template:
         title: "HandBrake GUI State"
         description: >-
-          Action to be taken on the queue of HandBrake (GUI) when it starts. When set to
-          "PROCESS", HandBrake automatically starts encoding elements present in the
-          queue. When set to "CLEAR", the content of the queue is cleared. With any other
-          value, no action is taken on the queue.
+          Action to be taken on the {{ app.friendly_name }} GUI queue at startup. When
+          set to "PROCESS", {{ app.friendly_name }} automatically starts encoding items
+          in the queue. When set to "CLEAR", the queue is cleared. Any other value
+          results in no action on the queue.
         display: advanced
         required: false
         mask: false
@@ -1072,103 +1045,96 @@ container:
       unraid_template:
         title: "Automatic Video Converter: State"
         description: >-
-          Setting this to 1 enables the automatic video converter, 0 disables
+          Setting this to "1" enables the automatic video converter, "0" disables
           it.
         display: advanced
         required: false
         mask: false
-    - name: AUTOMATED_CONVERSION_PRESET 
+    - name: AUTOMATED_CONVERSION_PRESET
       description: >-
-        HandBrake preset used by the automatic video converter.  Identification
-        of a preset must follow the format `<CATEGORY>/<PRESET NAME>`.  See the
-        [Automatic Video Conversion](#automatic-video-conversion) section for
-        more details.
+        {{ app.friendly_name }} preset used by the automatic video converter. The preset
+        must be identified in the format `<CATEGORY>/<PRESET NAME>`. See the
+        [Automatic Video Conversion](#automatic-video-conversion) section for details.
       type: public
       default: "General/Very Fast 1080p30"
       unraid_template:
         title: "Automatic Video Converter: Preset"
         description: >-
-          Preset used by the automatic video converter.  Identification of the
-          preset must follow the format 'CATEGORY/PRESET NAME'.  Name of all
-          available presets can be seen via the HandBrake GUI.
+          Preset used by the automatic video converter. The preset must be identified
+          in the format 'CATEGORY/PRESET NAME'. Available presets can be seen via the
+          {{ app.friendly_name }} GUI.
         display: always
         required: false
         mask: false
     - name: AUTOMATED_CONVERSION_FORMAT
       description: >-
-        Video container format used by the automatic video converter for output
-        files.  This is typically the video filename extension.  See the
-        [Automatic Video Conversion](#automatic-video-conversion) section for
-        more details.
+        Video container format used by the automatic video converter for output files,
+        typically the video filename extension. See the
+        [Automatic Video Conversion](#automatic-video-conversion) section for details.
       type: public
       default: mp4
       unraid_template:
         title: "Automatic Video Converter: Format"
         description: >-
-          Video container format used by the automatic video converter for
-          output files.  This is typically the video filename extension.
+          Video container format used by the automatic video converter for output files,
+          typically the video filename extension.
         display: always
         required: false
         mask: false
     - name: AUTOMATED_CONVERSION_KEEP_SOURCE
       description: >-
-        When set to `0`, a video that has been successfully converted is removed
-        from the watch folder.
+        When set to `0`, a successfully converted video is removed from the watch
+        folder.
       type: public
       default: 1
       unraid_template:
         title: "Automatic Video Converter: Keep Source Files"
         description: >-
-          Set to 0 to remove successfully converted videos from the watch folder, 1 to keep them.
+          When set to "0", a successfully converted video is removed from the watch
+          folder.
         display: always
         required: false
         mask: false
     - name: AUTOMATED_CONVERSION_VIDEO_FILE_EXTENSIONS
       description: >-
-        Space-separated list of file extensions to be considered as video files.
-        By default, this list is empty, meaning that the automatic video
-        converter will let HandBrake automatically detects if a file, no matter
-        its extension, is a video or not (note that extensions defined by the
-        `AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS` environment variable
-        are always considered as non-video files).  Normally, this variable
-        doesn't need to be set.  Usage of this variable is useful when only
-        specific video files need to converted.
+        Space-separated list of file extensions considered as video files. By default,
+        this list is empty, allowing {{ app.friendly_name }} to automatically detect if
+        a file is a video, regardless of its extension (except for extensions defined by
+        `AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS`, which are always considered
+        non-video). This variable is typically unnecessary but useful when only specific
+        video files need conversion.
       type: public
       unraid_template:
         title: "Automatic Video Converter: Video File Extensions"
         description: >-
-          Space-separated list of file extensions to be considered as video
-          files.  By default, this list is empty, meaning that the automatic
-          video converter will let HandBrake automatically detects if a file,
-          no matter its extension, is a video or not (note that extensions
-          defined by the Non-Video File Extensions list are always considered as
-          non-video files).  Normally, this variable doesn't need to be set.
-          Usage of this variable is useful when only specific video files need
-          to converted.
+          Space-separated list of file extensions considered as video files. By default,
+          this list is empty, allowing {{ app.friendly_name }} to automatically detect
+          if a file is a video, regardless of its extension (except for extensions
+          defined by the Non-Video File Extensions list, which are always considered
+          non-video). This variable is typically unnecessary but useful when only
+          specific video files need conversion.
         display: advanced
         required: false
         mask: false
     - name: AUTOMATED_CONVERSION_NON_VIDEO_FILE_ACTION
       description: >-
-        When set to `ignore`, a non-video file found in the watch folder is
-        ignored.  If set to `copy`, a non-video file is copied as-is to the
-        output folder.
+        When set to `ignore`, non-video files in the watch folder are ignored. If set
+        to `copy`, non-video files are copied as-is to the output folder.
       type: public
       default: ignore
       unraid_template:
         title: "Automatic Video Converter: Non-Video File Action"
         description: >-
-          Set to "ignore" to ignore non-video files from the watch folder, or
-          set to "copy" to copy them as-is to the output folder.
+          When set to "ignore", non-video files in the watch folder are ignored. If set
+          to "copy", non-video files are copied as-is to the output folder.
         display: always
         required: false
         mask: false
     - name: AUTOMATED_CONVERSION_NON_VIDEO_FILE_EXTENSIONS
       description: >-
-        Space-separated list of file extensions to be considered as not being
-        videos.  Most non-video files are properly rejected by HandBrake.
-        However, some files, like images, are convertible by HandBrake even if
-        they are not video files.
+        Space-separated list of file extensions considered non-video. Most non-video
+        files are properly rejected by {{ app.friendly_name }}, but some files, like
+        images, may be convertible despite not being videos.
       type: public
       default: jpg jpeg bmp png gif txt nfo
       unraid_template:
@@ -1176,62 +1142,76 @@ container:
         display: advanced
         required: false
         mask: false
+    - name: AUTOMATED_CONVERSION_WATCH_DIR
+      description: >-
+        Path to the watch directory within the container. When set to `AUTO` (the
+        default), the path is set to `/watch` for the first watch directory and
+        `/watchX` for additional ones, where `X` is the index (e.g., `2` for the
+        second). **NOTE**: Ensure a volume mapping for this directory is defined when
+        creating the container.
+      type: public
+      default: AUTO
+      unraid_template:
+        title: "Automatic Video Converter: Watch Directory"
+        description: >-
+          Path to the watch directory within the container. When set to "AUTO" (the
+          default), the path is set to "/watch" for the first watch directory and
+          "/watchX" for additional ones, where "X" is the index (e.g., "2" for the
+          second).
+        display: always
+        required: false
+        mask: false
     - name: AUTOMATED_CONVERSION_OUTPUT_DIR
       description: >-
-        Root directory, inside the container, where converted videos should be
-        written.  **NOTE**: Make sure a volume mapping for this directory is
-        defined when creating the container.
+        Root directory inside the container where converted videos are written.
+        **NOTE**: Ensure a volume mapping for this directory is defined when creating
+        the container.
       type: public
       default: /output
       unraid_template:
-        title: "Automatic Video Converter: Output directory"
+        title: "Automatic Video Converter: Output Directory"
         description: >-
-          Root directory, inside the container, where converted videos should be
-          written.
+          Root directory inside the container where converted videos are written.
         display: always
         required: false
         mask: false
     - name: AUTOMATED_CONVERSION_OUTPUT_SUBDIR
       description: >-
-        Subdirectory of the output folder into which converted videos should be
-        written.  By default, this variable is not set, meaning that videos are
-        saved directly into `/output/`.  If `Home/Movies` is set, converted
-        videos will be written to `/output/Home/Movies`.  Use the special value
-        `SAME_AS_SRC` to use the same subfolder as the source.  For example, if
-        the video source file is `/watch/Movies/mymovie.mkv`, the converted
-        video will be written to `/output/Movies/`.
+        Subdirectory of the output folder where converted videos are written. By
+        default, videos are saved directly to `/output/`. If set to `Home/Movies`,
+        videos are written to `/output/Home/Movies`. Use `SAME_AS_SRC` to match the
+        source subfolder. For example, if the source is
+        `/watch/Movies/MyMovie/MyMovie.mkv`, the output is written to
+        `/output/Movies/MyMovie/`.
       type: public
       unraid_template:
         title: "Automatic Video Converter: Output Subdirectory"
         description: >-
-          Subdirectory of the output folder into which converted videos should
-          be written.  Leave value empty to save converted videos directly into
-          "/output/".  Use the special value "SAME_AS_SRC" to use the same
-          subfolder as the source.  For example, if the video source file is
-          "/watch/Movies/mymovie.mkv", the converted video will be written to
-          "/output/Movies/".  Any other value is considered as the subfolder
-          name.  For example, setting the value "Home/Movies" will make
-          converted videos to be written to "/output/Home/Movies".
+          Subdirectory of the output folder where converted videos are written. By
+          default, videos are saved directly to "/output/". If set to "Home/Movies",
+          videos are written to "/output/Home/Movies". Use "SAME_AS_SRC" to match the
+          source subfolder. For example, if the source is
+          "/watch/Movies/MyMovie/MyMovie.mkv", the output is written to
+          "/output/Movies/MyMovie/".
         display: always
         required: false
         mask: false
     - name: AUTOMATED_CONVERSION_OVERWRITE_OUTPUT
       description: >-
-        Setting this to `1` allows the final destination file to be overwritten if it already exists.
+        When set to `1`, allows overwriting an existing destination file.
       type: public
       default: 0
       unraid_template:
         title: "Automatic Video Converter: Overwrite Destination"
         description: >-
-          Setting this to 1 allows the final destination file to be overwritten if it already exists.
+          When set to "1", allows overwriting an existing destination file.
         display: advanced
         required: false
         mask: false
     - name: AUTOMATED_CONVERSION_SOURCE_STABLE_TIME
       description: >-
-        Time (in seconds) during which properties (e.g. size, time, etc) of a
-        video file in the watch folder need to remain the same.  This is to
-        avoid processing a file that is being copied.
+        Time (in seconds) during which properties (e.g., size, time) of a video file in
+        the watch folder must remain unchanged to avoid processing a file being copied.
       type: public
       default: 5
       unraid_template:
@@ -1241,37 +1221,38 @@ container:
         mask: false
     - name: AUTOMATED_CONVERSION_SOURCE_MIN_DURATION
       description: >-
-        Minimum title duration (in seconds).  Shorter titles will be ignored. 
-        This applies only to video disc sources (ISO file, `VIDEO_TS` folder
-        or `BDMV` folder).
+        Minimum title duration (in seconds). Shorter titles are ignored. Applies only to
+        video disc sources (ISO files, `VIDEO_TS` folders, or `BDMV` folders).
       type: public
       default: 10
       unraid_template:
         title: "Automatic Video Converter: Minimum Title Duration"
         description: >-
-          Minimum title duration (in seconds).  Shorter titles will be ignored.
-          This applies only to video disc sources (ISO file, VIDEO_TS folder or
-          BDMV folder).
+          Minimum title duration (in seconds). Shorter titles are ignored. Applies only
+          to video disc sources (ISO files, "VIDEO_TS" folders, or "BDMV" folders).
         display: advanced
         required: false
         mask: false
     - name: AUTOMATED_CONVERSION_SOURCE_MAIN_TITLE_DETECTION
       description: >-
-        Setting this to `1` enables HandBrake main feature title detection to
-        try to guess and select the main title.
+        When set to `1`, enables {{ app.friendly_name }}'s main feature title detection
+        to guess and select the main title. Applies only to video disc sources (ISO
+        files, `VIDEO_TS` folders, or `BDMV` folders).
       type: public
       default: 0
       unraid_template:
         title: "Automatic Video Converter: Main Title Detection"
         description: >-
-          Setting this to 1 enables HandBrake main feature title detection to
-          try to guess and select the main title.
+          When set to "1", enables {{ app.friendly_name }}'s main feature title
+          detection to guess and select the main title. Applies only to video disc
+          sources (ISO files, "VIDEO_TS" folders, or "BDMV" folders).
         display: advanced
         required: false
         mask: false
     - name: AUTOMATED_CONVERSION_CHECK_INTERVAL
       description: >-
-        Interval (in seconds) at which the automatic video converter checks for new files.
+        Interval (in seconds) at which the automatic video converter checks for new
+        files.
       type: public
       default: 5
       unraid_template:
@@ -1291,52 +1272,55 @@ container:
         mask: false
     - name: AUTOMATED_CONVERSION_NO_GUI_PROGRESS
       description: >-
-        When set to `1`, progress of videos converted by the automatic video converter is not shown in the HandBrake GUI.
+        When set to `1`, progress of videos converted by the automatic video converter
+        is not shown in the {{ app.friendly_name }} GUI.
       type: public
       default: 0
       unraid_template:
         title: "Automatic Video Converter: Disable Progress in GUI"
         description: >-
-          Set to 1 to disable display of the video conversion progress in HandBrake GUI.
+          When set to "1", progress of videos converted by the automatic video converter
+          is not shown in the {{ app.friendly_name }} GUI.
         display: advanced
         required: false
         mask: false
     - name: AUTOMATED_CONVERSION_HANDBRAKE_CUSTOM_ARGS
       description: >-
-        Custom arguments to pass to HandBrake when performing a conversion.
+        Custom arguments to pass to {{ app.friendly_name }} during conversion.
       type: public
       unraid_template:
         title: "Automatic Video Converter: Custom HandBrake Arguments"
         display: advanced
         required: false
         mask: false
-    - name: AUTOMATED_CONVERSION_INSTALL_PKGS
-      description: >-
-        Space-separated list of Alpine Linux packages to install.  This is
-        useful when the automatic video converter's hooks require tools not
-        available in the container image.  See https://pkgs.alpinelinux.org
-        for the list of available Alpine Linux packages.
-      type: public
-      unraid_template:
-        title: "Automatic Video Converter: Install Packages"
-        display: advanced
-        required: false
-        mask: false
     - name: AUTOMATED_CONVERSION_USE_TRASH
       description: >-
-        When set to `1`, the automatic video converter uses the trash directory.
-        So when the automatic video converter is configured to *not* keep
-        sources, it will move them to the trash directory (`/trash` inside the
-        container) instead of deleting them.
+        When set to `1`, the automatic video converter uses the trash directory. This
+        applies only when the converter is configured not to keep source files. In that
+        case, they will be moved to the trash directory (`/trash` inside the container
+        by default) instead of being permanently deleted.
       type: public
       default: 0
       unraid_template:
         title: "Automatic Video Converter: Use Trash Directory"
         description: >-
-          Set to 1 to enable usage of the trash directory. So when the automatic
-          video converter is configured to not keep sources, it will move files
-          to the trash directory (/trash inside the container) instead of
-          deleting them.
+          When set to "1", the automatic video converter uses the trash directory. This
+          applies only when the converter is configured not to keep source files. In
+          that case, they will be moved to the trash directory ("/trash" inside the
+          container by default) instead of being permanently deleted.
+        display: advanced
+        required: false
+        mask: false
+
+    - name: AUTOMATED_CONVERSION_TRASH_DIR
+      description: >-
+        Location of the trash directory inside the container.
+      type: public
+      default: /trash
+      unraid_template:
+        title: "Automatic Video Converter: Trash Directory"
+        description: >-
+          Location of the trash directory inside the container.
         display: advanced
         required: false
         mask: false
@@ -1346,36 +1330,30 @@ container:
     - container_path: /watch
       host_path_example: "/home/user/HandBrake/watch"
       description: >-
-        This is where videos to be automatically converted are located
+        The location for videos to be automatically converted.
       permissions: rw
       include_in_quick_start: true
       unraid_template:
         title: Watch Directory
-        description: >-
-          This is the watch folder of the automatic video converter.  Any video
-          copied into this folder will be automatically converted by HandBrake.
         display: always
         required: false
         mask: false
     - container_path: /output
       host_path_example: "/home/user/HandBrake/output"
       description: >-
-        This is where automatically converted video files are written.
+        The destination for converted video files.
       permissions: rw
       include_in_quick_start: true
       unraid_template:
         title: Output Directory
-        description: >-
-          This is the default output folder for converted videos.  Also used by
-          the automatic video converter.
         display: always
         required: true
         mask: false
     - container_path: /trash
       host_path_example: "/home/user/HandBrake/trash"
       description: >-
-        When trash usage is enabled, this is where the automatic video converter moves
-        converted files instead of deleting them.
+        When trash usage is enabled, converted source files are moved here instead of
+        being deleted.
       permissions: rw
       unraid_template:
         title: Trash Directory

@@ -46,8 +46,8 @@ Where:
 
   - `/docker/appdata/handbrake`: Stores the application's configuration, state, logs, and any files requiring persistency.
   - `/home/user`: Contains files from the host that need to be accessible to the application.
-  - `/home/user/HandBrake/watch`: This is where videos to be automatically converted are located
-  - `/home/user/HandBrake/output`: This is where automatically converted video files are written.
+  - `/home/user/HandBrake/watch`: The location for videos to be automatically converted.
+  - `/home/user/HandBrake/output`: The destination for converted video files.
 
 Access the HandBrake GUI by browsing to `http://your-host-ip:5800`.
 Files from the host appear under the `/storage` folder in the container.
