@@ -720,7 +720,7 @@ during startup. Look for messages like:
 
 This indicates that `/dev/sr0` needs to be exposed to the container.
 
-> [!NOTE]
+> [!TIP]
 > View the container’s log by running `docker logs <container_name>`.
 
 Alternatively, identify Linux devices from the host by running:
@@ -874,8 +874,8 @@ If the monitoring application ignores hidden directories, no special
 configuration is needed.
 
 If the monitoring application processes hidden directories, set the
-`AUTOMATED_CONVERSION_OUTPUT_SUBDIR` environment variable to a subdirectory.
-Configure the monitoring application to watch this subdirectory. For example,
+`AUTOMATED_CONVERSION_OUTPUT_SUBDIR` environment variable to a subdirectory and
+configure the monitoring application to watch this subdirectory. For example,
 if `AUTOMATED_CONVERSION_OUTPUT_SUBDIR` is set to `TV Shows` and `/output` is
 mapped to `/home/user/appvolumes/HandBrake` on the host, monitor
 `/home/user/appvolumes/HandBrake/TV Shows`.
@@ -892,7 +892,7 @@ are required:
     the [Intel Ark] website. The processor model is logged during container
     startup, e.g.:
     ```
-    [cont-init.d] 95-check-qsv.sh: Processor: Intel(R) Core(TM) i7-2600 CPU @ 3.40GHz
+    [cont-init.d] 54-check-qsv.sh: Processor: Intel(R) Core(TM) i7-2600 CPU @ 3.40GHz
     ```
   - The Intel i915 graphics driver must be loaded on the host.
   - The `/dev/dri` device must be exposed to the container using the
@@ -907,16 +907,17 @@ container’s log for details on the issue.
 > modifications, as the container’s user is automatically added to the group
 > owning the device. If the device is owned by the `root` group, use one of
 > these solutions:
->   - Run the container as root (`USER_ID=0`).
->   - Grant read/write permissions to all for the `/dev/dri` device on the host:
->     ```
->     sudo chmod a+wr /dev/dri/*
->     ```
 >   - Change the group owning the `/dev/dri` device on the host. For example,
 >     to set it to `video`:
 >     ```
 >     sudo chown root:video /dev/dri/*
 >     ```
+>   - Grant read/write permissions to all for the `/dev/dri` device on the host:
+>     ```
+>     sudo chmod a+wr /dev/dri/*
+>     ```
+>   - Run the container as root (`USER_ID=0`). Not recommended for security
+>     reason.
 
 [Intel Ark]: https://ark.intel.com/Search/FeatureFilter?productType=873&0_QuickSyncVideo=True
 
