@@ -345,6 +345,22 @@ app:
           On unRAID systems, add the `--ulimit core=-1` parameter to the
           `Extra Parameters` field in the container settings.
   changelog:
+    - version: 25.06.1
+      date: 2025-06-23
+      changes:
+        - 'Automatic Video Converter: Disabled QSV decoding by default (like the GUI) to prevent potential crashes.'
+        - 'Automatic Video Converter: Added the ability to customize the trash directory location.'
+        - 'Automatic Video Converter: Added the ability to customize the watch folder directory location.'
+        - 'Automatic Video Converter: Added hook that can be used to provide custom conversion arguments to HandBrake.'
+        - 'Updated gmmlib to version 22.7.2.'
+        - 'Updated Intel Media Driver to version 25.1.4.'
+        - 'Updated Intel OneVPL GPU runtime to version 25.1.4.'
+        - 'Updated baseimage to version 4.8.0, which brings the following changes:'
+        - '2:Added automatic reconnect support of the web interface.'
+        - '2:Added web file manager.'
+        - '2:Updated noVNC to version 1.6.0.'
+        - '2:Updated web UI components (Bootstrap).'
+        - '2:Do not ask VNC password when accessing the web interface and web authentication is enabled.'
     - version: 25.02.3
       date: 2025-02-23
       changes:
