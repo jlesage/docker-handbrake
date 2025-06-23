@@ -299,7 +299,7 @@ process_video() {
         HANDBRAKE_HOOK_CUSTOM_ARGS=
         if [ -f /config/hooks/hb_custom_args.sh ]; then
             log "Executing custom HandBrake args hook..."
-            args="$(/bin/sh /config/hooks/pre_conversion.sh "$video" "$AC_PRESET")"
+            args="$(/bin/sh /config/hooks/hb_custom_args.sh "$video" "$AC_PRESET")"
             hook_rc=$?
             log "Custom HandBrake args hook exited with $hook_rc"
 
