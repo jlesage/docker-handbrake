@@ -71,7 +71,7 @@ RUN /build/build.sh "$CPU_FEATURES_URL"
 RUN xx-verify /tmp/cpu_features-install/bin/list_cpu_features
 
 # Pull base image.
-FROM jlesage/baseimage-gui:alpine-3.19-v4.8.0
+FROM jlesage/baseimage-gui:alpine-3.19-v4.8.1
 
 ARG HANDBRAKE_VERSION
 ARG DOCKER_IMAGE_VERSION
