@@ -345,6 +345,10 @@ app:
           On unRAID systems, add the `--ulimit core=-1` parameter to the
           `Extra Parameters` field in the container settings.
   changelog:
+    - version: 25.06.3
+      date: 2025-06-29
+      changes:
+        - 'Fixed an issue where trash-related environment variables for each watch folder were not honored.'
     - version: 25.06.2
       date: 2025-06-25
       changes:
