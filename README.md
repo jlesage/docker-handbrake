@@ -635,7 +635,7 @@ server {
 		# differs from the one seen by external clients.
 		#port_in_redirect off;
 		location /handbrake/websockify {
-			proxy_pass http://docker-handbrake/websockify/;
+			proxy_pass http://docker-handbrake/websockify;
 			proxy_http_version 1.1;
 			proxy_set_header Upgrade $http_upgrade;
 			proxy_set_header Connection $connection_upgrade;
