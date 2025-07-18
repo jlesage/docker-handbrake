@@ -47,7 +47,7 @@ for i in $(seq 1 ${AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS:-5}); do
         log "ERROR: Output folder '$DIR' doesn't exist."
         exit 1
     fi
-    take-ownership --not-recursive "$DIR"
+    take-ownership --not-recursive --skip-if-writable "$DIR"
 done
 
 # vim:ts=4:sw=4:et:sts=4
