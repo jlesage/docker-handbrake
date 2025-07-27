@@ -140,6 +140,7 @@ RUN \
     set-cont-env APP_NAME "HandBrake" && \
     set-cont-env APP_VERSION "$HANDBRAKE_VERSION" && \
     set-cont-env DOCKER_IMAGE_VERSION "$DOCKER_IMAGE_VERSION" && \
+    set-cont-env DISABLE_GLX 1 && \
     true
 
 # Set public environment variables.
