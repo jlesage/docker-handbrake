@@ -345,6 +345,14 @@ app:
           On unRAID systems, add the `--ulimit core=-1` parameter to the
           `Extra Parameters` field in the container settings.
   changelog:
+    - version: 25.07.2
+      date: 2025-07-27
+      changes:
+        - 'Updated gmmlib to version 22.8.1.'
+        - 'Updated Intel Media Driver to version 25.5.6.'
+        - 'Updated OneVPL GPU Runtime to version 25.2.6.'
+        - 'Take ownership of the output directory only if it is not writable.'
+        - 'Updated baseimage to version 4.9.0.'
     - version: 25.07.1
       date: 2025-07-05
       changes:
