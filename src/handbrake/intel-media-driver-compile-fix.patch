@@ -32,7 +32,7 @@
  set(MEDIA_COMPILER_FLAGS_RELEASE "")
  
  if(${UFO_VARIANT} STREQUAL "default")
---- a/Tools/bldsys/include/utils.cmakeg	2024-08-26 21:05:30.979553316 -0400
+--- a/Tools/bldsys/include/utils.cmake	2024-08-26 21:05:30.979553316 -0400
 +++ b/Tools/bldsys/include/utils.cmake	2024-08-26 21:05:41.891712443 -0400
 @@ -55,7 +55,7 @@
      endif (${PLATFORM} STREQUAL "ghs")

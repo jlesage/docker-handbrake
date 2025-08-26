@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # Find and report issues with detected optical drives that would prevent them
-# to be used by MakeMKV.
+# to be used by HandBrake.
 #
 
 set -e # Exit immediately if a command exits with a non-zero status.
@@ -16,8 +16,7 @@ permissions_ok() {
     DEV_PERM_G="$(echo "$DEV_PERM" | head -c 2 | tail -c 1)"
     DEV_PERM_O="$(echo "$DEV_PERM" | head -c 3 | tail -c 1)"
 
-    # NOTE: Write access to the device *is* required, otherwise MakeMKV will
-    #       complain.
+    # NOTE: Write access to the device *is* required.
 
     # OK: User permission of the device is R/W and the container runs as root.
     [ "$DEV_PERM_U" -ge 6 ] && [ "$USER_ID" = "0" ] && return 0
