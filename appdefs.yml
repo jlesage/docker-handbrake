@@ -345,6 +345,10 @@ app:
           On unRAID systems, add the `--ulimit core=-1` parameter to the
           `Extra Parameters` field in the container settings.
   changelog:
+    - version: 25.09.1
+      date: 2025-09-06
+      changes:
+        - 'Updated HandBrake to version 1.10.2.'
     - version: 25.07.2
       date: 2025-07-27
       changes:
