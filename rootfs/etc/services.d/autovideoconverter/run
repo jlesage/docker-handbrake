@@ -4,8 +4,11 @@ set -u # Treat unset variables as an error.
 
 FAILED_CONVERSIONS="/config/failed_conversions"
 SUCCESSFUL_CONVERSIONS="/config/successful_conversions"
+IGNORED_CONVERSIONS="/config/ignored_conversion"
 
 HANDBRAKE_CLI="/usr/bin/HandBrakeCLI --preset-import-file /config/ghb/presets.json"
+
+CONTAINER_INSTANCE_ID="$(cat /config/machine-id)"
 
 # https://gist.github.com/aaomidi/0a3b5c9bd563c9e012518b495410dc0e
 VIDEO_FILE_EXTENSIONS_INTERNAL_LIST="\
@@ -40,6 +43,13 @@ trap "clean_exit" EXIT
 
 log() {
     echo "$*"
+}
+
+is_dir_writable() {
+    tmpfile="$(mktemp "$1"/.test_XXXXXX 2>/dev/null)"
+    rc=$?
+    rm -f "$tmpfile"
+    return "$rc"
 }
 
 log_hb_encode_progress() {
@@ -121,6 +131,43 @@ get_video_titles() {
     return ${PIPESTATUS[0]}
 }
 
+get_video_lock_dname() {
+    video="$1"
+    wf="$2"
+    lock_dname="$(echo "$video" | sed "s|^$wf||" | tr '/' '.')".lock
+    echo "$lock_dname"
+}
+
+lock_video() {
+    video="$1"
+    wf="$2"
+
+    if ! is_dir_writable "$wf"; then
+        return 0
+    fi
+
+    lock_dname="$(get_video_lock_dname "$video" $"$wf")"
+    err="$(mkdir "$wf"/"$lock_dname" 2>&1)"
+    rc=$?
+    if [ "$rc" -eq 0 ]; then
+        mkdir "$wf"/"$lock_dname"/"$CONTAINER_INSTANCE_ID"
+        return 0
+    else
+        if echo "$err" | grep -iq "File exists"; then
+            return 1
+        else
+            return 2
+        fi
+    fi
+}
+
+unlock_video() {
+    video="$1"
+    wf="$2"
+    lock_dname="$(get_video_lock_dname "$video" $"$wf")"
+    rm  -rf "$wf"/"$lock_dname"
+}
+
 process_video() {
     video="$1"
     wf="$2"
@@ -161,6 +208,24 @@ process_video() {
         return
     fi
 
+    # Skip video if it has been ignored.
+    if [ -f "$IGNORED_CONVERSIONS" ] && grep -q -w "$hash" "$IGNORED_CONVERSIONS"; then
+        log "Skipping video '$video' ($hash): has been processed by another instance."
+        return
+    fi
+
+    # Skip video if it is being processed by another instance.
+    lock_video "$video" "$wf"
+    lock_rc=$?
+    if [ "$lock_rc" -eq 1 ]; then
+        echo "$video $hash" >> "$IGNORED_CONVERSIONS"
+        log "Skipping '$video': currently beging processed by another instance."
+        return
+    elif [ "$lock_rc" -eq 2 ]; then
+        log "ERROR: Unable to acquire lock for video '${video}' (${hash})."
+        return
+    fi
+
     # Set the output directory.
     case "$AC_OUTPUT_SUBDIR" in
         UNSET)
@@ -196,6 +261,7 @@ process_video() {
     # Get video titles.
     if $FILE_EXT_IN_VIDEO_LIST && $FILE_EXT_IN_NON_VIDEO_LIST; then
         log "ERROR: File '${video}' (${hash}) has an extension defined as both a video and non-video file."
+        unlock_video "$video" "$wf"
         return
     elif [ -n "$AC_VIDEO_FILE_EXTENSIONS" ] && ! $FILE_EXT_IN_VIDEO_LIST; then
         log "File '${video}' (${hash}) has an extension not part of the inclusion list."
@@ -417,29 +483,34 @@ process_video() {
         fi
         echo "$video $hash" >> "$FAILED_CONVERSIONS"
     fi
+
+    unlock_video "$video" "$wf"
 }
 
 process_watch_folder() {
     WF="$1"
-
     NUM_PROCESSED_FILES=0
 
+    # Return now if the watch folder doesn't exist.
     [ -d "$WF" ] || return
+
+    # Remove any left-over locks for our own instance.
+    find "$WF" -mindepth 1 -maxdepth 1 -type d -name "*.lock" | while read -r d; do
+        if [ -e "$d"/"$CONTAINER_INSTANCE_ID" ]; then
+            rm -rf "$d"
+        fi
+    done
+
+    # Return now if the watch folder didn't change.
     WATCHDIR_HASH_changed "$WF" || return
 
     # Make sure the output directory is properly setup.
     if [ ! -d "$AC_OUTPUT_DIR" ]; then
         log "ERROR: Cannot process watch folder '$WF', because the associated output directory '$AC_OUTPUT_DIR' doesn't exist."
         return
-    else
-        TMPFILE="$(mktemp "$AC_OUTPUT_DIR"/.test_XXXXXX 2>/dev/null)"
-        RC=$?
-        if [ "$RC" -eq 0 ]; then
-            rm "$TMPFILE"
-        else
-            log "ERROR: Cannot process watch folder '$WF', because the associated output directory '$AC_OUTPUT_DIR' is not writable."
-            return
-        fi
+    elif ! is_dir_writable "$AC_OUTPUT_DIR"; then
+        log "ERROR: Cannot process watch folder '$WF', because the associated output directory '$AC_OUTPUT_DIR' is not writable."
+        return
     fi
 
     if WATCHDIR_HASH_isset "$WF"; then
@@ -507,6 +578,7 @@ process_watch_folder() {
 
 [ -f "$FAILED_CONVERSIONS" ] || touch "$FAILED_CONVERSIONS"
 [ -f "$SUCCESSFUL_CONVERSIONS" ] || touch "$SUCCESSFUL_CONVERSIONS"
+[ -f "$IGNORED_CONVERSIONS" ] || touch "$IGNORED_CONVERSIONS"
 
 while true; do
     for i in $(seq 1 ${AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS:-5}); do

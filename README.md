@@ -55,6 +55,7 @@ of modern, widely supported codecs.
    * [Access to Optical Drives](#access-to-optical-drives)
    * [Automatic Video Conversion](#automatic-video-conversion)
       * [Multiple Watch Folders](#multiple-watch-folders)
+      * [Multiple Containers Capability](#multiple-containers-capability)
       * [Video Discs](#video-discs)
       * [Hooks](#hooks)
       * [Temporary Conversion Directory](#temporary-conversion-directory)
@@ -809,12 +810,29 @@ The maximum number of watch folders is defined by the
 `AUTOMATED_CONVERSION_MAX_WATCH_FOLDERS` environment variable.
 
 > [!NOTE]
->Each additional watch folder must be mapped to a host folder via a volume
+> Each additional watch folder must be mapped to a host folder via a volume
 > mapping during container creation.
 
 > [!NOTE]
 > Each output folder defined via `AUTOMATED_CONVERSION_OUTPUT_DIR` must be
 > mapped to a host folder via a volume mapping during container creation.
+
+### Multiple Containers Capability
+
+Multiple container instances can operate on the same watch folder to increase
+throughput and parallelize video conversions. Each container monitors the folder
+independently and picks up available video files for processing.
+
+> [!NOTE]
+> The watch folder must be writable by all containers, since each container
+> creates a lock file in the folder before starting a conversion. This ensures
+> that no two containers process the same video at the same time.
+
+> [!NOTE]
+> To prevent already-converted videos from being picked up again, configure each
+> container to remove the source file once processing is finished. This can be
+> enforced by setting the `AUTOMATED_CONVERSION_KEEP_SOURCE` environment
+> variable to `0`.
 
 ### Video Discs
 
