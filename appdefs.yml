@@ -362,6 +362,10 @@ app:
           On unRAID systems, add the `--ulimit core=-1` parameter to the
           `Extra Parameters` field in the container settings.
   changelog:
+    - version: 25.09.2
+      date: 2025-09-27
+      changes:
+        - 'When possible, create a lock in the watch folder before starting conversion. This allows multiple containers to work on the same watch folder.'
     - version: 25.09.1
       date: 2025-09-06
       changes:
