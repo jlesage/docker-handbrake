@@ -165,7 +165,7 @@ unlock_video() {
     video="$1"
     wf="$2"
     lock_dname="$(get_video_lock_dname "$video" $"$wf")"
-    rm  -rf "$wf"/"$lock_dname"
+    rm -rf "$wf"/"$lock_dname"
 }
 
 process_video() {
@@ -194,23 +194,15 @@ process_video() {
         return
     fi
 
-    # Skip video if it is not stable.
-    log "Waiting $AC_SOURCE_STABLE_TIME seconds before processing '$video'..."
-    sleep $AC_SOURCE_STABLE_TIME
-    if [ "$hash" != "$(get_video_hash "$video")" ]; then
-        log "Skipping '$video': currently being copied."
+    # Skip video if it has been ignored.
+    if [ -f "$IGNORED_CONVERSIONS" ] && grep -q -w "$hash" "$IGNORED_CONVERSIONS"; then
+        log "Skipping video '$video' ($hash): has been processed by another instance."
         return
     fi
 
     # Skip video if it is not readable.
     if [ ! -r "$video" ]; then
         log "Skipping '$video': not readable, check permissions."
-        return
-    fi
-
-    # Skip video if it has been ignored.
-    if [ -f "$IGNORED_CONVERSIONS" ] && grep -q -w "$hash" "$IGNORED_CONVERSIONS"; then
-        log "Skipping video '$video' ($hash): has been processed by another instance."
         return
     fi
 
@@ -223,6 +215,15 @@ process_video() {
         return
     elif [ "$lock_rc" -eq 2 ]; then
         log "ERROR: Unable to acquire lock for video '${video}' (${hash})."
+        return
+    fi
+
+    # Skip video if it is not stable.
+    log "Waiting $AC_SOURCE_STABLE_TIME seconds before processing '$video'..."
+    sleep $AC_SOURCE_STABLE_TIME
+    if [ "$hash" != "$(get_video_hash "$video")" ]; then
+        log "Skipping '$video': currently being copied."
+        unlock_video "$video" "$wf"
         return
     fi
 
