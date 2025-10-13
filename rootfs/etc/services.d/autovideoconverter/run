@@ -35,8 +35,14 @@ clean_exit() {
     rm -rf "$WATCHDIR_HASH"
     killall HandBrakeCLI 2>/dev/null
     killall yad 2>/dev/null
+    while killall -0 HandBrakeCLI 2>/dev/null; do
+        sleep 1
+    done
     if [ -n "${OUTPUT_DIR_TMP:-}" ]; then
         rm -rf "$OUTPUT_DIR_TMP"
+    fi
+    if [ -n "$video" ] && [ -n "$wf" ]; then
+        unlock_video "$video" "$wf"
     fi
 }
 trap "clean_exit" EXIT
