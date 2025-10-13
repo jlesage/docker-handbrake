@@ -31,6 +31,9 @@ WATCHDIR_HASH="$(mktemp -d)"
 
 OUTPUT_DIR_TMP=""
 
+CURRENT_LOCK_VIDEO=
+CURRENT_LOCK_WF=
+
 clean_exit() {
     rm -rf "$WATCHDIR_HASH"
     killall HandBrakeCLI 2>/dev/null
@@ -41,8 +44,8 @@ clean_exit() {
     if [ -n "${OUTPUT_DIR_TMP:-}" ]; then
         rm -rf "$OUTPUT_DIR_TMP"
     fi
-    if [ -n "$video" ] && [ -n "$wf" ]; then
-        unlock_video "$video" "$wf"
+    if [ -n "$CURRENT_LOCK_VIDEO" ] && [ -n "$CURRENT_LOCK_WF" ]; then
+        unlock_video "$CURRENT_LOCK_VIDEO" "$CURRENT_LOCK_WF"
     fi
 }
 trap "clean_exit" EXIT
@@ -52,6 +55,9 @@ log() {
 }
 
 is_dir_writable() {
+    local tmpfile
+    local rc
+
     tmpfile="$(mktemp "$1"/.test_XXXXXX 2>/dev/null)"
     rc=$?
     rm -f "$tmpfile"
@@ -59,7 +65,7 @@ is_dir_writable() {
 }
 
 log_hb_encode_progress() {
-    while read OUTPUT; do
+    while read -r OUTPUT; do
         echo "Encoding $video: $OUTPUT"
     done | awk 'NR % 12 == 0'
 }
@@ -68,7 +74,7 @@ log_hb_encode_progress_yad() {
     # Ignore the output if GUI progress or HandBrake GUI are disabled.
     if is-bool-val-true "$AC_NO_GUI_PROGRESS" || is-bool-val-false "${HANDBRAKE_GUI:-1}"
     then
-        while read OUTPUT; do
+        while read -r OUTPUT; do
             # Do nothing with the output.
             :
         done
@@ -76,7 +82,7 @@ log_hb_encode_progress_yad() {
     fi
 
     (
-        while read OUTPUT; do
+        while read -r OUTPUT; do
             # This control the progress bar.
             echo "$OUTPUT" | cut -d',' -f2- | cut -d' ' -f2 2>/dev/null
             # This put the text inside the progress bar.
@@ -97,29 +103,29 @@ log_hb_encode_progress_yad() {
 }
 
 WATCHDIR_HASH_calculate() {
-    WATCHDIR="$1"
-    find "$WATCHDIR" -follow -type f -not -path '*/\.*' -printf '%T@:%s:%p:%m\n' | md5sum | cut -d' ' -f1
+    local watchdir="$1"
+    find "$watchdir" -follow -type f -not -path '*/\.*' -printf '%T@:%s:%p:%m\n' | md5sum | cut -d' ' -f1
 }
 
 WATCHDIR_HASH_isset() {
-    WATCHDIR="$1"
-    [ -f "$WATCHDIR_HASH/$WATCHDIR/hash" ]
+    local watchdir="$1"
+    [ -f "$WATCHDIR_HASH/$watchdir/hash" ]
 }
 
 WATCHDIR_HASH_update() {
-    WATCHDIR="$1"
-    mkdir -p "$WATCHDIR_HASH/$WATCHDIR"
-    WATCHDIR_HASH_calculate "$WATCHDIR" > "$WATCHDIR_HASH/$WATCHDIR/hash"
+    local watchdir="$1"
+    mkdir -p "$WATCHDIR_HASH/$watchdir"
+    WATCHDIR_HASH_calculate "$watchdir" > "$WATCHDIR_HASH/$watchdir/hash"
 }
 
 WATCHDIR_HASH_changed() {
-    WATCHDIR="$1"
-    [ ! -f "$WATCHDIR_HASH/$WATCHDIR/hash" ] || \
-    [ "$(cat "$WATCHDIR_HASH/$WATCHDIR/hash")" != "$(WATCHDIR_HASH_calculate "$WATCHDIR")" ]
+    local watchdir="$1"
+    [ ! -f "$WATCHDIR_HASH/$watchdir/hash" ] || \
+    [ "$(cat "$WATCHDIR_HASH/$watchdir/hash")" != "$(WATCHDIR_HASH_calculate "$watchdir")" ]
 }
 
 get_video_hash() {
-    video="$1"
+    local video="$1"
     if [ -f "$video" ]; then
         stat -c '%n %s %Y' "$video" | md5sum | cut -d' ' -f1
     else
@@ -128,34 +134,42 @@ get_video_hash() {
 }
 
 get_video_titles() {
-    video="$1"
+    local video="$1"
 
     $HANDBRAKE_CLI -i "$video" \
                    -t0 \
-                   --min-duration $AC_SOURCE_MIN_DURATION 2>&1 |
+                   --min-duration "$AC_SOURCE_MIN_DURATION" 2>&1 |
     grep "^+ title " | sed 's/^+ title \([0-9]\+\):$/\1/'
     return ${PIPESTATUS[0]}
 }
 
 get_video_lock_dname() {
-    video="$1"
-    wf="$2"
+    local video="$1"
+    local wf="$2"
+    local lock_dname
     lock_dname="$(echo "$video" | sed "s|^$wf||" | tr '/' '.')".lock
     echo "$lock_dname"
 }
 
 lock_video() {
-    video="$1"
-    wf="$2"
+    local video="$1"
+    local wf="$2"
 
     if ! is_dir_writable "$wf"; then
         return 0
     fi
 
+    local lock_dname
+    local err
+    local rc
+
     lock_dname="$(get_video_lock_dname "$video" $"$wf")"
     err="$(mkdir "$wf"/"$lock_dname" 2>&1)"
     rc=$?
+
     if [ "$rc" -eq 0 ]; then
+        CURRENT_LOCK_VIDEO="$video"
+        CURRENT_LOCK_WF="$wf"
         mkdir "$wf"/"$lock_dname"/"$CONTAINER_INSTANCE_ID"
         return 0
     else
@@ -168,15 +182,19 @@ lock_video() {
 }
 
 unlock_video() {
-    video="$1"
-    wf="$2"
+    local video="$1"
+    local wf="$2"
+    local lock_dname
     lock_dname="$(get_video_lock_dname "$video" $"$wf")"
     rm -rf "$wf"/"$lock_dname"
+
+    CURRENT_LOCK_VIDEO=
+    CURRENT_LOCK_WF=
 }
 
 process_video() {
-    video="$1"
-    wf="$2"
+    local video="$1"
+    local wf="$2"
 
     # Skip video if it doesn't exists (may have been removed while processing
     # the watch directory).
@@ -186,6 +204,7 @@ process_video() {
     fi
 
     # Get hash of the video from its properties.
+    local hash
     hash="$(get_video_hash "$video")"
 
     # Skip video if it has been already successfully processed.
@@ -214,7 +233,7 @@ process_video() {
 
     # Skip video if it is being processed by another instance.
     lock_video "$video" "$wf"
-    lock_rc=$?
+    local lock_rc=$?
     if [ "$lock_rc" -eq 1 ]; then
         echo "$video $hash" >> "$IGNORED_CONVERSIONS"
         log "Skipping '$video': currently beging processed by another instance."
@@ -226,7 +245,7 @@ process_video() {
 
     # Skip video if it is not stable.
     log "Waiting $AC_SOURCE_STABLE_TIME seconds before processing '$video'..."
-    sleep $AC_SOURCE_STABLE_TIME
+    sleep "$AC_SOURCE_STABLE_TIME"
     if [ "$hash" != "$(get_video_hash "$video")" ]; then
         log "Skipping '$video': currently being copied."
         unlock_video "$video" "$wf"
@@ -249,98 +268,105 @@ process_video() {
     OUTPUT_DIR="$(echo "$OUTPUT_DIR" | sed 's|/\+|/|g' | sed 's|/\+$||')"
 
     # Get the file extension.
-    VIDEO_FILE_EXT="${video##*.}"
+    local video_file_ext="${video##*.}"
 
     # Determine if the extension is in the list of video file extensions.
-    if echo "$AC_VIDEO_FILE_EXTENSIONS" | grep -iwq "$VIDEO_FILE_EXT"; then
-        FILE_EXT_IN_VIDEO_LIST=true
+    local file_ext_in_video_list
+    if echo "$AC_VIDEO_FILE_EXTENSIONS" | grep -iwq "$video_file_ext"; then
+        file_ext_in_video_list=true
     else
-        FILE_EXT_IN_VIDEO_LIST=false
+        file_ext_in_video_list=false
     fi
 
     # Determine if the extension is in the list of non-video file extensions.
-    if echo "$AC_NON_VIDEO_FILE_EXTENSIONS" | grep -iwq "$VIDEO_FILE_EXT"; then
-        FILE_EXT_IN_NON_VIDEO_LIST=true
+    local file_ext_in_non_video_list
+    if echo "$AC_NON_VIDEO_FILE_EXTENSIONS" | grep -iwq "$video_file_ext"; then
+        file_ext_in_non_video_list=true
     else
-        FILE_EXT_IN_NON_VIDEO_LIST=false
+        file_ext_in_non_video_list=false
     fi
 
     # Get video titles.
-    if $FILE_EXT_IN_VIDEO_LIST && $FILE_EXT_IN_NON_VIDEO_LIST; then
+    local video_titles="UNSET"
+    local video_titles_retval
+    if $file_ext_in_video_list && $file_ext_in_non_video_list; then
         log "ERROR: File '${video}' (${hash}) has an extension defined as both a video and non-video file."
         unlock_video "$video" "$wf"
         return
-    elif [ -n "$AC_VIDEO_FILE_EXTENSIONS" ] && ! $FILE_EXT_IN_VIDEO_LIST; then
+    elif [ -n "$AC_VIDEO_FILE_EXTENSIONS" ] && ! $file_ext_in_video_list; then
         log "File '${video}' (${hash}) has an extension not part of the inclusion list."
-        VIDEO_TITLES=UNSET
-        VIDEO_TITLES_RETVAL=1
-    elif $FILE_EXT_IN_NON_VIDEO_LIST; then
+        video_titles=UNSET
+        video_titles_retval=1
+    elif $file_ext_in_non_video_list; then
         log "File '${video}' (${hash}) has an extension part of the exclusion list."
-        VIDEO_TITLES=UNSET
-        VIDEO_TITLES_RETVAL=1
+        video_titles=UNSET
+        video_titles_retval=1
     else
         # Let Handbrake detects if the file is a video or not.
-        VIDEO_TITLES="$(get_video_titles "$video")"
-        VIDEO_TITLES_RETVAL=$?
-        if [ "$VIDEO_TITLES_RETVAL" -ne 0 ]; then
+        video_titles="$(get_video_titles "$video")"
+        video_titles_retval=$?
+        if [ "$video_titles_retval" -ne 0 ]; then
             # File is not a video.
-            VIDEO_TITLES=UNSET
+            video_titles=UNSET
 
-            if $FILE_EXT_IN_VIDEO_LIST; then
+            if $file_ext_in_video_list; then
                 # The file extension is part of the video file extension list.
                 # Make sure to fail the conversion and not consider the file
                 # as a non-video.
-                VIDEO_TITLES_RETVAL=0
-            elif echo "$VIDEO_FILE_EXTENSIONS_INTERNAL_LIST" | grep -iwq "$VIDEO_FILE_EXT"; then
+                video_titles_retval=0
+            elif echo "$VIDEO_FILE_EXTENSIONS_INTERNAL_LIST" | grep -iwq "$video_file_ext"; then
                 # The file extension is part of our internal list.  Make sure to
                 # fail the conversion and not consider the file as a non-video.
                 # This is a protection against Handbrake not correctly detecting
                 # a video because of a bug, crash, missing support, etc.
-                VIDEO_TITLES_RETVAL=0
+                video_titles_retval=0
             fi
         fi
+        video_titles="${video_titles:-UNSET}"
     fi
 
     hb_rc=0
 
-    VIDEO_TITLES="${VIDEO_TITLES:-UNSET}"
-    if [ "$VIDEO_TITLES" != "UNSET" ]; then
-        NUM_VIDEO_TITLES="$(echo "$VIDEO_TITLES" | wc -l)"
+    # Get number of video titles.
+    local num_video_titles
+    if [ "$video_titles" != "UNSET" ]; then
+        num_video_titles="$(echo "$video_titles" | wc -l)"
     else
-        NUM_VIDEO_TITLES="0"
+        num_video_titles="0"
     fi
 
-    if [ "$VIDEO_TITLES_RETVAL" -gt 0 ] && [ "$AC_NON_VIDEO_FILE_ACTION" = "copy" ]; then
+    if [ "$video_titles_retval" -gt 0 ] && [ "$AC_NON_VIDEO_FILE_ACTION" = "copy" ]; then
         log "File '$video' ($hash) is not a video, copying (unchanged) to output..."
         mkdir -p "$OUTPUT_DIR"
         cp -p "${video}" "${OUTPUT_DIR}/$(basename "${video}")" # "-p" maintains permissions, times etc...
-    elif [ "$VIDEO_TITLES_RETVAL" -gt 0 ]; then
+    elif [ "$video_titles_retval" -gt 0 ]; then
         log "File '$video' ($hash) is not a video, ignoring..."
-    elif [ "$NUM_VIDEO_TITLES" -eq 0 ]; then
+    elif [ "$num_video_titles" -eq 0 ]; then
         log "ERROR: Could not identify titles in '${video}' (${hash})."
         hb_rc=1
     else
         # If main title detection is enabled, force the number of titles to 1.
         if [ "$AC_SOURCE_MAIN_TITLE_DETECTION" != "0" ]; then
-            NUM_VIDEO_TITLES="1"
+            num_video_titles="1"
         fi
 
         log "Starting conversion of '${video}' (${hash}) using preset '${AC_PRESET}'..."
-        log "${NUM_VIDEO_TITLES} title(s) to process."
+        log "${num_video_titles} title(s) to process."
     fi
 
-    CUR_VIDEO_TITLE=0
+    local title
+    local cur_video_title=0
 
-    for TITLE in $VIDEO_TITLES; do
-        [ "$TITLE" != "UNSET" ] || continue
+    for title in $video_titles; do
+        [ "$title" != "UNSET" ] || continue
 
-        CUR_VIDEO_TITLE="$(expr $CUR_VIDEO_TITLE + 1)"
-        [ "$NUM_VIDEO_TITLES" -eq 1 ] || log "Processing title $TITLE ($CUR_VIDEO_TITLE/$NUM_VIDEO_TITLES)..."
+        cur_video_title="$(expr $cur_video_title + 1)"
+        [ "$num_video_titles" -eq 1 ] || log "Processing title $title ($cur_video_title/$num_video_titles)..."
 
         # Get the output file basename: start with the one of the input file.
         basename="$(basename "$video" | sed 's/\.[^.]*$//')"
         # If multiple titles, add the '.title-XX' suffix.
-        [ "$NUM_VIDEO_TITLES" -eq 1 ] || basename="$basename.title-$TITLE"
+        [ "$num_video_titles" -eq 1 ] || basename="$basename.title-$title"
 
         # Now set the final output filename by adding the extension.
         OUTPUT_FILE="$OUTPUT_DIR/$basename.$AC_FORMAT"
@@ -394,11 +420,11 @@ process_video() {
         # Set the temporary output filename.
         OUTPUT_FILE_TMP="$OUTPUT_DIR_TMP/$basename.$AC_FORMAT"
 
-        TITLE_ARG=""
+        local title_arg=""
         if [ "$AC_SOURCE_MAIN_TITLE_DETECTION" == "0" ]; then
-            TITLE_ARG="--title $TITLE"
+            title_arg="--title $title"
         else
-            TITLE_ARG="--main-feature"
+            title_arg="--main-feature"
         fi
 
         # Invoke HandBrake.
@@ -406,7 +432,7 @@ process_video() {
             /config/log/hb/conversion.log
         $HANDBRAKE_CLI -i "$video" \
                        -o "$OUTPUT_FILE_TMP" \
-                       $TITLE_ARG \
+                       $title_arg \
                        --preset "$AC_PRESET" \
                        $HANDBRAKE_HOOK_CUSTOM_ARGS \
                        $AC_HANDBRAKE_CUSTOM_ARGS 2>> \
@@ -469,6 +495,7 @@ process_video() {
                 fi
             fi
             # Remove directory if empty (hidden files/folders are ignored).
+            local videodir
             videodir="$(dirname "$video")"
             while [ "$videodir" != "$wf" ] && [ -z "$(ls "$videodir")" ]; do
                 rm -rf "$videodir"
@@ -495,68 +522,71 @@ process_video() {
 }
 
 process_watch_folder() {
-    WF="$1"
+    local wf="$1"
+
     NUM_PROCESSED_FILES=0
 
     # Return now if the watch folder doesn't exist.
-    [ -d "$WF" ] || return
+    [ -d "$wf" ] || return
 
     # Remove any left-over locks for our own instance.
-    find "$WF" -mindepth 1 -maxdepth 1 -type d -name "*.lock" | while read -r d; do
+    find "$wf" -mindepth 1 -maxdepth 1 -type d -name "*.lock" | while read -r d; do
         if [ -e "$d"/"$CONTAINER_INSTANCE_ID" ]; then
             rm -rf "$d"
         fi
     done
 
     # Return now if the watch folder didn't change.
-    WATCHDIR_HASH_changed "$WF" || return
+    WATCHDIR_HASH_changed "$wf" || return
 
     # Make sure the output directory is properly setup.
     if [ ! -d "$AC_OUTPUT_DIR" ]; then
-        log "ERROR: Cannot process watch folder '$WF', because the associated output directory '$AC_OUTPUT_DIR' doesn't exist."
+        log "ERROR: Cannot process watch folder '$wf', because the associated output directory '$AC_OUTPUT_DIR' doesn't exist."
         return
     elif ! is_dir_writable "$AC_OUTPUT_DIR"; then
-        log "ERROR: Cannot process watch folder '$WF', because the associated output directory '$AC_OUTPUT_DIR' is not writable."
+        log "ERROR: Cannot process watch folder '$wf', because the associated output directory '$AC_OUTPUT_DIR' is not writable."
         return
     fi
 
-    if WATCHDIR_HASH_isset "$WF"; then
-        log "Change detected in watch folder '$WF'."
+    if WATCHDIR_HASH_isset "$wf"; then
+        log "Change detected in watch folder '$wf'."
     fi
 
     # Make sure to update the watch directory hash before processing it.
     # This is to make sure we catch, on the next round, changes occuring
     # during the processing.
-    WATCHDIR_HASH_update "$WF"
+    WATCHDIR_HASH_update "$wf"
 
-    log "Processing watch folder '$WF'..."
-    FILELIST1="$(mktemp)"
-    FILELIST2="$(mktemp)"
+    log "Processing watch folder '$wf'..."
+    local filelist1
+    local filelist2
+    filelist1="$(mktemp)"
+    filelist2="$(mktemp)"
 
     # First, get the list of files in the watch folder, filtering all files
     # files under VIDEO_TS or BDMV and keeping only their parent directory.
-    find "$WF" -follow -type f -not -path '*/\.*' -printf "%T@ %p\n" | \
+    find "$wf" -follow -type f -not -path '*/\.*' -printf "%T@ %p\n" | \
         sort -n | \
         cut -d' ' -f2- | \
         sed 's|/\([^/]*\)/VIDEO_TS/.*$|/\1|g' | \
         sed 's|/\([^/]*\)/BDMV/.*$|/\1|g' | \
-        uniq > "$FILELIST1"
-    cp "$FILELIST1" "$FILELIST2"
+        uniq > "$filelist1"
+    cp "$filelist1" "$filelist2"
 
     # Then, remove all files under directories part of the list.  The
     # directories from the list are video discs and their individual files
     # should not be processed.
-    while read -u 3 FILE
+    while read -u 3 f
     do
-        if [ -d "$FILE" ]; then
-            sed -i "s|$FILE/.*|$FILE|g" "$FILELIST2"
+        if [ -d "$f" ]; then
+            sed -i "s|$f/.*|$f|g" "$filelist2"
         fi
-    done 3<"$FILELIST1"
-    cat "$FILELIST2" | uniq > "$FILELIST1"
+    done 3<"$filelist1"
+    cat "$filelist2" | uniq > "$filelist1"
 
     # Warn user if video disc folder structure is found at the root of the watch
     # folder.
-    for DIR in "$WF/VIDEO_TS" "$WF/BDMV"
+    for DIR in "$wf/VIDEO_TS" "$wf/BDMV"
     do
         if [ -d "$DIR" ]; then
             log "Skipping '$DIR': video disc folder structure should not be placed at the root of the watch folder."
@@ -564,21 +594,21 @@ process_watch_folder() {
     done
 
     # Process videos files.
-    while read -u 3 FILE
+    while read -u 3 f
     do
-        if [ "$FILE" = "$WF" ]; then
+        if [ "$f" = "$wf" ]; then
             continue
         fi
-        process_video "$FILE" "$WF"
-    done 3<"$FILELIST1"
-    rm "$FILELIST1"
-    rm "$FILELIST2"
-    log "Watch folder '$WF' processing terminated."
+        process_video "$f" "$wf"
+    done 3<"$filelist1"
+    rm "$filelist1"
+    rm "$filelist2"
+    log "Watch folder '$wf' processing terminated."
 
     # Call watch folder done hook.
     if [ -f /config/hooks/post_watch_folder_processing.sh ] && [ "$NUM_PROCESSED_FILES" -gt 0 ]; then
         log "Executing post watch folder processing hook..."
-        /bin/sh /config/hooks/post_watch_folder_processing.sh "$WF"
+        /bin/sh /config/hooks/post_watch_folder_processing.sh "$wf"
         log "Post watch folder processing hook exited with $?"
     fi
 }
@@ -615,17 +645,17 @@ while true; do
         done
 
         # Set the watch folder path.
-        DIR="$AC_WATCH_DIR"
+        dir="$AC_WATCH_DIR"
         if [ "$AC_WATCH_DIR" = "AUTO" ]; then
             if [ "$i" -eq 1 ]; then
-                DIR="/watch"
+                dir="/watch"
             else
-                DIR="/watch$i"
+                dir="/watch$i"
             fi
         fi
 
         # Process watch folder.
-        process_watch_folder "$DIR"
+        process_watch_folder "$dir"
     done
 
     sleep "${AUTOMATED_CONVERSION_CHECK_INTERVAL:-5}"
