@@ -102,6 +102,14 @@ log_hb_encode_progress_yad() {
             2>/dev/null
 }
 
+log_hb_encode_detect_success() {
+    while read -r OUTPUT; do
+        if [ "$OUTPUT" = "Encode done!" ]; then
+            touch "$1"
+        fi
+    done
+}
+
 WATCHDIR_HASH_calculate() {
     local watchdir="$1"
     find "$watchdir" -follow -type f -not -path '*/\.*' -printf '%T@:%s:%p:%m\n' | md5sum | cut -d' ' -f1
@@ -435,8 +443,8 @@ process_video() {
                        $title_arg \
                        --preset "$AC_PRESET" \
                        $HANDBRAKE_HOOK_CUSTOM_ARGS \
-                       $AC_HANDBRAKE_CUSTOM_ARGS 2>> \
-            /config/log/hb/conversion.log | \
+                       $AC_HANDBRAKE_CUSTOM_ARGS \
+            2> >(tee -a /config/log/hb/conversion.log | log_hb_encode_detect_success "$OUTPUT_FILE_TMP".success ) | \
             /usr/bin/unbuffer -p grep "^Encoding" | \
             stdbuf -oL cut -d' ' -f2- | \
             tee >(log_hb_encode_progress) >(log_hb_encode_progress_yad) > /dev/null
@@ -445,9 +453,11 @@ process_video() {
         # Close YAD window.
         killall -SIGUSR1 yad 2> /dev/null
 
-        # Make sure the output file has been generated.
-        if [ $hb_rc -eq 0 ] && [ ! -f "$OUTPUT_FILE_TMP" ]; then
-            hb_rc=1
+        # Make sure the video has been converted successfully.
+        if [ $hb_rc -eq 0 ]; then
+            if [ ! -f "$OUTPUT_FILE_TMP" ] || [ ! -f "$OUTPUT_FILE_TMP".success ]; then
+                hb_rc=1
+            fi
         fi
 
         # Move the file to its final location if conversion terminated
