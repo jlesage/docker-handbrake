@@ -119,7 +119,8 @@ RUN \
         bash \
         coreutils \
         findutils \
-        expect
+        expect \
+        xdpyinfo
 
 #        && \
 #    # Save some space by removing unused DRI drivers.

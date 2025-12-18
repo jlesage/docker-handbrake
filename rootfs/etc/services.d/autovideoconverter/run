@@ -91,7 +91,7 @@ log_hb_encode_progress_yad() {
     ) | /opt/base/bin/yad \
             --fixed \
             --width=384 \
-            --posx=$(expr $DISPLAY_WIDTH / 2 - 384 / 2) \
+            --posx=$(expr $(xdpyinfo | awk -F'[ x]+' '/dimensions:/{print $3}') / 2 - 384 / 2) \
             --posy=5 \
             --title "Automatic Video Converter" \
             --window-icon /opt/novnc/images/icons/master_icon.png \
