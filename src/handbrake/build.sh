@@ -479,7 +479,7 @@ fi
 log "Configuring HandBrake..."
 (
     if [ "$(xx-info arch)" = "amd64" ]; then
-        CONF_FLAGS="--enable-qsv"
+        CONF_FLAGS="--enable-qsv --enable-vce"
     else
         CONF_FLAGS="--disable-qsv --disable-nvenc"
     fi
