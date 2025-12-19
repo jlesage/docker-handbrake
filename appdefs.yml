@@ -362,6 +362,10 @@ app:
           On unRAID systems, add the `--ulimit core=-1` parameter to the
           `Extra Parameters` field in the container settings.
   changelog:
+    - version: 25.12.2
+      date: 2025-12-18
+      changes:
+        - 'Automatic Video Converter: Improved detection of conversion failures.'
     - version: 25.12.1
       date: 2025-12-07
       changes:
