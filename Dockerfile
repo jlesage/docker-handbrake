@@ -174,7 +174,6 @@ ENV \
 VOLUME ["/storage"]
 VOLUME ["/output"]
 VOLUME ["/watch"]
-VOLUME ["/trash"]
 
 # Metadata.
 LABEL \
