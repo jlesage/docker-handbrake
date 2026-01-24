@@ -15,7 +15,8 @@ modern web browser, requiring no installation or configuration on the client
 A fully automated mode is also available: drop files into a watch folder and let
 HandBrake process them without any user interaction.
 
-> This Docker container is entirely unofficial and not made by the creators of HandBrake.
+> This Docker container is entirely unofficial and not made by the creators of
+> HandBrake.
 
 ---
 

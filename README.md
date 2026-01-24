@@ -16,7 +16,8 @@ A fully automated mode is also available: drop files into a watch folder and let
 HandBrake process them without any user interaction.
 
 > [!NOTE]
-> This Docker container is entirely unofficial and not made by the creators of HandBrake.
+> This Docker container is entirely unofficial and not made by the creators of
+> HandBrake.
 
 ---
 
@@ -65,7 +66,7 @@ of modern, widely supported codecs.
       * [Multiple Containers Capability](#multiple-containers-capability)
       * [Video Discs](#video-discs)
       * [Hooks](#hooks)
-      * [Temporary Conversion Directory](#temporary-conversion-directory)
+      * [Staging Conversion Directory](#staging-conversion-directory)
    * [Intel Quick Sync Video](#intel-quick-sync-video)
       * [unRAID](#unraid-1)
    * [Nightly Builds](#nightly-builds)
@@ -777,6 +778,7 @@ To enable GPU acceleration, the host must have compatible open-source kernel
 drivers installed, and the GPU device `/dev/dri` must be exposed to the
 container. For example, this is done by adding the `--device /dev/dri`
 argument to the `docker run` command.
+
 ## Shell Access
 
 To access the shell of a running container, execute the following command:
@@ -972,9 +974,9 @@ The following table describes available hooks:
 > Use the `INSTALL_PACKAGES` environment variable to install additional
 > packages needed by features implemented via hooks.
 
-### Temporary Conversion Directory
+### Staging Conversion Directory
 
-Videos being converted are written to a hidden, temporary directory under the
+Videos being converted are written to a hidden, staging directory under the
 root of the output directory (`/output` by default). Once conversion completes
 successfully, the video file is moved to its final location.
 
