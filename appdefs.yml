@@ -210,10 +210,10 @@ app:
           > [!TIP]
           > Use the `INSTALL_PACKAGES` environment variable to install additional
           > packages needed by features implemented via hooks.
-      - title: Temporary Conversion Directory
+      - title: Staging Conversion Directory
         level: 3
         content: |-
-          Videos being converted are written to a hidden, temporary directory under the
+          Videos being converted are written to a hidden, staging directory under the
           root of the output directory (`/output` by default). Once conversion completes
           successfully, the video file is moved to its final location.
 
@@ -1117,8 +1117,6 @@ container:
       default: 1
       unraid_template:
         title: "HandBrake GUI State"
-        description: >-
-          Setting this to "1" enables the HandBrake GUI, "0" disables it.
         display: advanced
         required: false
         mask: false
@@ -1132,11 +1130,6 @@ container:
       default: NONE
       unraid_template:
         title: "HandBrake GUI State"
-        description: >-
-          Action to be taken on the {{ app.friendly_name }} GUI queue at startup. When
-          set to "PROCESS", {{ app.friendly_name }} automatically starts encoding items
-          in the queue. When set to "CLEAR", the queue is cleared. Any other value
-          results in no action on the queue.
         display: advanced
         required: false
         mask: false
@@ -1148,9 +1141,6 @@ container:
       default: 1
       unraid_template:
         title: "Automatic Video Converter: State"
-        description: >-
-          Setting this to "1" enables the automatic video converter, "0" disables
-          it.
         display: advanced
         required: false
         mask: false
@@ -1165,7 +1155,7 @@ container:
         title: "Automatic Video Converter: Preset"
         description: >-
           Preset used by the automatic video converter. The preset must be identified
-          in the format 'CATEGORY/PRESET NAME'. Available presets can be seen via the
+          in the format `CATEGORY/PRESET NAME`. Available presets can be seen via the
           {{ app.friendly_name }} GUI.
         display: always
         required: false
@@ -1193,9 +1183,6 @@ container:
       default: 1
       unraid_template:
         title: "Automatic Video Converter: Keep Source Files"
-        description: >-
-          When set to "0", a successfully converted video is removed from the watch
-          folder.
         display: always
         required: false
         mask: false
@@ -1210,13 +1197,6 @@ container:
       type: public
       unraid_template:
         title: "Automatic Video Converter: Video File Extensions"
-        description: >-
-          Space-separated list of file extensions considered as video files. By default,
-          this list is empty, allowing {{ app.friendly_name }} to automatically detect
-          if a file is a video, regardless of its extension (except for extensions
-          defined by the Non-Video File Extensions list, which are always considered
-          non-video). This variable is typically unnecessary but useful when only
-          specific video files need conversion.
         display: advanced
         required: false
         mask: false
@@ -1228,9 +1208,6 @@ container:
       default: ignore
       unraid_template:
         title: "Automatic Video Converter: Non-Video File Action"
-        description: >-
-          When set to "ignore", non-video files in the watch folder are ignored. If set
-          to "copy", non-video files are copied as-is to the output folder.
         display: always
         required: false
         mask: false
@@ -1258,9 +1235,9 @@ container:
       unraid_template:
         title: "Automatic Video Converter: Watch Directory"
         description: >-
-          Path to the watch directory within the container. When set to "AUTO" (the
-          default), the path is set to "/watch" for the first watch directory and
-          "/watchX" for additional ones, where "X" is the index (e.g., "2" for the
+          Path to the watch directory within the container. When set to `AUTO` (the
+          default), the path is set to `/watch` for the first watch directory and
+          `/watchX` for additional ones, where `X` is the index (e.g., `2` for the
           second).
         display: always
         required: false
@@ -1290,13 +1267,6 @@ container:
       type: public
       unraid_template:
         title: "Automatic Video Converter: Output Subdirectory"
-        description: >-
-          Subdirectory of the output folder where converted videos are written. By
-          default, videos are saved directly to "/output/". If set to "Home/Movies",
-          videos are written to "/output/Home/Movies". Use "SAME_AS_SRC" to match the
-          source subfolder. For example, if the source is
-          "/watch/Movies/MyMovie/MyMovie.mkv", the output is written to
-          "/output/Movies/MyMovie/".
         display: always
         required: false
         mask: false
@@ -1307,8 +1277,6 @@ container:
       default: 0
       unraid_template:
         title: "Automatic Video Converter: Overwrite Destination"
-        description: >-
-          When set to "1", allows overwriting an existing destination file.
         display: advanced
         required: false
         mask: false
@@ -1331,9 +1299,6 @@ container:
       default: 10
       unraid_template:
         title: "Automatic Video Converter: Minimum Title Duration"
-        description: >-
-          Minimum title duration (in seconds). Shorter titles are ignored. Applies only
-          to video disc sources (ISO files, "VIDEO_TS" folders, or "BDMV" folders).
         display: advanced
         required: false
         mask: false
@@ -1346,10 +1311,6 @@ container:
       default: 0
       unraid_template:
         title: "Automatic Video Converter: Main Title Detection"
-        description: >-
-          When set to "1", enables {{ app.friendly_name }}'s main feature title
-          detection to guess and select the main title. Applies only to video disc
-          sources (ISO files, "VIDEO_TS" folders, or "BDMV" folders).
         display: advanced
         required: false
         mask: false
@@ -1382,9 +1343,6 @@ container:
       default: 0
       unraid_template:
         title: "Automatic Video Converter: Disable Progress in GUI"
-        description: >-
-          When set to "1", progress of videos converted by the automatic video converter
-          is not shown in the {{ app.friendly_name }} GUI.
         display: advanced
         required: false
         mask: false
@@ -1407,11 +1365,6 @@ container:
       default: 0
       unraid_template:
         title: "Automatic Video Converter: Use Trash Directory"
-        description: >-
-          When set to "1", the automatic video converter uses the trash directory. This
-          applies only when the converter is configured not to keep source files. In
-          that case, they will be moved to the trash directory ("/trash" inside the
-          container by default) instead of being permanently deleted.
         display: advanced
         required: false
         mask: false
@@ -1423,8 +1376,6 @@ container:
       default: /trash
       unraid_template:
         title: "Automatic Video Converter: Trash Directory"
-        description: >-
-          Location of the trash directory inside the container.
         display: advanced
         required: false
         mask: false
