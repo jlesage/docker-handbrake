@@ -285,7 +285,6 @@ Adjust the configuration to suit your needs. Only mandatory settings are
 included in this example.
 
 ```yaml
-version: '3'
 services:
   handbrake:
     image: jlesage/handbrake
