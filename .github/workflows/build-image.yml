@@ -128,7 +128,7 @@ jobs:
           build-args: |
             DOCKER_IMAGE_VERSION=${{ steps.prep.outputs.label_version }}
           cache-from: type=registry,ref=${{ env.CACHE_IMAGE }}
-          cache-to: type=registry,ref=${{ env.CACHE_IMAGE }},mode=max
+          cache-to: ${{ github.ref == 'refs/heads/master' && format('type=registry,ref={0},mode=max', env.CACHE_IMAGE) || '' }}
 
       - name: Build and push (debug version)
         uses: docker/build-push-action@v4
@@ -141,7 +141,7 @@ jobs:
             DOCKER_IMAGE_VERSION=${{ steps.prep.outputs.label_version }}-debug
             HANDBRAKE_DEBUG_MODE=max
           cache-from: type=registry,ref=${{ env.CACHE_IMAGE }}
-          cache-to: type=registry,ref=${{ env.CACHE_IMAGE }},mode=max
+          cache-to: ${{ github.ref == 'refs/heads/master' && format('type=registry,ref={0},mode=max', env.CACHE_IMAGE) || '' }}
 
       - name: Inspect
         if: ${{ steps.prep.outputs.is_release == 'yes' }}
