@@ -23,7 +23,7 @@ jobs:
     name: Build image
     runs-on: ubuntu-22.04
     env:
-      CACHE_IMAGE: ghcr.io/${{ github.repository }}:buildcache
+      CACHE_IMAGE: ghcr.io/${{ env.DOCKER_IMAGE_NAME }}:buildcache
 
     steps:
       - name: Free disk space
