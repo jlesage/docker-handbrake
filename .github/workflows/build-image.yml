@@ -22,8 +22,6 @@ jobs:
   build:
     name: Build image
     runs-on: ubuntu-22.04
-    env:
-      CACHE_IMAGE: ghcr.io/${{ env.DOCKER_IMAGE_NAME }}:buildcache
 
     steps:
       - name: Free disk space
@@ -79,6 +77,10 @@ jobs:
               IS_RELEASE=no
               RELEASE_TYPE="n/a"
           fi
+          # Determine the Docker cache image.
+          name="${GITHUB_REPOSITORY#*/}"
+          name="${name#docker-}"
+          CACHE_IMAGE="ghcr.io/${GITHUB_REPOSITORY_OWNER}/${name}:buildcache"
           # Print results.
           echo "::group::Results"
           echo "Github reference: $GITHUB_REF"
@@ -87,6 +89,7 @@ jobs:
           echo "Docker container version: $VERSION"
           echo "Docker container version label: $LABEL_VERSION"
           echo "Docker container tag(s): $TAGS"
+          echo "Docker cache image: $CACHE_IMAGE"
           echo "::endgroup::"
           # Export outputs.
           echo "is_release=${IS_RELEASE}" >> $GITHUB_OUTPUT
@@ -94,6 +97,7 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "label_version=${LABEL_VERSION}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
+          echo "CACHE_IMAGE=${CACHE_IMAGE}" >> $GITHUB_ENV
           #echo "build_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
 
       - name: Setup QEMU
