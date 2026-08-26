@@ -699,7 +699,7 @@ The control panel is available whenever the application GUI is accessed through
 a web browser. Click the small three-dots tab on the left edge of the browser
 window to open it.
 
-![Web Control Panel](https://images.weserv.nl/?url=raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/images/control-panel.png&w=500)
+![Web Control Panel](https://images.weserv.nl/?url=raw.githubusercontent.com/jlesage/docker-templates/master/jlesage/images/control-panel.png&w=500&v=1)
 
 | Control | Action / Purpose |
 |---------|------------------|
