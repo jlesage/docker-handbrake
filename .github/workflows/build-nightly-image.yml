@@ -47,7 +47,8 @@ jobs:
           # Determine the Docker container tags.
           TAGS="${{ env.DOCKER_IMAGE_NAME }}:${VERSION},${{ env.DOCKER_IMAGE_NAME }}:nightly-latest"
           # Determine if a build is needed.
-          if curl --silent -f "https://hub.docker.com/v2/repositories/${{ env.DOCKER_IMAGE_NAME }}/tags/${VERSION}/" > /dev/null
+          if curl --silent -f "https://hub.docker.com/v2/repositories/${{ env.DOCKER_IMAGE_NAME }}/tags/${VERSION}/" > /dev/null && \
+             curl --silent -f "https://hub.docker.com/v2/repositories/${{ env.DOCKER_IMAGE_NAME }}/tags/${VERSION}-debug/" > /dev/null
           then
               BUILD_NEEDED=no
           else
@@ -126,13 +127,31 @@ jobs:
             DOCKER_IMAGE_VERSION=${{ needs.prepare.outputs.label_version }}
             HANDBRAKE_VERSION=${{ needs.prepare.outputs.handbrake_version }}
             HANDBRAKE_URL=https://github.com/HandBrake/HandBrake.git
-            HANDBRAKE_DEBUG_MODE=max
+            HANDBRAKE_DEBUG_MODE=none
           cache-from: type=gha,scope=${{ env.DOCKER_IMAGE_NAME }}-nightly
           cache-to: type=gha,mode=max,scope=${{ env.DOCKER_IMAGE_NAME }}-nightly
+
+      - name: Build and push (debug version)
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          platforms: ${{ env.PLATFORMS }}
+          tags: |
+            ${{ env.DOCKER_IMAGE_NAME }}:${{ needs.prepare.outputs.version }}-debug
+            ${{ env.DOCKER_IMAGE_NAME }}:nightly-latest-debug
+          build-args: |
+            DOCKER_IMAGE_VERSION=${{ needs.prepare.outputs.label_version }}-debug
+            HANDBRAKE_VERSION=${{ needs.prepare.outputs.handbrake_version }}
+            HANDBRAKE_URL=https://github.com/HandBrake/HandBrake.git
+            HANDBRAKE_DEBUG_MODE=max
+          cache-from: type=gha,scope=${{ env.DOCKER_IMAGE_NAME }}-nightly-debug
+          cache-to: type=gha,mode=max,scope=${{ env.DOCKER_IMAGE_NAME }}-nightly-debug
 
       - name: Inspect
         run: |
           docker buildx imagetools inspect ${{ env.DOCKER_IMAGE_NAME }}:${{ needs.prepare.outputs.version }}
+          docker buildx imagetools inspect ${{ env.DOCKER_IMAGE_NAME }}:${{ needs.prepare.outputs.version }}-debug
 
   notification:
     name: Notification
